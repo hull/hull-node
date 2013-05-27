@@ -12,6 +12,7 @@ var hullClient = hull({
   orgUrl: 'YOUR_HULL_ORG_URL',
   appSecret: 'YOUR_HULL_APP_SECRET'
 });
+```
 
 ## API
 
