@@ -18,7 +18,7 @@ Client.prototype = {
    * @returns {String} The hash to identity the user
    */
   getUserHash: function (user) {
-    var timestamp = Date.now();
+    var timestamp = Math.round(new Date().getTime() / 1000);
     var message = (new Buffer(JSON.stringify(user))).toString('base64');
     var signature = crypto.createHmac('sha1', this.conf.appSecret).update([message, timestamp].join(' ')).digest('hex');
     var parts = [
