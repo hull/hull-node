@@ -6,7 +6,7 @@
   "main": "lib/index.js",
 
   "repository": "https://github.com/hull/hull-node.git",
-  "author": "Xavier Cambar <xavier@hull.io>",
+  "author": "Xavier Cambar <xavier@hull.io>, Stephane Bellity <stephane@hull.io>",
   "license": "MIT",
 
   "scripts": {
