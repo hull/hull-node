@@ -17,7 +17,7 @@ describe('module exports', function () {
   });
 
   describe('The exported "client" property', function () {
-    it('should be the same as the exported object', function () {
+    it('should be the same as the module exports', function () {
       hull.client.should.equal(hull);
     });
   });
