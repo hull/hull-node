@@ -28,5 +28,13 @@ describe('API client', function () {
     var instance = hull(minimalConfig);
     instance.should.be.instanceof(hull);
   });
+  it('should have 4 methods for the http verbs', function () {
+    var client = hull(minimalConfig);
+    client.should.contain.keys(['get', 'post', 'put', 'delete']);
+    client.get.should.be.a('function');
+    client.put.should.be.a('function');
+    client.post.should.be.a('function');
+    client.delete.should.be.a('function');
+  })
 });
 
