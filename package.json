@@ -2,18 +2,20 @@
   "name": "hull",
   "version": "0.1.0",
   "description": "A Node.js client for hull.io APIs",
-  
   "main": "lib/index.js",
-
   "repository": "https://github.com/hull/hull-node.git",
   "author": "Xavier Cambar <xavier@hull.io>, Stephane Bellity <stephane@hull.io>",
   "license": "MIT",
-
   "scripts": {
     "test": "echo \"Error: no test specified yet\" && exit 1"
   },
-
   "dependencies": {
     "superagent": "0.14.x"
+  },
+  "devDependencies": {
+    "mocha": "~1.10.0",
+    "sinon-chai": "~2.4.0",
+    "chai": "~1.6.1",
+    "sinon": "~1.7.2"
   }
 }
