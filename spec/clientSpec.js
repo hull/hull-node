@@ -13,13 +13,6 @@ var hull = require('../lib/index'),
     };
 
 describe('API client', function () {
-  it('should require an object with specific properties as its first partameter', function () {
-    hull.bind(undefined, undefined).should.throw();
-    hull.bind(undefined, '').should.throw();
-    hull.bind(undefined, []).should.throw();
-    hull.bind(undefined, {}).should.throw();
-    hull.bind(undefined, minimalConfig).should.not.throw();
-  });
   it('should be a constructor for the client', function () {
     var instance = new hull(minimalConfig);
     instance.should.be.instanceof(hull);
