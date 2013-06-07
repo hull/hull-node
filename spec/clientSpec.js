@@ -1,3 +1,9 @@
+"use strict";
+
+var chai = require('chai');
+var sinon = require('sinon');
+chai.use(require('sinon-chai'));
+chai.should();
 
 var hull = require('../lib/index'),
     minimalConfig = {
@@ -12,7 +18,7 @@ describe('API client', function () {
     hull.bind(undefined, '').should.throw();
     hull.bind(undefined, []).should.throw();
     hull.bind(undefined, {}).should.throw();
-    hull.bind(undefined, minimalConfig).should.not.throw;
+    hull.bind(undefined, minimalConfig).should.not.throw();
   });
   it('should be a constructor for the client', function () {
     var instance = new hull(minimalConfig);
@@ -23,6 +29,4 @@ describe('API client', function () {
     instance.should.be.instanceof(hull);
   });
 });
-
-
 

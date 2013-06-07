@@ -5,6 +5,8 @@ var sinon = require('sinon');
 chai.use(require('sinon-chai'));
 chai.should();
 
+var hull = require('../lib/index');
+
 describe('module exports', function () {
 
   it('should be a function', function () {
