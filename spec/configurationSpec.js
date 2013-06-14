@@ -10,6 +10,11 @@ describe('Configuration check', function () {
   it('should throw if no configuration is passed', function () {
     conf.check.bind(undefined).should.throw();
   });
+  describe('defaults properties to be checked', function () {
+    it('should be exposed', function () {
+      conf.check.defaults.should.eql(['appId', 'appSecret', 'orgUrl']);
+    });
+  });
   describe('default requirements', function () {
     it('should throw if any are missing', function () {
       conf.check.bind(undefined, {appId: true, orgUrl:true}).should.throw();
