@@ -2,6 +2,8 @@
 
 var chai = require('chai');
 var sinon = require('sinon');
+var omit = require('underscore').omit;
+var extend = require('underscore').extend;
 chai.use(require('sinon-chai'));
 chai.should();
 
@@ -28,6 +30,23 @@ describe('API client', function () {
     client.put.should.be.a('function');
     client.post.should.be.a('function');
     client.delete.should.be.a('function');
-  })
+  });
+
+  describe('minimal configuration', function () {
+    it('should require `appId`', function () {
+      hull.bind(undefined, omit(minimalConfig,'appId')).should.throw();
+    });
+    it('should require `appSecret`', function () {
+      hull.bind(undefined, omit(minimalConfig,'appSecret')).should.throw();
+    });
+    it('should require `orgUrl`', function () {
+      hull.bind(undefined, omit(minimalConfig,'orgUrl')).should.throw();
+    });
+    it('`version` should be forced to package.json value', function () {
+      var conf = extend({}, minimalConfig, {version:'test'});
+      var client = hull(minimalConfig);
+      client.conf.version.should.eql(require('../package.json').version);
+    });
+  });
 });
 
