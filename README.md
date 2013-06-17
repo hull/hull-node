@@ -1,4 +1,5 @@
-# Node.js client for hull.io
+# Node.js client for hull.io [ ![Codeship Status for hull/hull-node](https://www.codeship.io/projects/862851d0-b98b-0130-bbef-5e0af06e25c6/status?branch=master) ](https://www.codeship.io/projects/4360)
+
 
 This provides utility functions to use hull.io APIs within Node.js apps.
 
