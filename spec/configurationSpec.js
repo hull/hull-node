@@ -45,6 +45,12 @@ describe('Configuration check', function () {
         conf.defaults({a:'a'});
         conf.get().should.eql(conf.get());
       });
+      it('should return a copy of the global conf if `defaults` is called with no argument', function () {
+        var _conf = conf.defaults();
+        var _def = conf.get();
+        _conf.should.eql(_def);
+        _conf.should.not.be.equal(_def);
+      });
     });
     it('should have an empty default configuration', function () {
       Object.keys(conf.get()).should.be.empty;
