@@ -10,13 +10,13 @@
     "test": "`npm bin`/mocha spec/*"
   },
   "dependencies": {
-    "superagent": "0.14.x"
+    "superagent": "0.14.x",
+    "underscore": "~1.4.4"
   },
   "devDependencies": {
     "mocha": "~1.10.0",
     "sinon-chai": "~2.4.0",
     "chai": "~1.6.1",
-    "sinon": "~1.7.2",
-    "underscore": "~1.4.4"
+    "sinon": "~1.7.2"
   }
 }
