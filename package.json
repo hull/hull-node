@@ -10,7 +10,7 @@
     "test": "`npm bin`/mocha spec/*"
   },
   "dependencies": {
-    "superagent": "0.14.x",
+    "superagent": "~0.16.0",
     "underscore": "~1.4.4"
   },
   "devDependencies": {
