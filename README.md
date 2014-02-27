@@ -19,25 +19,40 @@ hull.conf({
 var client = hull.client();
 ```
 
-## API
-
-* `hull.conf(obj)` : Returns the global configuration or sets it if an object is given. It's mostly a helper to avoid the necessity of specifying the configuration everytime it is needed.
-* `hull.utils.signUserData(userJson/*, appSecret*/)` : Creates a signed id for the user passed in parameter. It allows to connect your own users to [hull.io](http://hull.io) services.
-* `hull.utils.checkSignedUserId(userId, userSig/*, appSecret*/)` : Checks the validity of the signature relatively to a user id
-* `hull.middleware(/*appId, appSecret, deserializer*/)`: Generates a middleware to add to your Connect/Express apps. It will check if a user is onnected.
-* `hull.client()`: Instanciates an HTTP client to [hull.io](http://hull.io) APIs.
-
 ### Using the HTTP client
 
-Once you have instanciated a client, you can use one of the `get`, `post`, `put`or `delete` methods to perform actions of our APIs.
-The first parameter is the route, the second is the set of parameters you want to send with the request, the third is a callback.
+Once you have instanciated a client, you can use one of the `get`, `post`,
+`put`or `delete` methods to perform actions of our APIs.
+The first parameter is the route, the second is the set of parameters you want
+to send with the request, the third is a callback.
+
+```js
+client.get(path /*, params*/ /* function (err, data) {}*/);
+```
+
+## API
+
+* `hull.conf(obj)` : Returns the global configuration or sets it if an object
+is given. It's mostly a helper to avoid the necessity of specifying the
+configuration everytime it is needed.
+* `hull.utils.signUserData(userJson/*, appSecret*/)` : Creates a signed id for
+the user passed in parameter. It allows to connect your own users to
+[hull.io](http://hull.io) services.
+* `hull.utils.checkSignedUserId(userId, userSig/*, appSecret*/)` : Checks the
+validity of the signature relatively to a user id
+* `hull.middleware(/*appId, appSecret, deserializer*/)`: Generates a middleware
+to add to your Connect/Express apps. It will check if a user is onnected.
+* `hull.client()`: Instanciates an HTTP client to [hull.io](http://hull.io)
+APIs.
 
 
 ## Resources
 
-We have built a demo that uses this library, check out [hull\_userbase](http://github.com/hull/hull_userbase).
+We have built a demo that uses this library, check out
+[hull\_userbase](http://github.com/hull/hull_userbase).
 
-Also check out the [API documentation](http://hull.io/docs/api) to learn what you can achieve with our APIs.
+Also check out the [API documentation](http://hull.io/docs/api) to learn what
+you can achieve with our APIs.
 
 # LICENCE
 
