@@ -14,7 +14,7 @@ describe('module exports', function () {
     hull.should.be.a('function');
   });
   it('should have some properties', function () {
-    hull.should.have.keys(['client', 'utils', 'middleware', 'conf']);
+    hull.should.have.keys(['as', 'client', 'utils', 'middleware', 'conf', ]);
   });
   it('should return an instance of the HTTP client', function () {
     hull({appId:true, orgUrl:true, appSecret:true}).should.be.instanceOf(Client);
