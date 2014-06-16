@@ -15,7 +15,7 @@ hull.conf({
   appSecret: 'YOUR_HULL_APP_SECRET'
 });
 
-// Instanciates a client for the API
+// Instantiates a client for the API
 var client = hull.client();
 ```
 
