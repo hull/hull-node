@@ -14,7 +14,6 @@ describe('module exports', function () {
     hull.should.be.a('function');
   });
   it('should have some properties', function () {
-    console.dir(hull);
     hull.should.have.keys(['as', 'client', 'utils', 'middleware', 'conf', 'webhook']);
   });
   it('should return an instance of the HTTP client', function () {
