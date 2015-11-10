@@ -10,8 +10,8 @@ import Hull from 'hull';
 
 const hull = new Hull({
   platformId: 'YOUR_HULL_PLATFORM_ID',
-  platformSecret: 'YOUR_HULL_PLATFORM_SECRET'
-  orgUrl: 'YOUR_HULL_ORG_URL',
+  platformSecret: 'YOUR_HULL_PLATFORM_SECRET',
+  orgUrl: 'YOUR_HULL_ORG_URL'
 });
 ```
 
