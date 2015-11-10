@@ -2,12 +2,13 @@
   "name": "hull",
   "version": "0.5.0",
   "description": "A Node.js client for hull.io APIs",
-  "main": "/index.js",
+  "main": "dist/index.js",
   "repository": "https://github.com/hull/hull-node.git",
   "author": "Romain Dardour <romain@hull.io>, Xavier Cambar <xavier@hull.io>, Stephane Bellity <stephane@hull.io>",
   "license": "MIT",
   "scripts": {
-    "test": "`npm bin`/mocha spec/*"
+    "test": "`npm bin`/mocha spec/*",
+    "postinstall": "./node_modules/.bin/babel lib --out-dir dist"
   },
   "dependencies": {
     "babel": "^5.8.23",
