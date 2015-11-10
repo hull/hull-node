@@ -23,11 +23,28 @@ The first parameter is the route, the second is the set of parameters you want
 to send with the request, the third is a callback.
 
 ```js
-hull.get(path /*, params*/).then(function(err, response){
+//hull.api.get works too.
+hull.get(path /*, params*/).then(function(data){
   console.log(response);
-},function(err){
+},function(err, response){
   console.log(err);
 });
+```
+
+For convenience, we add `wrapped=true` to all collection requests.
+This will give you an object in the form :
+```json
+{
+  data: [....],
+  pagination:{
+    next_url:'xxxx',
+    last_url:'xxxx',
+    'total': 1163,
+    page: 1,
+    pages: 39,
+    per_page: 30
+  }
+}
 ```
 
 ## API
