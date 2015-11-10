@@ -47,9 +47,19 @@ This will give you an object in the form :
 }
 ```
 
+### Using the client as a specific user
+
+```js
+var user = hull.as('userId');
+user.get('/me')
+user.userToken()
+//user is an instance of Hull, scoped to a specific user. it will act as if the user performed the action
+```
+
 ## API
 
 * `hull.configuration()` : Returns the global configuration
+* `hull.as(userId)`: create a new Hull client acting as the user
 * `hull.userToken(userHash, claims)` : Creates a signed id for
 the user passed in hash. It allows to connect your own users to
 [hull.io](http://hull.io) services. userHash needs an `email` field
