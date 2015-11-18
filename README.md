@@ -31,8 +31,7 @@ hull.get(path /*, params*/).then(function(data){
 });
 ```
 
-For convenience, we add `wrapped=true` to all collection requests.
-This will give you an object in the form :
+For convenience, we add `wrapped=true` to all requests that return a Collection as an Array. You will receive an object in the form :
 ```json
 {
   data: [....],
@@ -46,6 +45,7 @@ This will give you an object in the form :
   }
 }
 ```
+If you want to un-nest the response and receive raw arrays, without pagination, add `wrapped:false` to your query
 
 ### Using the client as a specific user
 

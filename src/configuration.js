@@ -32,10 +32,9 @@ const VALID_PROPS = {
   accessToken: VALID.string
 };
 
+class Configuration {
 
-export default class Configuration {
-
-  constructor(config = {}) {
+  constructor(config) {
     if (!_.isObject(config) || !_.size(config)) {
       throw new Error('Configuration is invalid, it should be a non-empty object');
     }
@@ -76,3 +75,5 @@ export default class Configuration {
     return JSON.parse(JSON.stringify(this._state));
   }
 }
+
+export default Configuration;

@@ -1,5 +1,6 @@
 'use strict';
 
+import _ from 'lodash';
 import rest from 'restler';
 import Configuration from './configuration';
 
@@ -17,8 +18,15 @@ function isAbsolute(url = '') {
   return /http[s]?:\/\//.test(url);
 }
 
+function parseResponse(callback, res) {
+  if ( _.isObject(res) && !_.isArray(res.data)) {
+    return callback(res.data);
+  }
+  return callback(res);
+}
+
 function perform(config = {}, method = 'get', path, params = {}) {
-  // const prms = {wrapped: true, ...params};
+  const prms = {wrapped: true, ...params};
 
   const opts = {
     headers: {
@@ -30,9 +38,9 @@ function perform(config = {}, method = 'get', path, params = {}) {
   };
 
   if (method === 'get') {
-    opts.query = params;
+    opts.query = prms;
   } else {
-    opts.data = JSON.stringify(params);
+    opts.data = JSON.stringify(prms);
   }
 
   const methodCall = rest[method];
@@ -41,12 +49,13 @@ function perform(config = {}, method = 'get', path, params = {}) {
   const actions = {};
   const query = methodCall(path, opts);
   const promise = new Promise(function(resolve, reject) {
+    actions.resolve = parseResponse.bind(this, resolve);
+    actions.reject = parseResponse.bind(this, reject);
+
     query
-    .on('success', resolve)
-    .on('error', reject)
-    .on('fail', reject);
-    actions.resolve = resolve;
-    actions.reject = reject;
+    .on('success', actions.resolve)
+    .on('error', actions.reject)
+    .on('fail', actions.reject);
     return query;
   });
   promise.abort = function() {
