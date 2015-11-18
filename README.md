@@ -32,7 +32,7 @@ hull.get(path /*, params*/).then(function(data){
 ```
 
 For convenience, we add `wrapped=true` to all requests that return a Collection as an Array. You will receive an object in the form :
-```json
+```js
 {
   data: [....],
   pagination:{
