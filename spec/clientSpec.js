@@ -8,7 +8,7 @@ var expect = chai.expect;
 chai.use(require('sinon-chai'));
 chai.should();
 
-var Client = require('../lib/client'),
+var Client = require('../lib/index'),
     config = {
       platformId: '550964db687ee7866d000057',
       platformSecret: 'abcd12345',

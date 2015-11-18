@@ -1,5 +1,4 @@
-var Hull = require('./index');
-
+var Hull = require('./lib/index');
 if (process.env.HULL_PLATFORM_ID && process.env.HULL_PLATFORM_SECRET && process.env.HULL_ORG_URL) {
   var hull = new Hull({
     platformId: process.env.HULL_PLATFORM_ID,

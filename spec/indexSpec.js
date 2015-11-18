@@ -16,7 +16,7 @@
 // };
 
 // var Hull = require('../lib/index');
-// var Client = require('../lib/client');
+// var Client = require('../lib/index');
 
 // describe('Main Entry point', function() {
 

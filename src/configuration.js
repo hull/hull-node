@@ -35,8 +35,6 @@ const VALID_PROPS = {
 
 export default class Configuration {
 
-  static version = pkg.version
-
   constructor(config = {}) {
     if (!_.isObject(config) || !_.size(config)) {
       throw new Error('Configuration is invalid, it should be a non-empty object');

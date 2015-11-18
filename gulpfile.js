@@ -1,15 +1,17 @@
 'use strict';
 /* global require, console*/
-require('babel/register');
 
 var gulp = require('gulp');
-var mocha = require('gulp-mocha');
-var files = ['spec/*'];
 
-gulp.task('tests:run', function() {
-  return gulp.src(files, { read: false }).pipe(mocha());
-});
+var config = {
+  src: 'src',
+  dest: 'lib',
+  spec: ['spec/*']
+};
 
-gulp.task('tests:watch', function() {
-  gulp.watch(files, ['tests:run']);
-});
+require('./tasks/clean')(gulp, config.dest);
+require('./tasks/build')(gulp, config.src, config.dest);
+require('./tasks/test')(gulp, config.spec);
+
+gulp.task('default', ['clean', 'build']);
+gulp.task('prepublish', ['clean', 'build']);

@@ -18,7 +18,7 @@ function isAbsolute(url = '') {
 }
 
 function perform(config = {}, method = 'get', path, params = {}) {
-  const prms = {wrapped: true, ...params};
+  // const prms = {wrapped: true, ...params};
 
   const opts = {
     headers: {
@@ -30,9 +30,9 @@ function perform(config = {}, method = 'get', path, params = {}) {
   };
 
   if (method === 'get') {
-    opts.query = prms;
+    opts.query = params;
   } else {
-    opts.data = JSON.stringify(prms);
+    opts.data = JSON.stringify(params);
   }
 
   const methodCall = rest[method];

@@ -10,7 +10,7 @@ import trait from './trait';
 
 const PUBLIC_METHODS = ['get', 'post', 'del', 'put'];
 
-var Client = function(config = {}) {
+const Client = function Client(config = {}) {
   if (!(this instanceof Client)) { return new Client(config); }
 
   var clientConfig = new Configuration(config);
@@ -63,4 +63,4 @@ var Client = function(config = {}) {
   }
 };
 
-export default Client;
+module.exports = Client;
