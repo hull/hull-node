@@ -1,88 +1,63 @@
 "use strict";
-var chai = require('chai'),
-    sinon = require('sinon');
+/* global it, describe */
+
+var _ = require('lodash');
+var sinon = require('sinon');
+var chai = require('chai');
+var expect = chai.expect;
 chai.use(require('sinon-chai'));
 chai.should();
 
-var conf = require('../lib/configuration');
+var Configuration = require('../lib/configuration'),
+    config = {
+      platformId: '550964db687ee7866d000057',
+      platformSecret: 'abcd12345',
+      orgUrl: 'https://hull-demos.hullapp.io'
+    };
 
-describe('Configuration check', function () {
-  it('should throw if no configuration is passed', function () {
-    conf.check.bind(undefined).should.throw();
+
+describe('Configuration check', function() {
+  it('should throw if no configuration is passed', function() {
+    expect(function() {
+      new Configuration();
+    }).to.throw();
   });
-  describe('defaults properties to be checked', function () {
-    it('should be exposed', function () {
-      conf.check.defaults.should.eql(['appId', 'appSecret', 'orgUrl']);
+
+  describe('default requirements', function() {
+    it('should throw if any are missing', function() {
+      expect(function() {
+        new Configuration({appId: true, orgUrl: true});
+      }).to.throw();
+      expect(function() {
+        new Configuration({appId: true, appSecret: true});
+      }).to.throw();
+      expect(function() {
+        new Configuration({orgUrl: true, appSecret: true});
+      }).to.throw();
+    });
+
+    it('should throw if they are invalid', function() {
+      expect(function() {
+        new Configuration({orgUrl: true, appId: true, appSecret: true});
+      }).to.throw();
+    });
+
+    it('should pass if they are valid', function() {
+      expect(function() {
+        new Configuration(config);
+      }).to.not.throw();
     });
   });
-  describe('default requirements', function () {
-    it('should throw if any are missing', function () {
-      conf.check.bind(undefined, {appId: true, orgUrl:true}).should.throw();
-      conf.check.bind(undefined, {appId: true, appSecret:true}).should.throw();
-      conf.check.bind(undefined, {orgUrl: true, appSecret:true}).should.throw();
-    });
-    it('should pass if all are present', function () {
-      conf.check.bind(undefined, {orgUrl: true, appId: true, appSecret:true}).should.not.throw();
-    });
-  });
-  describe('specifying custom requirements', function () {
-    it('should bypass the default requirements', function () {
-      conf.check.bind(undefined, {}, []).should.not.throw();
-    });
-    it('should throw if any of the specified requirements are missing', function () {
-      conf.check.bind(undefined, {yep: true}, ['nope']).should.throw();
-    });
-    it('should pass if all are present', function () {
-      conf.check.bind(undefined, {yep: true}, ['yep']).should.not.throw();
-    });
-  });
-  describe('global configuration', function () {
-    describe('getting the global configuration', function () {
-      it('should always return a new object', function () {
+
+  describe('global configuration', function() {
+    describe('getting the global configuration', function() {
+      it('should always return a new object', function() {
+        var conf = new Configuration(config);
         conf.get().should.not.be.equal(conf.get());
       });
-      it('should have thre same properties', function () {
-        conf.defaults({a:'a'});
+      it('should have thre same properties', function() {
+        var conf = new Configuration(config);
         conf.get().should.eql(conf.get());
-      });
-      it('should return a copy of the global conf if `defaults` is called with no argument', function () {
-        var _conf = conf.defaults();
-        var _def = conf.get();
-        _conf.should.eql(_def);
-        _conf.should.not.be.equal(_def);
-      });
-    });
-    it('should have an empty default configuration', function () {
-      Object.keys(conf.get()).should.be.empty;
-    });
-    it('should be possible to redefine the global conf', function () {
-      conf.defaults({a:'a'});
-      conf.get().should.eql({a:'a'});
-    });
-    it('should be possible to reset the conf', function () {
-      conf.defaults({a: 'a'});
-      conf.reset();
-      Object.keys(conf.get()).should.be.empty;
-    });
-    describe('extending the global conf', function () {
-      it('should return a new object', function () {
-        var _default = conf.get();
-        conf.extend({a: 'a'}).should.not.be.equal(_default);
-      });
-      it('should not override the default conf', function () {
-        var _default = conf.get();
-        conf.extend({a: 'a'}).should.not.be.equal(_default);
-        _default.should.eql(conf.get());
-      });
-      it('should be the same with an empty extension', function () {
-        var _default = conf.get();
-        var extended = conf.extend();
-        _default.should.eql(_default);
-        _default.should.not.be.equal(extended);
-      });
-      it('should merge the properties in a new object', function () {
-        conf.extend({a: 'a'}).should.contain.keys(Object.keys(conf.get()));
-        conf.extend({a: 'a'}).should.contain.keys(['a']);
       });
     });
   });
