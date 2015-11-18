@@ -60,9 +60,7 @@ user.userToken()
 
 * `hull.configuration()` : Returns the global configuration
 * `hull.as(userId)`: create a new Hull client acting as the user
-* `hull.userToken(userHash, claims)` : Creates a signed id for
-the user passed in hash. It allows to connect your own users to
-[hull.io](http://hull.io) services. userHash needs an `email` field
+* `hull.userToken({email:'xxx@example.com',name:'FooBar'}, claims)` : Creates a signed id for the user passed in hash. It allows to connect your own users to [hull.io](http://hull.io) services. userHash needs an `email` field. Read the docs about [Bring your own users](http://hull.io/docs/users/byou)
 * `hull.currentUserId(userId, userSig)` : Checks the
 validity of the signature relatively to a user id
 * `hull.currentUserMiddleware()`: Generates a middleware
