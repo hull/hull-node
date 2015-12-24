@@ -29,4 +29,5 @@ export default function(config = {}, req, res, next) {
       req.hull.userId = userId;
     }
   }
+  next()
 }

@@ -36,7 +36,7 @@ const Client = function Client(config = {}) {
   };
 
   this.currentUserMiddleware = function(req, res, next) {
-    return currentUserMiddleware(clientConfig, req, res, next);
+    return currentUserMiddleware(clientConfig.get(), req, res, next);
   };
 
   this.webhookMiddleware = function(req, res, next) {
