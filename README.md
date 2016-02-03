@@ -65,7 +65,7 @@ user.userToken()
 validity of the signature relatively to a user id
 * `hull.currentUserMiddleware()`: Generates a middleware
 to add to your Connect/Express apps. It will check if a user is onnected.
-* `hull.webhookMiddleware()`: Generates a middleware to answer to webhooks
+* `hull.webhookMiddleware()`: Generates a middleware to answer to webhooks (deprecated, please use notifications instead)
 
 ```js
 const app = express();
@@ -83,3 +83,39 @@ app.use(function(req,res,next){
 })
 
 ```
+
+
+### Receiving notifications from Hull
+
+Your app can subscribe to events from Hull and receive notifications via http POST. 
+
+
+
+
+```js
+const app = express();
+import NotifHandler from 'hull/notif-handler';
+
+const handler = NotifHandler({
+  onSubscribe() {} // called when a new subscription is installed
+  onError() {} // called when an error is raised
+  events: {
+    'user_report:update' : function(notif, context) {
+      console.warn('Event Handler here', notif, context);
+      // notif: { 
+      //    message: { id: '123', ... }, 
+      //    subject: 'user_report:update', 
+      //    timestamp: "2016-02-03T17:01:57.393Z' }
+      // }
+      // context: { 
+      //  hull: <Instance of Hull Client> 
+      //  ship: <Current ship instance if available>
+      // }
+    }
+  }
+})
+
+
+app.post('/notify', handler);
+```
+
