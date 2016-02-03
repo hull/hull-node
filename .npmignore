@@ -1,1 +1,9 @@
 src/
+spec/
+tasks/
+.babelrc
+.editorconfig
+.gitignore
+demo.js
+gulpfile.js
+.end.sh.sample
