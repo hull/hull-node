@@ -26,7 +26,9 @@
     "jwt-simple": "^0.3.1",
     "lodash": "^3.10.1",
     "raw-body": "^2.1.4",
-    "restler": "^3.4.0"
+    "restler": "^3.4.0",
+    "sns-validator": "^0.2.0",
+    "connect" : "^3.4.1"
   },
   "devDependencies": {
     "babel": "^6.1.18",
