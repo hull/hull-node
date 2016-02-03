@@ -6,11 +6,9 @@ import Client from './index';
 import rawBody from 'raw-body';
 
 function parseRequest() {
-  return function (req, res, next) {
+  return function(req, res, next) {
     req.hull = req.hull || {};
-    rawBody(req, true, function(err, body) {
-      // Because we can't reuse streams and express middlewares
-      // throw them away
+    rawBody(req, true, (err, body) => {
       req.hull.message = JSON.parse(body);
       return next();
     });
@@ -20,8 +18,7 @@ function parseRequest() {
 function verifySignature(options = {}) {
   const validator = new MessageValidator();
 
-  return function (req, res, next) {
-
+  return function(req, res, next) {
     if (!req.hull.message) {
       return res.handleError('Empty Message', 400);
     }
@@ -31,31 +28,31 @@ function verifySignature(options = {}) {
         return res.handleError(err.toString(), 400);
       }
 
-      req.hull = req.hull || {}
+      req.hull = req.hull || {};
 
-      if (message['Type'] === 'SubscriptionConfirmation') {
-        https.get(message['SubscribeURL'], function (sub) {
+      if (message.Type === 'SubscriptionConfirmation') {
+        https.get(message.SubscribeURL, () => {
           if (typeof options.onSubscribe === 'function') {
             options.onSubscribe(req);
           }
           return res.end('subscribed');
-        }, function(err) {
+        }, () => {
           return res.handleError('Failed to subscribe', 400);
         });
-      } else if (message['Type'] === 'Notification') {
+      } else if (message.Type === 'Notification') {
         try {
           req.hull.notification = {
-            subject: message['Subject'],
-            message: JSON.parse(message['Message']),
-            timestamp: new Date(message['Timestamp'])
-          }
+            subject: message.Subject,
+            message: JSON.parse(message.Message),
+            timestamp: new Date(message.Timestamp)
+          };
           next();
-        } catch (err) {
+        } catch (error) {
           res.handleError('Invalid message', 400);
         }
       }
     });
-  }
+  };
 }
 
 function processHandlers(handlers) {
