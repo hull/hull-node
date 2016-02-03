@@ -9,7 +9,14 @@ function parseRequest() {
   return function(req, res, next) {
     req.hull = req.hull || {};
     rawBody(req, true, (err, body) => {
-      req.hull.message = JSON.parse(body);
+      if (err) {
+        return res.handleError('Invalid body', 400);
+      }
+      try {
+        req.hull.message = JSON.parse(body);
+      } catch (parseError) {
+        return res.handleError('Invalid body', 400);
+      }
       return next();
     });
   };
