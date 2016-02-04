@@ -6,4 +6,6 @@ tasks/
 .gitignore
 demo.js
 gulpfile.js
-.end.sh.sample
+.env
+.env.*
+*tgz

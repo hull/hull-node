@@ -3,7 +3,7 @@
 import rawBody from 'raw-body';
 import crypto from './crypto';
 
-export default function(config = {}, req, res, next) {
+module.exports = function WebhookHandler(config = {}, req, res, next) {
   if (config.platformId !== req.headers['hull-app-id']) {
     return next(new Error('App Id is different from configured Hull client on your side. check your platformId'));
   }

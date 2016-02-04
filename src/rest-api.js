@@ -1,6 +1,5 @@
 'use strict';
 
-import _ from 'lodash';
 import rest from 'restler';
 import Configuration from './configuration';
 
@@ -19,15 +18,10 @@ function isAbsolute(url = '') {
 }
 
 function parseResponse(callback, res) {
-  if ( _.isObject(res) && !_.isArray(res.data)) {
-    return callback(res.data);
-  }
   return callback(res);
 }
 
 function perform(config = {}, method = 'get', path, params = {}) {
-  const prms = {wrapped: true, ...params};
-
   const opts = {
     headers: {
       ...DEFAULT_HEADERS,
@@ -38,9 +32,9 @@ function perform(config = {}, method = 'get', path, params = {}) {
   };
 
   if (method === 'get') {
-    opts.query = prms;
+    opts.query = params;
   } else {
-    opts.data = JSON.stringify(prms);
+    opts.data = JSON.stringify(params);
   }
 
   const methodCall = rest[method];
@@ -71,7 +65,7 @@ function format(config, url) {
   return `${config.get('orgUrl')}${config.get('prefix')}/${strip(url)}`;
 }
 
-export default function restAPI(config, url, method, params) {
+module.exports = function restAPI(config, url, method, params) {
   if (method === 'del') { method = 'delete'; }
   const conf = {
     platformId: config.get('platformId'),
@@ -80,4 +74,4 @@ export default function restAPI(config, url, method, params) {
   };
   const path = format(config, url);
   return perform(conf, method.toLowerCase(), path, params);
-}
+};

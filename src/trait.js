@@ -1,5 +1,5 @@
 import _ from 'lodash';
-export default {
+module.exports = {
   normalize(traits) {
     return _.reduce(traits, (memo, value, key)=>{
       if (!_.isObject(value)) {

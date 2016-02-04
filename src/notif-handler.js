@@ -2,7 +2,7 @@ import MessageValidator from 'sns-validator';
 import connect from 'connect';
 import https from 'https';
 import _ from 'lodash';
-import Client from './index';
+import Client from './client';
 import rawBody from 'raw-body';
 
 function parseRequest() {
@@ -113,7 +113,7 @@ function enrichWithHullClient() {
     req.hull = req.hull || {};
 
     const { message } = req.hull;
-    const forceShipUpdate = false;
+    let forceShipUpdate = false;
     if (message && message.Subject === 'ship:update') {
       forceShipUpdate = true;
     }
@@ -148,7 +148,7 @@ function errorHandler(onError) {
 }
 
 
-export default function NotifHandler(options = {}) {
+module.exports = function NotifHandler(options = {}) {
   const _handlers = {};
   const app = connect();
 

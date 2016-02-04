@@ -12,7 +12,7 @@ function parseSignedCookie(signedCookie) {
   return null;
 }
 
-export default function(config = {}, req, res, next) {
+module.exports = function CurrentUser(config = {}, req, res, next) {
   req.hull = req.hull || {};
   const cookies = req.cookies || {};
   const { platformId } = config;
@@ -29,5 +29,5 @@ export default function(config = {}, req, res, next) {
       req.hull.userId = userId;
     }
   }
-  next()
+  next();
 }
