@@ -20,7 +20,7 @@ function isAbsolute(url = '') {
 
 function parseResponse(callback, res) {
   if (_.isObject(res) && res.data && !res.pagination) {
-    return res.data;
+    return callback(res.data);
   }
   return callback(res);
 }
