@@ -1,11 +1,11 @@
 'use strict';
 
 import rest from 'restler';
-import Configuration from './configuration';
+import pkg from '../package.json';
 
 const DEFAULT_HEADERS = {
   'Content-Type': 'application/json',
-  'User-Agent': `Hull Node Client version: ${Configuration.version}`
+  'User-Agent': `Hull Node Client version: ${pkg.version}`
 };
 
 function strip(url = '') {
