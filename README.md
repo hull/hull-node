@@ -94,7 +94,7 @@ Your app can subscribe to events from Hull and receive notifications via http PO
 
 ```js
 const app = express();
-import NotifHandler from 'hull/lib/notif-handler';
+import { NotifHandler } from 'hull';
 
 const handler = NotifHandler({
   onSubscribe() {} // called when a new subscription is installed
