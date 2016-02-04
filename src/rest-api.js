@@ -1,5 +1,6 @@
 'use strict';
 
+import _ from 'lodash';
 import rest from 'restler';
 import pkg from '../package.json';
 
@@ -18,10 +19,18 @@ function isAbsolute(url = '') {
 }
 
 function parseResponse(callback, res) {
+  if (_.isObject(res) && res.data && !res.pagination) {
+    return res.data;
+  }
   return callback(res);
 }
 
-function perform(config = {}, method = 'get', path, params = {}) {
+function perform(config = {}, method = 'get', path, prms = {}) {
+  const params = {
+    wrapped: true,
+    ...prms
+  };
+
   const opts = {
     headers: {
       ...DEFAULT_HEADERS,
