@@ -93,7 +93,8 @@ function processHandlers(handlers) {
 function enrichWithHullClient() {
   var _cache = [];
 
-  function getCurrentShip(shipId, client) {
+  function getCurrentShip(shipId, client, forceUpdate) {
+    if (forceUpdate) _cache[shipId] = null;
     _cache[shipId] = _cache[shipId] || client.get(shipId);
     return _cache[shipId];
   }
@@ -111,13 +112,19 @@ function enrichWithHullClient() {
 
     req.hull = req.hull || {};
 
+    const { message } = req.hull;
+    const forceShipUpdate = false;
+    if (message && message.Subject === 'ship:update') {
+      forceShipUpdate = true;
+    }
+
     if (config.organization && config.ship && config.secret) {
       const client = req.hull.client = new Client({
         orgUrl: 'https://' + config.organization,
         platformId: config.ship,
         platformSecret: config.secret
       });
-      getCurrentShip(config.ship, client).then((ship) => {
+      getCurrentShip(config.ship, client, forceShipUpdate).then((ship) => {
         req.hull.ship = ship;
         next();
       }, (err) => {
