@@ -31,22 +31,6 @@ hull.get(path /*, params*/).then(function(data){
 });
 ```
 
-For convenience, we add `wrapped=true` to all requests that return a Collection as an Array. You will receive an object in the form :
-```js
-{
-  data: [....],
-  pagination:{
-    next_url:'xxxx',
-    last_url:'xxxx',
-    'total': 1163,
-    page: 1,
-    pages: 39,
-    per_page: 30
-  }
-}
-```
-If you want to un-nest the response and receive raw arrays, without pagination, add `wrapped:false` to your query
-
 ### Using the client as a specific user
 
 ```js

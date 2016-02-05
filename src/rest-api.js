@@ -1,6 +1,5 @@
 'use strict';
 
-import _ from 'lodash';
 import rest from 'restler';
 import pkg from '../package.json';
 
@@ -18,18 +17,7 @@ function isAbsolute(url = '') {
   return /http[s]?:\/\//.test(url);
 }
 
-function parseResponse(callback, res) {
-  if (_.isObject(res) && res.data && !res.pagination) {
-    return callback(res.data);
-  }
-  return callback(res);
-}
-
-function perform(config = {}, method = 'get', path, prms = {}) {
-  const params = {
-    wrapped: true,
-    ...prms
-  };
+function perform(config = {}, method = 'get', path, params = {}) {
 
   const opts = {
     headers: {
@@ -52,8 +40,8 @@ function perform(config = {}, method = 'get', path, prms = {}) {
   const actions = {};
   const query = methodCall(path, opts);
   const promise = new Promise(function(resolve, reject) {
-    actions.resolve = parseResponse.bind(this, resolve);
-    actions.reject = parseResponse.bind(this, reject);
+    actions.resolve = resolve;
+    actions.reject = reject;
 
     query
     .on('success', actions.resolve)
@@ -61,6 +49,7 @@ function perform(config = {}, method = 'get', path, prms = {}) {
     .on('fail', actions.reject);
     return query;
   });
+
   promise.abort = function() {
     query.abort();
     actions.reject();
