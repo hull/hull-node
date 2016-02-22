@@ -56,8 +56,8 @@ module.exports = {
       if (!user) { throw new Error('Missing user ID'); }
       claims.sub = user;
     } else {
-      if (!_.isObject(user) || !user.email) {
-        throw new Error('you need to pass a User hash with an `email` field');
+      if (!_.isObject(user) || (!user.email && !user.external_id)) {
+        throw new Error('you need to pass a User hash with an `email` or `external_id` field');
       }
       claims['io.hull.user'] = user;
     }
