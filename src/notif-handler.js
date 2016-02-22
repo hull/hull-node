@@ -77,8 +77,8 @@ function processHandlers(handlers) {
 
         Promise.all(processors).then(() => {
           next();
-        }, () => {
-          res.handleError('Failed to process message', 500);
+        }, (err) => {
+          res.handleError('Failed to process message: ' + err.toString(), 500);
         });
       } else {
         next();
@@ -107,6 +107,11 @@ function enrichWithHullClient() {
       } else if (val && val.length) {
         cfg[k] = val[0];
       }
+
+      if (typeof cfg[k] === 'string') {
+        cfg[k] = cfg[k].trim();
+      }
+
       return cfg;
     }, {});
 
@@ -181,4 +186,4 @@ module.exports = function NotifHandler(options = {}) {
   handler.addEventHandler = addEventHandler;
 
   return handler;
-}
+};
