@@ -70,6 +70,29 @@ app.use(function(req,res,next){
 
 ```
 
+### API calls as a user:
+
+* `hull.as(userId, sudo).track(eventName, properties, context)` Stores a new event, which you can namespace using the `source` property in the `context` parameter
+* `hull.as(userId, sudo).trait(properties)` Stores Properties on the user.
+
+```js
+const sudo = true;
+const userId = '12345';
+
+hull.as(userId, sudo).track('new support ticket', {
+  messages: 3,
+  priority:'high'  
+}, {
+  source: 'zendesk',
+  ip: null, //don't store ip - it's a server call
+  referer: null, //don't store referer - it's a server call
+  created_at: '2013-02-08 09:30:26.123+07:00' //ISO 8601. moment.js does it very well 
+});
+
+hull.as(userId, sudo).traits({
+  hometown: 'paris'  
+});
+```
 
 ### Receiving notifications from Hull
 
