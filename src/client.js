@@ -52,14 +52,14 @@ module.exports = function Client(config = {}) {
     this.traits = function(traits) {
       return this.api('me/traits', 'put', trait.normalize(traits));
     };
-    this.track = function(event, properties, source = 'track') {
+    this.track = function(event, properties = {}, context = {}) {
       return this.api('/t', 'POST', {
-        event,
-        properties,
-        source,
         ip: null,
         url: null,
-        referer: null
+        referer: null,
+        ...context,
+        properties,
+        event
       });
     };
   } else {
