@@ -15,8 +15,8 @@ function parseSignedCookie(signedCookie) {
 module.exports = function CurrentUser(config = {}, req, res, next) {
   req.hull = req.hull || {};
   const cookies = req.cookies || {};
-  const { platformId } = config;
-  const cookieName = `hull_${platformId}`;
+  const { id } = config;
+  const cookieName = `hull_${id}`;
   if (!(cookieName in cookies)) { return next(); }
 
   const signedUser = parseSignedCookie(cookies[cookieName]);

@@ -22,8 +22,8 @@ function perform(config = {}, method = 'get', path, params = {}) {
   const opts = {
     headers: {
       ...DEFAULT_HEADERS,
-      'Hull-App-Id': config.platformId,
-      'Hull-Access-Token': config.accessToken || config.platformSecret,
+      'Hull-App-Id': config.id,
+      'Hull-Access-Token': config.accessToken || config.secret,
       ...(params.headers || {})
     }
   };
@@ -60,14 +60,14 @@ function perform(config = {}, method = 'get', path, params = {}) {
 
 function format(config, url) {
   if (isAbsolute(url)) { return url; }
-  return `${config.get('orgUrl')}${config.get('prefix')}/${strip(url)}`;
+  return `${config.get('protocol')}://${config.get('organization')}${config.get('prefix')}/${strip(url)}`;
 }
 
 module.exports = function restAPI(config, url, method, params) {
   if (method === 'del') { method = 'delete'; }
   const conf = {
-    platformId: config.get('platformId'),
-    platformSecret: config.get('platformSecret'),
+    id: config.get('id'),
+    secret: config.get('secret'),
     accessToken: config.get('accessToken')
   };
   const path = format(config, url);

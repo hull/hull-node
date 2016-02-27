@@ -9,9 +9,9 @@ This provides utility functions to use hull.io APIs within Node.js apps.
 import Hull from 'hull';
 
 const hull = new Hull({
-  platformId: 'YOUR_HULL_PLATFORM_ID',
-  platformSecret: 'YOUR_HULL_PLATFORM_SECRET',
-  orgUrl: 'YOUR_HULL_ORG_URL'
+  id: 'YOUR_HULL_ID',
+  secret: 'YOUR_HULL_SECRET',
+  organization: 'YOUR_HULL_ORGANIZATION'
 });
 ```
 

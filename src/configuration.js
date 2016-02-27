@@ -21,13 +21,16 @@ const VALID = {
 };
 
 const REQUIRED_PROPS = {
-  platformId: VALID.objectId,
-  platformSecret: VALID.string,
-  orgUrl: VALID.string
+  id: VALID.objectId,
+  secret: VALID.string,
+  organization: VALID.string
 };
 
 const VALID_PROPS = {
   ...REQUIRED_PROPS,
+  prefix: VALID.string,
+  domain: VALID.string,
+  protocol: VALID.string,
   userId: VALID.objectId,
   accessToken: VALID.string
 };

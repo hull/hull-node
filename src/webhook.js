@@ -4,8 +4,8 @@ import rawBody from 'raw-body';
 import crypto from './crypto';
 
 module.exports = function WebhookHandler(config = {}, req, res, next) {
-  if (config.platformId !== req.headers['hull-app-id']) {
-    return next(new Error('App Id is different from configured Hull client on your side. check your platformId'));
+  if (config.id !== req.headers['hull-app-id']) {
+    return next(new Error('App Id is different from configured Hull client on your side. check your id'));
   }
 
   const sig = req.headers['hull-signature'].split('.');

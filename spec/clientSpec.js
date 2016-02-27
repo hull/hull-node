@@ -9,9 +9,9 @@ chai.should();
 var Client = require('../lib/client');
 
 var config = {
-  platformId: '550964db687ee7866d000057',
-  platformSecret: 'abcd12345',
-  orgUrl: 'https://hull-demos.hullapp.io'
+  id: '550964db687ee7866d000057',
+  secret: 'abcd12345',
+  organization: 'hull-demos'
 };
 
 describe('API client', function() {
@@ -44,35 +44,35 @@ describe('API client', function() {
   });
 
   describe('minimal configuration', function() {
-    it('should require `platformId`', function() {
+    it('should require `id`', function() {
       expect(function() {
-        return new Client(_.omit(config, 'platformId'));
+        return new Client(_.omit(config, 'id'));
       }).to.throw();
     });
-    it('should require `platformSecret`', function() {
+    it('should require `secret`', function() {
       expect(function() {
-        return new Client(_.omit(config, 'platformSecret'));
+        return new Client(_.omit(config, 'secret'));
       }).to.throw();
     });
-    it('should require `orgUrl`', function() {
+    it('should require `organization`', function() {
       expect(function() {
-        return new Client(_.omit(config, 'orgUrl'));
+        return new Client(_.omit(config, 'organization'));
       }).to.throw();
     });
 
-    it('should require a valid `platformId`', function() {
+    it('should require a valid `id`', function() {
       expect(function() {
-        return new Client(_.extend({}, config, { platformId: true } ));
+        return new Client(_.extend({}, config, { id: true } ));
       }).to.throw();
     });
-    it('should require a valid `platformSecret`', function() {
+    it('should require a valid `secret`', function() {
       expect(function() {
-        return new Client(_.extend({}, config, { platformSecret: true } ));
+        return new Client(_.extend({}, config, { secret: true } ));
       }).to.throw();
     });
-    it('should require a valid `orgUrl`', function() {
+    it('should require a valid `organization`', function() {
       expect(function() {
-        return new Client(_.extend({}, config, { orgUrl: true } ));
+        return new Client(_.extend({}, config, { organization: true } ));
       }).to.throw();
     });
 

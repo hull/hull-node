@@ -57,7 +57,7 @@ module.exports = function Client(config = {}) {
       if (!userId) {
         throw new Error('User Id was not defined when calling hull.as()');
       }
-      // const scopedClientConfig = _.omit(config, 'platformSecret');
+      // const scopedClientConfig = _.omit(config, 'secret');
       return new Client({ ...config, userId });
     };
   }

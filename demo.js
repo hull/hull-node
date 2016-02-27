@@ -2,11 +2,11 @@ require('babel-register');
 // var Hull = require('./lib/index.js');
 var Hull = require('./src/index.js');
 
-if (process.env.HULL_PLATFORM_ID && process.env.HULL_PLATFORM_SECRET && process.env.HULL_ORG_URL) {
+if (process.env.HULL_PLATFORM_ID && process.env.HULL_PLATFORM_SECRET && process.env.HULL_ORGANIZATION) {
   var hull = new Hull({
-    platformId: process.env.HULL_PLATFORM_ID,
-    platformSecret: process.env.HULL_PLATFORM_SECRET,
-    orgUrl: process.env.HULL_ORG_URL
+    id: process.env.HULL_PLATFORM_ID,
+    secret: process.env.HULL_PLATFORM_SECRET,
+    organization: process.env.HULL_ORGANIZATION
   });
 
   hull.get('/org').then(function(data) {

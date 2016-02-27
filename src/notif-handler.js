@@ -125,9 +125,9 @@ function enrichWithHullClient() {
 
     if (config.organization && config.ship && config.secret) {
       const client = req.hull.client = new Client({
-        orgUrl: 'https://' + config.organization,
-        platformId: config.ship,
-        platformSecret: config.secret
+        organization: config.organization,
+        id: config.ship,
+        secret: config.secret
       });
       getCurrentShip(config.ship, client, forceShipUpdate).then((ship) => {
         req.hull.ship = ship;

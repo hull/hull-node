@@ -6,7 +6,7 @@ import jwt from 'jwt-simple';
 
 
 function getSecret(config = {}, secret) {
-  return secret || config.accessToken || config.platformSecret;
+  return secret || config.accessToken || config.secret;
 }
 function sign(config, data) {
   if (!_.isString(data)) {
@@ -19,7 +19,7 @@ function sign(config, data) {
   .digest('hex');
 }
 function checkConfig(config) {
-  if (!config || !_.isObject(config) || !config.platformId || !config.platformSecret) {
+  if (!config || !_.isObject(config) || !config.id || !config.secret) {
     throw new Error(`invalid config in Crypto: ${JSON.stringify(config)}`);
   }
 }
@@ -29,7 +29,7 @@ function buildToken(config, claims = {}) {
   if (claims.exp) { claims.exp = Number(claims.exp);}
   const iat = Math.floor(new Date().getTime() / 1000);
   const claim = {
-    iss: config.platformId,
+    iss: config.id,
     iat: iat,
     exp: iat + 600,
     ...claims
