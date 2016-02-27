@@ -1,7 +1,7 @@
 {
   "name": "hull",
   "version": "0.6.0",
-  "description": "A Node.js client for hull.io APIs",
+  "description": "A Node.js client for hull.io",
   "main": "lib",
   "repository": {
     "type": "git",
