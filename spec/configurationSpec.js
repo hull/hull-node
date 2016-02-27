@@ -10,9 +10,9 @@ chai.should();
 
 var Configuration = require('../lib/configuration'),
     config = {
-      platformId: '550964db687ee7866d000057',
-      platformSecret: 'abcd12345',
-      orgUrl: 'https://hull-demos.hullapp.io'
+      id: '550964db687ee7866d000057',
+      secret: 'abcd12345',
+      organization: 'hull-demos.hullapp.io'
     };
 
 
@@ -26,19 +26,19 @@ describe('Configuration check', function() {
   describe('default requirements', function() {
     it('should throw if any are missing', function() {
       expect(function() {
-        new Configuration({appId: true, orgUrl: true});
+        new Configuration({appId: true, organization: true});
       }).to.throw();
       expect(function() {
         new Configuration({appId: true, appSecret: true});
       }).to.throw();
       expect(function() {
-        new Configuration({orgUrl: true, appSecret: true});
+        new Configuration({organization: true, appSecret: true});
       }).to.throw();
     });
 
     it('should throw if they are invalid', function() {
       expect(function() {
-        new Configuration({orgUrl: true, appId: true, appSecret: true});
+        new Configuration({organization: true, appId: true, appSecret: true});
       }).to.throw();
     });
 

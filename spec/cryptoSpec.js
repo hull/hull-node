@@ -11,12 +11,12 @@
 
 // var crypto = require('../lib/crypto');
 // var invalidConfig = {
-//   platformId: true
+//   id: true
 // };
 // var config = {
-//   platformId: '550964db687ee7866d000057',
-//   platformSecret: 'abcd12345',
-//   orgUrl: 'https://hull-demos.hullapp.io'
+//   id: '550964db687ee7866d000057',
+//   secret: 'abcd12345',
+//   organization: 'hull-demos.hullapp.io'
 // };
 // var fooBar = ['foo', 'bar'];
 // var signedFooBar = 'c206e90efa41627cbf49e1e75d0a66643d4e14e5';
@@ -49,9 +49,9 @@
 //     });
 //     it('should not return the right signature item when secret is invalid', function() {
 //       var signed = crypto.sign({
-//         platformId: config.platformId,
-//         orgUrl: config.orgUrl,
-//         platformSecret: 'invalid'
+//         id: config.id,
+//         organization: config.organization,
+//         secret: 'invalid'
 //       }, fooBar.join('.'));
 //       expect(signed).to.not.be.equal(signedFooBar);
 //     });

@@ -10,9 +10,9 @@
 // chai.should();
 
 // var config = {
-//   platformId: '550964db687ee7866d000057',
-//   platformSecret: 'abcd12345',
-//   orgUrl: 'https://hull-demos.hullapp.io'
+//   id: '550964db687ee7866d000057',
+//   secret: 'abcd12345',
+//   organization: 'hull-demos.hullapp.io'
 // };
 
 // var Hull = require('../lib/index');
@@ -38,7 +38,7 @@
 //     expect(user).to.be.an.instanceOf(Client);
 //   });
 //   // it('should return an instance of the HTTP client', function() {
-//   //   Hull({appId:true, orgUrl:true, appSecret:true}).should.be.instanceOf(Client);
+//   //   Hull({appId:true, organization:true, appSecret:true}).should.be.instanceOf(Client);
 //   // });
 
 //   // describe('The exported "client" property', function() {

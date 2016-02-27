@@ -11,9 +11,9 @@
 // var Configuration = require('../lib/configuration');
 // var RestAPI = require('../lib/rest-api');
 // var config = {
-//   platformId: '550964db687ee7866d000057',
-//   platformSecret: 'abcd12345',
-//   orgUrl: 'https://hull-demos.hullapp.io'
+//   id: '550964db687ee7866d000057',
+//   secret: 'abcd12345',
+//   organization: 'hull-demos.hullapp.io'
 // };
 
 
@@ -34,7 +34,7 @@
 
 //     it('should throw when configuration is invalid', function() {
 //       expect(function() {
-//         var restAPI = new RestAPI(new Configuration(_.omit(config, 'orgUrl')));
+//         var restAPI = new RestAPI(new Configuration(_.omit(config, 'organization')));
 //       }).to.throw();
 //     });
 
