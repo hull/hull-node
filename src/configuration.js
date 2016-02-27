@@ -12,6 +12,9 @@ const GLOBALS = {
 
 const VALID_OBJECT_ID = new RegExp('^[0-9a-fA-F]{24}$');
 const VALID = {
+  boolean(val) {
+    return (val === true || val === false);
+  },
   objectId(str) {
     return VALID_OBJECT_ID.test(str);
   },
@@ -28,10 +31,11 @@ const REQUIRED_PROPS = {
 
 const VALID_PROPS = {
   ...REQUIRED_PROPS,
+  sudo: VALID.boolean,
   prefix: VALID.string,
   domain: VALID.string,
   protocol: VALID.string,
-  userId: VALID.objectId,
+  userId: VALID.string,
   accessToken: VALID.string
 };
 

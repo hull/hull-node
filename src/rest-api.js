@@ -18,15 +18,19 @@ function isAbsolute(url = '') {
 }
 
 function perform(config = {}, method = 'get', path, params = {}) {
-
   const opts = {
     headers: {
       ...DEFAULT_HEADERS,
       'Hull-App-Id': config.id,
-      'Hull-Access-Token': config.accessToken || config.secret,
+      'Hull-Access-Token': config.token,
       ...(params.headers || {})
     }
   };
+
+  if (config.userId) {
+    opts.headers['Hull-User-Id'] = config.userId;
+  }
+
 
   if (method === 'get') {
     opts.query = params;
@@ -39,6 +43,7 @@ function perform(config = {}, method = 'get', path, params = {}) {
 
   const actions = {};
   const query = methodCall(path, opts);
+
   const promise = new Promise(function(resolve, reject) {
     actions.resolve = resolve;
     actions.reject = reject;
@@ -65,11 +70,14 @@ function format(config, url) {
 
 module.exports = function restAPI(config, url, method, params) {
   if (method === 'del') { method = 'delete'; }
+  const token = config.get('sudo') ? config.get('secret') : (config.get('accessToken') || config.get('secret'));
   const conf = {
+    token,
     id: config.get('id'),
     secret: config.get('secret'),
-    accessToken: config.get('accessToken')
+    userId: config.get('userId')
   };
+
   const path = format(config, url);
   return perform(conf, method.toLowerCase(), path, params);
 };

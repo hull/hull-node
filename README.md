@@ -34,7 +34,9 @@ hull.get(path /*, params*/).then(function(data){
 ### Using the client as a specific user
 
 ```js
-var user = hull.as('userId');
+var user = hull.as('userId', true||false);
+//second argument allows to specify wether we get the user's right or admin rights.
+//Default is false: "get user rights". 
 user.get('/me')
 user.userToken()
 //user is an instance of Hull, scoped to a specific user. it will act as if the user performed the action
@@ -43,7 +45,7 @@ user.userToken()
 ## API
 
 * `hull.configuration()` : Returns the global configuration
-* `hull.as(userId)`: create a new Hull client acting as the user
+* `hull.as(userId, sudo)`: create a new Hull client acting as the user
 * `hull.userToken({email:'xxx@example.com',name:'FooBar'}, claims)` : Creates a signed id for the user passed in hash. It allows to connect your own users to [hull.io](http://hull.io) services. userHash needs an `email` field. Read the docs about [Bring your own users](http://hull.io/docs/users/byou)
 * `hull.currentUserId(userId, userSig)` : Checks the
 validity of the signature relatively to a user id

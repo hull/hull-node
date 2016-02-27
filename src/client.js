@@ -63,12 +63,13 @@ module.exports = function Client(config = {}) {
       });
     };
   } else {
-    this.as = function(userId) {
+    this.as = function(userId, sudo = false) {
+      // Sudo allows to be a user yet have admin rights... Use with care.
       if (!userId) {
         throw new Error('User Id was not defined when calling hull.as()');
       }
       // const scopedClientConfig = _.omit(config, 'secret');
-      return new Client({ ...config, userId });
+      return new Client({ ...config, userId, sudo });
     };
   }
 };
