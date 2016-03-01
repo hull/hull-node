@@ -118,7 +118,8 @@ const handler = NotifHandler({
       // }
       // context: { 
       //  hull: <Instance of Hull Client> 
-      //  ship: <Current ship instance if available>
+      //  ship: <Current ship instance if available>, 
+      //  req: < Original request, Useful to retreive additional data>
       // }
     }
   }

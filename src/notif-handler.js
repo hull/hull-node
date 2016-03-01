@@ -69,6 +69,7 @@ function processHandlers(handlers) {
       const eventHandlers = handlers[eventName];
       if (eventHandlers && eventHandlers.length > 0) {
         const context = {
+          req,
           hull: req.hull.client,
           ship: req.hull.ship
         };
