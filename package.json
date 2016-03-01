@@ -1,6 +1,6 @@
 {
   "name": "hull",
-  "version": "0.6.0",
+  "version": "0.6.1",
   "description": "A Node.js client for hull.io",
   "main": "lib",
   "repository": {
@@ -28,7 +28,7 @@
     "raw-body": "^2.1.5",
     "restler": "^3.4.0",
     "sns-validator": "^0.2.0",
-    "connect" : "^3.4.1"
+    "connect": "^3.4.1"
   },
   "devDependencies": {
     "babel": "^6.5.2",
