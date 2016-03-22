@@ -79,7 +79,7 @@ function processHandlers(handlers) {
         Promise.all(processors).then(() => {
           next();
         }, (err) => {
-          res.handleError('Failed to process message: ' + err.toString(), 500);
+          res.handleError(err.toString(), err.status || 400);
         });
       } else {
         next();
