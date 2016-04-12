@@ -81,9 +81,10 @@ export default function( Hull, options={} ){
   return function(req, res, next){
     req.hull = req.hull || { timings: {} };
 
-    if (req.body.ship && req.body.ship.private_settings) {
+    if (req.body && req.body.ship && req.body.ship.private_settings) {
       req.hull.ship = req.body.ship;
     }
+
     return incomingMiddleware({Hull, useCache: options.useCache, fetchShip: !req.hull.ship})(req, res, next);
   }
 }
