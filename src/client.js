@@ -49,8 +49,20 @@ module.exports = function Client(config = {}) {
   // When to pass org scret or not
 
   if (config.userId || config.accessToken) {
-    this.traits = function(traits) {
-      return this.api('me/traits', 'put', trait.normalize(traits));
+    this.traits = function(traits, context={}) {
+      //Quick and dirty way to add a source prefix to all traits we want in.
+      const source = context.namespace || context.source;
+      const dest = {}
+      if (source){
+        _.reduce(traits, (d, value, key)=>{
+          const key = `${source}/${key}`
+          d[key] = value;
+          return d;
+        }, dest);
+      } else {
+        dest = {...traits}
+      }
+      return this.api('me/traits', 'put', trait.normalize(dest));
     };
     this.track = function(event, properties = {}, context = {}) {
       return this.api('/t', 'POST', {
