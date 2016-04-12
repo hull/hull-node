@@ -4,6 +4,8 @@ import https from 'https';
 import _ from 'lodash';
 import Client from './client';
 import rawBody from 'raw-body';
+import incomingMiddleware from './incoming-middleware';
+import {group} from './trait';
 
 function parseRequest() {
   return function(req, res, next) {
@@ -48,9 +50,13 @@ function verifySignature(options = {}) {
         });
       } else if (message.Type === 'Notification') {
         try {
+          // Quick and dirty hack to group users for all notifications.
+          // Better when it will come from the server.
+          const payload = JSON.parse(message.Message);
+          if (payload && payload.user) { payload.user = group(payload.user); }
           req.hull.notification = {
             subject: message.Subject,
-            message: JSON.parse(message.Message),
+            message: payload,
             timestamp: new Date(message.Timestamp)
           };
           next();
@@ -74,6 +80,7 @@ function processHandlers(handlers) {
           ship: req.hull.ship
         };
 
+
         const processors = eventHandlers.map(fn => fn(req.hull.notification, context));
 
         Promise.all(processors).then(() => {
@@ -91,57 +98,6 @@ function processHandlers(handlers) {
 }
 
 
-function enrichWithHullClient() {
-  var _cache = [];
-
-  function getCurrentShip(shipId, client, forceUpdate) {
-    if (forceUpdate) _cache[shipId] = null;
-    _cache[shipId] = _cache[shipId] || client.get(shipId);
-    return _cache[shipId];
-  }
-
-  return function(req, res, next) {
-    const config = ['organization', 'ship', 'secret'].reduce((cfg, k)=> {
-      const val = req.query[k];
-      if (typeof val === 'string') {
-        cfg[k] = val;
-      } else if (val && val.length) {
-        cfg[k] = val[0];
-      }
-
-      if (typeof cfg[k] === 'string') {
-        cfg[k] = cfg[k].trim();
-      }
-
-      return cfg;
-    }, {});
-
-    req.hull = req.hull || {};
-
-    const { message } = req.hull;
-    let forceShipUpdate = false;
-    if (message && message.Subject === 'ship:update') {
-      forceShipUpdate = true;
-    }
-
-    if (config.organization && config.ship && config.secret) {
-      const client = req.hull.client = new Client({
-        organization: config.organization,
-        id: config.ship,
-        secret: config.secret
-      });
-      getCurrentShip(config.ship, client, forceShipUpdate).then((ship) => {
-        req.hull.ship = ship;
-        next();
-      }, (err) => {
-        res.handleError(err.toString(), 400);
-      });
-    } else {
-      next();
-    }
-  };
-}
-
 function errorHandler(onError) {
   return function(req, res, next) {
     res.handleError = function(message, status) {
@@ -152,7 +108,6 @@ function errorHandler(onError) {
     next();
   };
 }
-
 
 module.exports = function NotifHandler(options = {}) {
   const _handlers = {};
@@ -176,7 +131,7 @@ module.exports = function NotifHandler(options = {}) {
   app.use(errorHandler(options.onError));
   app.use(parseRequest());
   app.use(verifySignature({ onSubscribe: options.onSubscribe }));
-  app.use(enrichWithHullClient());
+  app.use(incomingMiddleware(Client, { useCache: true }));
   app.use(processHandlers(_handlers));
   app.use((req, res) => { res.end('ok'); });
 
