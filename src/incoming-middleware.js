@@ -1,7 +1,8 @@
 const _cache = {};
-function fetchShip(Client, options) {
-  function getCurrentShip(shipId, client, forceUpdate) {
-    if (options.useCache) {
+
+function incomingMiddleware({ Hull, useCache, fetchShip }) {
+  function getShip(shipId, client, forceUpdate) {
+    if (useCache) {
       if (forceUpdate) _cache[shipId] = null;
       _cache[shipId] = _cache[shipId] || client.get(shipId);
       return _cache[shipId];
@@ -9,7 +10,7 @@ function fetchShip(Client, options) {
     return client.get(shipId);
   }
 
-  function parseConfig(query) {
+  function parseQueryString(query) {
     return ['organization', 'ship', 'secret'].reduce((cfg, k)=> {
       const val = query[k];
       if (typeof val === 'string') {
@@ -31,28 +32,30 @@ function fetchShip(Client, options) {
     req.hull = req.hull || { timings: {} };
     req.hull.timings = req.hull.timings || {};
 
-    const config = parseConfig(req.query);
-
-    const { message } = req.hull;
-    let forceShipUpdate = false;
-    if (message && message.Subject === 'ship:update') {
-      forceShipUpdate = true;
-    }
-
     function done() {
       req.hull.timings.fetchShip = new Date() - startAt;
       next();
     }
 
-    if (config.organization && config.ship && config.secret) {
-      const client = req.hull.client = new Client({
-        id: config.ship,
-        organization: config.organization,
-        secret: config.secret
+    //Retreive current Ship info from Querystring.
+    const { organization, ship, secret } = parseQueryString(req.query);
+
+    // When receiving from SNS, this will be populated by 'notif-handler'
+    const { message } = req.hull;
+    let forceShipUpdate = !!(message && message.Subject === 'ship:update');
+
+    if (organization && ship && secret) {
+
+      //Create a Hull client with the current ship config.
+      const client = req.hull.client = new Hull({
+        id: ship,
+        organization: organization,
+        secret: secret
       });
 
-      if (options.fetchShip) {
-        getCurrentShip(config.ship, client, forceShipUpdate).then((ship) => {
+      //If we need to fetch it, go ahead.
+      if (fetchShip) {
+        getShip(ship, client, forceShipUpdate).then((ship) => {
           req.hull.ship = ship;
           done();
         }, (err) => {
@@ -63,28 +66,23 @@ function fetchShip(Client, options) {
       } else {
         done();
       }
+
     } else {
+
       res.status(401);
       res.send({ reason: 'hull_auth', message: 'Missing Hull credentials' });
       res.end();
+
     }
   };
 }
 
-export default {
-  fetchShip,
-  fetchShipMiddleware(Client, req, res, next) {
-    req.hull = req.hull || { timings: {} };
+export default function(Hull, req, res, next){
+  req.hull = req.hull || { timings: {} };
 
-    if (req.body.ship && req.body.ship.private_settings) {
-      req.hull.ship = req.body.ship;
-    }
-
-    return middleware(Client, {
-      useCache: true,
-      fetchShip: !req.hull.ship
-    })(req, res, next);
+  if (req.body.ship && req.body.ship.private_settings) {
+    req.hull.ship = req.body.ship;
   }
-}
 
-export default function
+  return incomingMiddleware({ Hull, useCache: true, fetchShip: !req.hull.ship })(req, res, next);
+}
