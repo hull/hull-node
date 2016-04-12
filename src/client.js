@@ -52,11 +52,11 @@ module.exports = function Client(config = {}) {
     this.traits = function(traits, context={}) {
       //Quick and dirty way to add a source prefix to all traits we want in.
       const source = context.namespace || context.source;
-      const dest = {}
+      let dest = {}
       if (source){
         _.reduce(traits, (d, value, key)=>{
-          const key = `${source}/${key}`
-          d[key] = value;
+          const k = `${source}/${key}`
+          d[k] = value;
           return d;
         }, dest);
       } else {
