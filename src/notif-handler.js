@@ -5,6 +5,7 @@ import _ from 'lodash';
 import Client from './client';
 import rawBody from 'raw-body';
 import {fetchShip} from './fetch-ship';
+import {group} from './trait';
 
 function parseRequest() {
   return function(req, res, next) {
@@ -49,9 +50,13 @@ function verifySignature(options = {}) {
         });
       } else if (message.Type === 'Notification') {
         try {
+          // Quick and dirty hack to group users for all notifications.
+          // Better when it will come from the server.
+          const payload = JSON.parse(message.Message);
+          if (payload && payload.user) { payload.user = group(payload.user); }
           req.hull.notification = {
             subject: message.Subject,
-            message: JSON.parse(message.Message),
+            message: payload,
             timestamp: new Date(message.Timestamp)
           };
           next();
