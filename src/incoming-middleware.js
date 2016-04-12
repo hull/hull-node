@@ -77,12 +77,13 @@ function incomingMiddleware({ Hull, useCache, fetchShip }) {
   };
 }
 
-export default function(Hull, req, res, next){
-  req.hull = req.hull || { timings: {} };
+export default function( Hull, options={} ){
+  return function(req, res, next){
+    req.hull = req.hull || { timings: {} };
 
-  if (req.body.ship && req.body.ship.private_settings) {
-    req.hull.ship = req.body.ship;
+    if (req.body.ship && req.body.ship.private_settings) {
+      req.hull.ship = req.body.ship;
+    }
+    return incomingMiddleware({Hull, useCache: options.useCache, fetchShip: !req.hull.ship})(req, res, next);
   }
-
-  return incomingMiddleware({ Hull, useCache: true, fetchShip: !req.hull.ship })(req, res, next);
 }

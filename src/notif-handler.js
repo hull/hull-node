@@ -4,7 +4,7 @@ import https from 'https';
 import _ from 'lodash';
 import Client from './client';
 import rawBody from 'raw-body';
-import {fetchShip} from './fetch-ship';
+import incomingMiddleware from './incoming-middleware';
 import {group} from './trait';
 
 function parseRequest() {
@@ -97,9 +97,6 @@ function processHandlers(handlers) {
   };
 }
 
-function enrichWithHullClient() {
-  return fetchShip(Client, { useCache: true });
-}
 
 function errorHandler(onError) {
   return function(req, res, next) {
@@ -134,7 +131,7 @@ module.exports = function NotifHandler(options = {}) {
   app.use(errorHandler(options.onError));
   app.use(parseRequest());
   app.use(verifySignature({ onSubscribe: options.onSubscribe }));
-  app.use(enrichWithHullClient());
+  app.use(incomingMiddleware(Client, { useCache: true }));
   app.use(processHandlers(_handlers));
   app.use((req, res) => { res.end('ok'); });
 
