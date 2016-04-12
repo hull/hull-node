@@ -4,6 +4,7 @@ import https from 'https';
 import _ from 'lodash';
 import Client from './client';
 import rawBody from 'raw-body';
+import {fetchShip} from './fetch-ship';
 
 function parseRequest() {
   return function(req, res, next) {
@@ -74,6 +75,7 @@ function processHandlers(handlers) {
           ship: req.hull.ship
         };
 
+
         const processors = eventHandlers.map(fn => fn(req.hull.notification, context));
 
         Promise.all(processors).then(() => {
@@ -90,56 +92,8 @@ function processHandlers(handlers) {
   };
 }
 
-
 function enrichWithHullClient() {
-  var _cache = [];
-
-  function getCurrentShip(shipId, client, forceUpdate) {
-    if (forceUpdate) _cache[shipId] = null;
-    _cache[shipId] = _cache[shipId] || client.get(shipId);
-    return _cache[shipId];
-  }
-
-  return function(req, res, next) {
-    const config = ['organization', 'ship', 'secret'].reduce((cfg, k)=> {
-      const val = req.query[k];
-      if (typeof val === 'string') {
-        cfg[k] = val;
-      } else if (val && val.length) {
-        cfg[k] = val[0];
-      }
-
-      if (typeof cfg[k] === 'string') {
-        cfg[k] = cfg[k].trim();
-      }
-
-      return cfg;
-    }, {});
-
-    req.hull = req.hull || {};
-
-    const { message } = req.hull;
-    let forceShipUpdate = false;
-    if (message && message.Subject === 'ship:update') {
-      forceShipUpdate = true;
-    }
-
-    if (config.organization && config.ship && config.secret) {
-      const client = req.hull.client = new Client({
-        organization: config.organization,
-        id: config.ship,
-        secret: config.secret
-      });
-      getCurrentShip(config.ship, client, forceShipUpdate).then((ship) => {
-        req.hull.ship = ship;
-        next();
-      }, (err) => {
-        res.handleError(err.toString(), 400);
-      });
-    } else {
-      next();
-    }
-  };
+  return fetchShip(Client, { useCache: true });
 }
 
 function errorHandler(onError) {
@@ -152,7 +106,6 @@ function errorHandler(onError) {
     next();
   };
 }
-
 
 module.exports = function NotifHandler(options = {}) {
   const _handlers = {};
