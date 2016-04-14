@@ -4,6 +4,7 @@ import https from 'https';
 import _ from 'lodash';
 import Client from './client';
 import rawBody from 'raw-body';
+import {group} from './trait';
 
 function parseRequest() {
   return function(req, res, next) {
@@ -31,7 +32,7 @@ function verifySignature(options = {}) {
     }
 
     validator.validate(req.hull.message, function(err, message) {
-      if (err) {
+      if (err && options.enforceValidation) {
         return res.handleError(err.toString(), 400);
       }
 
@@ -48,9 +49,14 @@ function verifySignature(options = {}) {
         });
       } else if (message.Type === 'Notification') {
         try {
+          const payload = JSON.parse(message.Message);
+          if (payload && payload.user) {
+            payload.user = group(payload.user);
+          }
+
           req.hull.notification = {
             subject: message.Subject,
-            message: JSON.parse(message.Message),
+            message: payload,
             timestamp: new Date(message.Timestamp)
           };
           next();
@@ -175,7 +181,7 @@ module.exports = function NotifHandler(options = {}) {
 
   app.use(errorHandler(options.onError));
   app.use(parseRequest());
-  app.use(verifySignature({ onSubscribe: options.onSubscribe }));
+  app.use(verifySignature({ onSubscribe: options.onSubscribe, enforceValidation: false }));
   app.use(enrichWithHullClient());
   app.use(processHandlers(_handlers));
   app.use((req, res) => { res.end('ok'); });

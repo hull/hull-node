@@ -1,6 +1,6 @@
 {
   "name": "hull",
-  "version": "0.6.2",
+  "version": "0.6.3",
   "description": "A Node.js client for hull.io",
   "main": "lib",
   "repository": {
@@ -20,15 +20,16 @@
     "prepublish": "npm run build"
   },
   "dependencies": {
+    "connect": "^3.4.1",
     "crypto": "0.0.3",
     "eslint-config-airbnb-es5": "^1.0.8",
     "gulp-mocha": "^2.2.0",
     "jwt-simple": "^0.4.1",
     "lodash": "^4.5.1",
+    "object-mapper": "^3.0.0",
     "raw-body": "^2.1.5",
     "restler": "^3.4.0",
-    "sns-validator": "^0.2.0",
-    "connect": "^3.4.1"
+    "sns-validator": "^0.2.0"
   },
   "devDependencies": {
     "babel": "^6.5.2",

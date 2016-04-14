@@ -43,15 +43,31 @@ module.exports = function Client(config = {}) {
     return webhookMiddleware(clientConfig, req, res, next);
   };
 
+  this.utils = {
+    groupTraits: trait.group
+  };
 
   // TODO
   // Check conditions on when to create a "user client" or an "org client".
   // When to pass org scret or not
 
   if (config.userId || config.accessToken) {
-    this.traits = function(traits) {
-      return this.api('me/traits', 'put', trait.normalize(traits));
+    this.traits = function(traits, context = {}) {
+      // Quick and dirty way to add a source prefix to all traits we want in.
+      const source = context.source;
+      let dest = {};
+      if (source) {
+        _.reduce(traits, (d, value, key)=>{
+          const k = `${source}/${key}`;
+          d[k] = value;
+          return d;
+        }, dest);
+      } else {
+        dest = {...traits};
+      }
+      return this.api('me/traits', 'put', trait.normalize(dest));
     };
+
     this.track = function(event, properties = {}, context = {}) {
       return this.api('/t', 'POST', {
         ip: null,

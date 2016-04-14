@@ -90,14 +90,64 @@ hull.as(userId, sudo).track('new support ticket', {
 });
 
 hull.as(userId, sudo).traits({
-  hometown: 'paris'  
-});
+  opened_tickets: 12 
+}, { source: 'zendesk' }); 
+// optional source will store the traits grouped under the source name.
 ```
+
+
+### Utils
+
+#### groupTraits(user_report)
+
+Returns a grouped version of the traits in the flat user report we return from the API.
+
+The NotifHandler already does this by default.
+
+Example user: 
+```js
+Hull.utils.groupTraits({
+  'email': 'romain@user',
+  'name': 'name',
+  'traits_coconut_name': 'coconut',
+  'traits_coconut_size': 'large',
+  'traits_cb/twitter_bio': 'parisian',
+  'traits_cb/twitter_name': 'parisian',
+  'traits_group/name': 'groupname',
+  'traits_zendesk/open_tickets': 18
+});
+// returns
+{
+  'id' : '31628736813n1283',
+  'email': 'romain@user',
+  'name': 'name',
+  'traits': {
+    'coconut_name': 'coconut',
+    'coconut_size': 'large'
+  },
+  cb: {  
+    'twitter_bio': 'parisian',
+    'twitter_name': 'parisian'
+  },
+  group: {
+    'name': 'groupname',
+  },
+  zendesk: {
+    'open_tickets': 18
+  }
+};
+
+
+
+
+```
+
+
+
 
 ### Receiving notifications from Hull
 
 Your app can subscribe to events from Hull and receive notifications via http POST. 
-
 
 
 
