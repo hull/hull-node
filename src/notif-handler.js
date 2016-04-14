@@ -31,7 +31,7 @@ function verifySignature(options = {}) {
       return res.handleError('Empty Message', 400);
     }
 
-    validator.validate(req.hull.message, function(err, message) {
+    validator.validate(req.hull.message, function(err) {
       if (err) {
         if (options.enforceValidation) {
           return res.handleError(err.toString(), 400);
@@ -39,7 +39,7 @@ function verifySignature(options = {}) {
         console.warn('Invalid signature error', req.hull.message);
       }
 
-      req.hull = req.hull || {};
+      const { message } = req.hull;
 
       if (message.Type === 'SubscriptionConfirmation') {
         https.get(message.SubscribeURL, () => {
