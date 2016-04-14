@@ -32,8 +32,11 @@ function verifySignature(options = {}) {
     }
 
     validator.validate(req.hull.message, function(err, message) {
-      if (err && options.enforceValidation) {
-        return res.handleError(err.toString(), 400);
+      if (err) {
+        if (options.enforceValidation) {
+          return res.handleError(err.toString(), 400);
+        }
+        console.warn('Invalid signature error', req.hull.message);
       }
 
       req.hull = req.hull || {};
