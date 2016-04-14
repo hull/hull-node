@@ -1,7 +1,7 @@
 'use strict';
 
 import _ from 'lodash';
-import crypto from'crypto';
+import crypto from 'crypto';
 import jwt from 'jwt-simple';
 
 

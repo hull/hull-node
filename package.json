@@ -21,9 +21,6 @@
   },
   "dependencies": {
     "connect": "^3.4.1",
-    "crypto": "0.0.3",
-    "eslint-config-airbnb-es5": "^1.0.8",
-    "gulp-mocha": "^2.2.0",
     "jwt-simple": "^0.4.1",
     "lodash": "^4.5.1",
     "object-mapper": "^3.0.0",
@@ -32,6 +29,7 @@
     "sns-validator": "^0.2.0"
   },
   "devDependencies": {
+    "gulp-mocha": "^2.2.0",
     "babel": "^6.5.2",
     "babel-cli": "^6.5.1",
     "babel-eslint": "^5.0.0",
@@ -43,6 +41,7 @@
     "del": "^2.2.0",
     "eslint": "^2.2.0",
     "eslint-config-airbnb": "^6.0.2",
+    "eslint-config-airbnb-es5": "^1.0.8",
     "eslint-plugin-react": "^4.1.0",
     "gulp": "^3.9.1",
     "gulp-babel": "^6.1.2",
