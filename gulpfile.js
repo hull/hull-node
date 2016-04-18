@@ -13,5 +13,5 @@ require('./tasks/clean')(gulp, config.dest);
 require('./tasks/build')(gulp, config.src, config.dest);
 require('./tasks/test')(gulp, config.spec);
 
-gulp.task('default', ['clean', 'build']);
+gulp.task('default', ['clean', 'build', 'tests:watch']);
 gulp.task('prepublish', ['clean', 'build']);

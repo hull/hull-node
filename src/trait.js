@@ -22,7 +22,12 @@ function buildMap(user) {
       } else {
         dest = key.replace(/^traits_/, 'traits.');
       }
-      m[key] = dest;
+
+      // Skip entire entry if the User already has a key by that name.
+      if(!user.hasOwnProperty(dest.split('.')[0])) {
+        m[key] = dest;
+      }
+
     } else {
       m[key] = key;
     }
