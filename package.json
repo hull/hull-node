@@ -26,7 +26,7 @@
     "object-mapper": "^3.0.0",
     "raw-body": "^2.1.5",
     "restler": "^3.4.0",
-    "sns-validator": "^0.2.0"
+    "sns-validator": "^0.2.1"
   },
   "devDependencies": {
     "gulp-mocha": "^2.2.0",

@@ -24,7 +24,7 @@ function parseRequest() {
 }
 
 function verifySignature(options = {}) {
-  const validator = new MessageValidator();
+  const validator = new MessageValidator(/sns\.us-east-1\.amazonaws\.com/, 'utf8');
 
   return function(req, res, next) {
     if (!req.hull.message) {
