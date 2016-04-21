@@ -53,7 +53,7 @@ function verifySignature(options = {}) {
       } else if (message.Type === 'Notification') {
         try {
           const payload = JSON.parse(message.Message);
-          if (payload && payload.user) {
+          if (payload && payload.user && options.groupTraits) {
             payload.user = group(payload.user);
           }
 
@@ -184,7 +184,11 @@ module.exports = function NotifHandler(options = {}) {
 
   app.use(errorHandler(options.onError));
   app.use(parseRequest());
-  app.use(verifySignature({ onSubscribe: options.onSubscribe, enforceValidation: false }));
+  app.use(verifySignature({
+    onSubscribe: options.onSubscribe,
+    enforceValidation: false,
+    groupTraits: options.groupTraits !== false
+  }));
   app.use(enrichWithHullClient());
   app.use(processHandlers(_handlers));
   app.use((req, res) => { res.end('ok'); });
