@@ -9,9 +9,9 @@ This provides utility functions to use hull.io APIs within Node.js apps.
 import Hull from 'hull';
 
 const hull = new Hull({
-  id: 'YOUR_HULL_ID',
-  secret: 'YOUR_HULL_SECRET',
-  organization: 'YOUR_HULL_ORGANIZATION'
+  id: 'HULL_ID',
+  secret: 'HULL_SECRET',
+  organization: 'HULL_ORGANIZATION_DOMAIN'
 });
 ```
 
@@ -34,24 +34,28 @@ hull.get(path /*, params*/).then(function(data){
 ### Using the client as a specific user
 
 ```js
-var user = hull.as('userId', true||false);
-//second argument allows to specify wether we get the user's right or admin rights.
+//user id from your database, lazily creates a user.
+var user = hull.as({ external_id: 'dkjf565wd654e' });
+//or if you retrieved a Hull Internal User Id:
+var user = hull.as('5718b59b7a85ebf20e000169', false);
+//second argument is optional and specifies wether we get the user's right or admin rights.
 //Default is false: "get user rights". 
-user.get('/me')
-user.userToken()
-//user is an instance of Hull, scoped to a specific user. it will act as if the user performed the action
+user.get('/me').then(function(me){
+  console.log(me)
+});
+user.userToken();
+//user is an instance of Hull, scoped to a specific user.
+//It will act as if the user performed the action if the second parameter is falsy
 ```
 
 ## API
 
 * `hull.configuration()` : Returns the global configuration
 * `hull.as(userId, sudo)`: create a new Hull client acting as the user
-* `hull.userToken({email:'xxx@example.com',name:'FooBar'}, claims)` : Creates a signed id for the user passed in hash. It allows to connect your own users to [hull.io](http://hull.io) services. userHash needs an `email` field. Read the docs about [Bring your own users](http://hull.io/docs/users/byou)
-* `hull.currentUserId(userId, userSig)` : Checks the
-validity of the signature relatively to a user id
-* `hull.currentUserMiddleware()`: Generates a middleware
-to add to your Connect/Express apps. It will check if a user is onnected.
-* `hull.webhookMiddleware()`: Generates a middleware to answer to webhooks (deprecated, please use notifications instead)
+* `hull.as({external_id:'externalId'}, sudo)`: Lazily find or create a new user and return it's hull client.
+* `hull.userToken({email:'xxx@example.com',name:'FooBar'}, claims)` : used for [Bring your own users](http://hull.io/docs/users/byou) - Creates a signed string for the user passed in hash. userHash needs an `email` field. [You can then pass this client-side to Hull.js](http://www.hull.io/docs/users/byou) to authenticate users client-side and cross-domain
+* `hull.currentUserId(userId, userSig)` : Checks the validity of the signature relatively to a user id
+* `hull.currentUserMiddleware()`: Reverse of Bring your own Users. When using Hull's Identity management, tells you who the current user is. Generates a middleware to add to your Connect/Express apps.
 
 ```js
 const app = express();
@@ -61,13 +65,6 @@ app.use(hull.currentUserMiddleware);
 app.use(function(req,res,next){
   console.log(req.hull.userId) // Should exist if there is a user logged in;  
 })
-
-app.use(hull.webhookMiddleware);
-//Responds to webhooks
-app.use(function(req,res,next){
-  console.log(req.body) // Webhook payload, decrypted.
-})
-
 ```
 
 ### API calls as a user:
@@ -77,9 +74,14 @@ app.use(function(req,res,next){
 
 ```js
 const sudo = true;
-const userId = '12345';
+const userId = '5718b59b7a85ebf20e000169';
+const externalId = 'dkjf565wd654e';
 
-hull.as(userId, sudo).track('new support ticket', {
+user = hull.as({external_id: externalId}) //lazily creates a user;
+//user.get('/me') promise will fetch this user's data.
+//alternatively, if you have the Hull UserId handy,
+//just do `hull.as(userId)`
+user.track('new support ticket', {
   messages: 3,
   priority:'high'  
 }, {
@@ -89,10 +91,10 @@ hull.as(userId, sudo).track('new support ticket', {
   created_at: '2013-02-08 09:30:26.123+07:00' //ISO 8601. moment.js does it very well 
 });
 
-hull.as(userId, sudo).traits({
+user.traits({
   opened_tickets: 12 
 }, { source: 'zendesk' }); 
-// optional source will store the traits grouped under the source name.
+// 'source' is optional. Will store the traits grouped under the source name.
 ```
 
 
@@ -136,20 +138,11 @@ Hull.utils.groupTraits({
     'open_tickets': 18
   }
 };
-
-
-
-
 ```
-
-
-
 
 ### Receiving notifications from Hull
 
 Your app can subscribe to events from Hull and receive notifications via http POST. 
-
-
 
 ```js
 const app = express();
