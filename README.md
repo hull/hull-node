@@ -76,10 +76,15 @@ Reverse of Bring your own Users. When using Hull's Identity management, tells yo
 # User Calls
 
 ```js
-//user id from your database, lazily creates a user.
+//If you only have an anonymous ID, use the `guest_id` field
+var user = hull.as({ guest_id: '123456789' });
+
+//if you have a user id from your database, use the `external_id` field
 var user = hull.as({ external_id: 'dkjf565wd654e' });
-//or if you retrieved a Hull Internal User Id:
+
+//if you retrieved a Hull Internal User Id:
 var user = hull.as('5718b59b7a85ebf20e000169', false);
+
 //second argument is optional and specifies wether we get the user's right or admin rights.
 //or with an Instagram or other social service ID:
 var user = hull.as('instagram:1234');
@@ -94,7 +99,7 @@ user.userToken();
 
 One of the more frequent use case is to perform API calls with the identity of a given user. We provide several methods to do so.
 
-You can use an internal Hull `id`, an `id` from your database which we call `external_id`, or even the `id` from a supported social service such as Instagram;
+You can use an internal Hull `id`, an Anonymous ID from that we call a `guest_id`, an ID from your database that we call `external_id`, or even the ID from a supported social service such as Instagram;
 
 Assigning the `user` variable doesn't make an API call, it scopes the calls to another instance of `hull` client. This means `user` is an instance of the `hull` client scoped to this user.
 
@@ -122,6 +127,13 @@ hull.as({external_id:'externalId'}, sudo)
 > Return a hull `client` scoped to the user identified by it's External ID (from your dashboard). Lazily created if [Guest Users](http://www.hull.io/docs/users/guest_users) are enabled
 
 ```js
+hull.as({guest_id:'anonymousId'}, sudo)
+```
+
+> Return a hull `client` scoped to the user identified by only by an anonymousId. Lets you start tracking and storing properties from a user before you have a UserID ready for him. Lazily created if [Guest Users](http://www.hull.io/docs/users/guest_users) are enabled
+> When you have a UserId, just pass both to link them.
+
+```js
 hull.as({email:'user@email.com'}, sudo)
 ```
 
@@ -132,8 +144,9 @@ hull.as({email:'user@email.com'}, sudo)
 const sudo = true;
 const userId = '5718b59b7a85ebf20e000169';
 const externalId = 'dkjf565wd654e';
+const anonymousId = '44564-EJVWE-1CE56SE-SDVE879VW8D4';
 
-const user = hull.as({external_id: externalId})
+const user = hull.as({external_id: externalId, guest_id: anonymousId})
 ```
 
 When you do this, you get a new client that has a different behaviour. It's now behaving as a User would. It means it does API calls as a user and has new methods to track and store properties
