@@ -31,7 +31,6 @@ function buildToken(config, claims = {}) {
   const claim = {
     iss: config.id,
     iat: iat,
-    exp: iat + 600,
     ...claims
   };
   return jwt.encode(claim, getSecret(config));
