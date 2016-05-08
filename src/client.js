@@ -43,8 +43,13 @@ module.exports = function Client(config = {}) {
     return webhookMiddleware(clientConfig, req, res, next);
   };
 
+  const shipId = `[${config && config.id}]`;
+  var log = console.log.bind(undefined, shipId);
   this.utils = {
-    groupTraits: trait.group
+    groupTraits: trait.group,
+    log: function(){
+      return log.apply(undefined, arguments)
+    }
   };
 
   // TODO

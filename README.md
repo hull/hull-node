@@ -220,6 +220,12 @@ The Hull API returns traits in a "flat" format, with '/' delimiters in the key.
 The Events handler  Returns a grouped version of the traits in the flat user report we return from the API.
 > The NotifHandler already does this by default.
 
+## log(data)
+
+```js
+Hull.utils.log(data)
+```
+Instance-scoped logging facility to make it easy to identify the Ship currently logging data.
 
 # Events
 
