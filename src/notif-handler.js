@@ -74,18 +74,42 @@ function verifySignature(options = {}) {
 function processHandlers(handlers) {
   return function(req, res, next) {
     try {
-      const eventName = req.hull.message.Subject;
-      const eventHandlers = handlers[eventName];
-      if (eventHandlers && eventHandlers.length > 0) {
-        const context = {
-          req,
-          hull: req.hull.client,
-          ship: req.hull.ship
-        };
+      const { message, notification, client, ship } = req.hull;
+      const eventName = getHandlerName(message.Subject);
+      const messageHandlers = handlers[eventName];
+      const processing = [];
 
-        const processors = eventHandlers.map(fn => fn(req.hull.notification, context));
+      const context = {
+        req, ship,
+        hull: client
+      };
 
-        Promise.all(processors).then(() => {
+      if (messageHandlers && messageHandlers.length > 0) {
+        messageHandlers.map(fn => {
+          processing.push(fn(notification, context));
+        });
+      }
+
+      const eventHandlers = handlers['event'] || [];
+
+      if (eventHandlers.length > 0 && eventName === 'user:update' && notification.message) {
+        const { user, events=[], segments = [] } = notification.message;
+        if (events.length > 0) {
+          events.map(event => {
+            eventHandlers.map(fn => {
+              const payload = {
+                message: { user, segments, event },
+                subject: 'event',
+                timestamp: message.Timestamp
+              };
+              processing.push(fn(payload, context))
+            })
+          })
+        }
+      }
+
+      if (processing.length > 0) {
+        Promise.all(processing).then(() => {
           next();
         }, (err) => {
           res.handleError(err.toString(), err.status || 400);
@@ -162,24 +186,34 @@ function errorHandler(onError) {
   };
 }
 
+function getHandlerName(eventName) {
+  const ModelsMapping = {
+    'user_report': 'user',
+    'users_segment': 'segment'
+  }
+  const [ modelName, action ] = eventName.split(':');
+  const model = ModelsMapping[modelName] || modelName;
+  return _.compact([model, action]).join(':');
+}
 
 module.exports = function NotifHandler(options = {}) {
   const _handlers = {};
   const app = connect();
+
+  function addEventHandler(evt, fn) {
+    const eventName = getHandlerName(evt);
+    _handlers[eventName] = _handlers[eventName] || [];
+    _handlers[eventName].push(fn);
+    return this;
+  }
 
   function addEventHandlers(eventsHash) {
     _.map(eventsHash, (fn, eventName) => addEventHandler(eventName, fn));
     return this;
   }
 
-  function addEventHandler(eventName, fn) {
-    _handlers[eventName] = _handlers[eventName] || [];
-    _handlers[eventName].push(fn);
-    return this;
-  }
-
-  if (options.events) {
-    addEventHandlers(options.events);
+  if (options.handlers) {
+    addEventHandlers(options.handlers);
   }
 
   app.use(errorHandler(options.onError));

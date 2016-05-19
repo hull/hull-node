@@ -236,14 +236,37 @@ import { NotifHandler } from 'hull';
 const handler = NotifHandler({
   onSubscribe() {} // called when a new subscription is installed
   onError() {} // called when an error is raised
-  events: {
-    'user_report:update' : function(notif, context) {
-      console.warn('Event Handler here', notif, context);
+  handlers: {
+    'event': function() {
+      console.log('Event Handler here', notif, context);
       // notif: { 
-      //    message: { id: '123', ... }, 
+      //    message: { 
+      //      user: { id: '123', ... }, 
+      //      segments: [ { } ],
+      //      event: {}
+      //    }, 
+      //    subject: 'event', 
+      //    timestamp: "2016-02-03T17:01:57.393Z' }
+      // },
+      // context: { 
+      //  hull: <Instance of Hull Client> 
+      //  ship: <Current ship instance if available>, 
+      //  req: < Original request, Useful to retreive additional data>
+      // }
+
+    },
+    'user:update' : function(notif, context) {
+      console.log('Event Handler here', notif, context);
+      // notif: { 
+      //    message: { 
+      //      user: { id: '123', ... }, 
+      //      segments: [ { } ],
+      //      changes: {},
+      //      events: [ {}, {} ]
+      //    }, 
       //    subject: 'user_report:update', 
       //    timestamp: "2016-02-03T17:01:57.393Z' }
-      // }
+      // },
       // context: { 
       //  hull: <Instance of Hull Client> 
       //  ship: <Current ship instance if available>, 
