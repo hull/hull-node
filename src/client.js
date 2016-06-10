@@ -45,10 +45,16 @@ module.exports = function Client(config = {}) {
 
   const shipId = `[${config && config.id}]`;
   var log = console.log.bind(undefined, shipId);
+  var warn = console.warn.bind(undefined, shipId);
   this.utils = {
     groupTraits: trait.group,
     log: function(){
-      return log.apply(undefined, arguments)
+      log.apply(undefined, arguments)
+    },
+    debug: function(){
+      if(process.env.DEBUG){
+        warn.apply(undefined, arguments)
+      }
     }
   };
 
