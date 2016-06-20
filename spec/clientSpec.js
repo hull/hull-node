@@ -34,8 +34,7 @@ describe('API client', function() {
       'configuration',
       'api',
       'userToken',
-      'currentUserMiddleware',
-      'webhookMiddleware'
+      'currentUserMiddleware'
     ];
 
     PUBLIC_METHODS.map(function(method) {

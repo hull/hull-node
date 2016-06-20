@@ -17,6 +17,7 @@ const hull = new Hull({
 Creating a new Hull client is pretty straightforward.
 In Ship Events, we create and scope one for you to abstract the lifecycle
 
+
 ## Calling the API
 
 ```js
@@ -35,7 +36,7 @@ hull.get(path, params).then(function(data){
 The first parameter is the route, the second is the set of parameters you want
 to send with the request. They all return Promises so you can use the `.then()` syntax if you're more inclined.
 
-# API
+# Instance Methods
 
 ## hull.configuration()
 
@@ -73,7 +74,52 @@ app.use(function(req,res,next){
 
 Reverse of Bring your own Users. When using Hull's Identity management, tells you who the current user is. Generates a middleware to add to your Connect/Express apps.
 
-# User Calls
+
+## Utils
+
+### hull.utils.groupTraits(user_report)
+
+```js
+const hull = new Hull({config});
+
+hull.utils.groupTraits({
+  'email': 'romain@user',
+  'name': 'name',
+  'traits_coconut_name': 'coconut',
+  'traits_coconut_size': 'large',
+  'traits_cb/twitter_bio': 'parisian',
+  'traits_cb/twitter_name': 'parisian',
+  'traits_group/name': 'groupname',
+  'traits_zendesk/open_tickets': 18
+});
+// returns
+{
+  'id' : '31628736813n1283',
+  'email': 'romain@user',
+  'name': 'name',
+  'traits': {
+    'coconut_name': 'coconut',
+    'coconut_size': 'large'
+  },
+  cb: {  
+    'twitter_bio': 'parisian',
+    'twitter_name': 'parisian'
+  },
+  group: {
+    'name': 'groupname',
+  },
+  zendesk: {
+    'open_tickets': 18
+  }
+};
+```
+
+The Hull API returns traits in a "flat" format, with '/' delimiters in the key.
+The Events handler  Returns a grouped version of the traits in the flat user report we return from the API.
+> The NotifHandler already does this by default.
+
+
+# Impersonating a User
 
 ```js
 //If you only have an anonymous ID, use the `guest_id` field
@@ -178,56 +224,45 @@ user.traits({
 
 Stores Properties on the user.
 
-# Utils
+# Class Methods
 
-
-## groupTraits(user_report)
+### Logging Methods: Hull.log(), Hull.debug(), Hull.metric()
 
 ```js
-Hull.utils.groupTraits({
-  'email': 'romain@user',
-  'name': 'name',
-  'traits_coconut_name': 'coconut',
-  'traits_coconut_size': 'large',
-  'traits_cb/twitter_bio': 'parisian',
-  'traits_cb/twitter_name': 'parisian',
-  'traits_group/name': 'groupname',
-  'traits_zendesk/open_tickets': 18
+Hull.onLog(function(message="", data={}, context={}){
+  //context can contain custom data.
+  //When used from hull.utils.log, context will contain current client configuration
+  // context = { id, organization, sudo, prefix, domain, protocol, userId }
 });
-// returns
+Hull.log("message", { object });
+hull.utils.log("message", { object });
+
+//Debug works the same way but only logs if process.env.DEBUG===true
+Hull.onDebug(function(message="", data={}, context={}){});
+Hull.log("message", { object });
+hull.utils.log("message", { object });
+
+//Metric lets you increment a counter for metrics of your choosing
+Hull.onMetric(function(metric="", value=1, context={}){});
+Hull.metric('request', 1);
+hull.utils.metric('request', 1);
+```
+
+By default, those 3 methods dump to `console` but they let you easily instument your code with more advanced loggers.
+
+They come in both flavors, `Hull.xxx` and `hull.utils.xxx` - The first one is a generic logger, the second one injects the current instance of `Hull` so you can retreive ship name, id and organization for more precision.
+
+## NotifHandler()
+
+NotifHandler is a packaged solution to receive User and Segment Notifications from Hull. It's built to be used as an express route. Hull will receive notificaitons if your ship's `manifest.json` exposes a `subscriptions` key:
+
+```json
 {
-  'id' : '31628736813n1283',
-  'email': 'romain@user',
-  'name': 'name',
-  'traits': {
-    'coconut_name': 'coconut',
-    'coconut_size': 'large'
-  },
-  cb: {  
-    'twitter_bio': 'parisian',
-    'twitter_name': 'parisian'
-  },
-  group: {
-    'name': 'groupname',
-  },
-  zendesk: {
-    'open_tickets': 18
-  }
-};
+  "subscriptions" : [ { "url" : "/notify" } ]
+}
 ```
 
-The Hull API returns traits in a "flat" format, with '/' delimiters in the key.
-The Events handler  Returns a grouped version of the traits in the flat user report we return from the API.
-> The NotifHandler already does this by default.
-
-## log(data)
-
-```js
-Hull.utils.log(data)
-```
-Instance-scoped logging facility to make it easy to identify the Ship currently logging data.
-
-# Events
+Here's how to use it.
 
 ```js
 const app = express();
@@ -255,6 +290,11 @@ const handler = NotifHandler({
       // }
 
     },
+    'ship:update': function(notif, context){},
+    'segment:update': function(notif, context){},
+    'segment:delete': function(notif, context){},
+    'user:delete': function(notif, context){},
+    'user:create': function(notif, context){},
     'user:update' : function(notif, context) {
       console.log('Event Handler here', notif, context);
       // notif: { 
@@ -282,3 +322,76 @@ app.post('/notify', handler);
 
 Your app can subscribe to events from Hull and receive Events via http POST. 
 For this we provide a helper called NotifHandler that handles all the complexity of subscribing to events and routing them to specific methods. All you need to do is declare which methods handle what Events.
+
+# Middlewares
+
+## Hull.Middlewares.hullClient()
+
+```js
+import Hull from "hull";
+
+const hullClient = Hull.Middlewares.hullClient;
+
+app.use(hullClient({ hostSecret:"supersecret", fetchShip: true, cacheShip: true }));
+
+app.use((req, res) => { res.json({ message: "thanks" }); });
+
+app.use(function(err, res, req, next){
+  if(err) return res.status(err.status || 500).send({ message: err.message });
+});
+```
+
+This middleware standardizes the instanciation of a Hull client from configuration passed as a Query string or as a token. It also optionally fetches the entire ship's configuration and caches it to save requests.
+
+Here is what happens when your express app receives a query.
+
+1. If a config object is found in `req.hull.config` it will be used to create an instance of the client.
+2. If a token is present in `req.hull.token`, the middleware will try to use the `hostSecret` to decode it, store it in `req.hull.client`. When using `req.hull.token`, the decoded token should be a valid configuration object: `{id, organization, secret}`
+3. If the query string contains `id`, `secret`, `organization`, they will be stored in `req.hull.config`
+4. After this, if a valid configuration is in `req.hull.config`, a Hull client instance will be created and stored in `req.hull.client`
+
+- When this is done, if `fetchShip=true`(default) then the Ship will be fetched and stored in `req.hull.ship`
+- If `cacheShip=true` (default) the results will be cached.
+- If the configuration or the secret is invalid, an error will be thrown that you can catch using express error handlers.
+
+```js
+app.use(function(req, res, next){
+   //... your token retreiving method
+   req.hull.token = myToken;
+   next();
+})
+app.use(hullClient({ hostSecret:"supersecret", fetchShip: true, cacheShip: true }));
+app.use(function(req, res){
+  req.hull.config // {id, organization, secret}
+  req.hull.client //instance of Hull client.
+  req.hull.ship   //ship object - use to retreive current configuration. 
+});
+
+```
+
+
+# Routes 
+
+A simple set of route handlers to reduce boilerplate by a tiny bit.
+
+## Hull.Routers.Readme
+
+```js
+import Hull from 'hull';
+const { Routes } = Hull;
+//Redirect to a properly formatted and designed version of the /README.MD file.
+//Convenience method
+app.get("/readme", Routes.Readme);
+app.get("/", Routes.Readme);
+//
+```
+
+
+## Hull.Routers.Manifest
+
+```js
+import Hull from 'hull';
+const { Routes } = Hull;
+//Serves the manifest.json from it's root to the right url; Convenience method
+app.get("/manifest.json", Routes.Manifest(__dirname));
+```

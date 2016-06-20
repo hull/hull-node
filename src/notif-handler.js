@@ -1,56 +1,64 @@
-import MessageValidator from 'sns-validator';
-import connect from 'connect';
-import https from 'https';
-import _ from 'lodash';
-import Client from './client';
-import rawBody from 'raw-body';
-import {group} from './trait';
+import MessageValidator from "sns-validator";
+import connect from "connect";
+import https from "https";
+import _ from "lodash";
+import rawBody from "raw-body";
+import { group } from "./trait";
+import hullClient from "./middleware/client";
+import Client from "./client";
 
-function parseRequest() {
-  return function(req, res, next) {
-    req.hull = req.hull || {};
-    rawBody(req, true, (err, body) => {
-      if (err) {
-        return res.handleError('Invalid body', 400);
-      }
-      try {
-        req.hull.message = JSON.parse(body);
-      } catch (parseError) {
-        return res.handleError('Invalid body', 400);
-      }
-      return next();
-    });
-  };
+function parseRequest(req, res, next) {
+  req.hull = req.hull || {};
+  rawBody(req, true, (err, body) => {
+    if (err) {
+      const e = new Error("Invalid Body");
+      e.status = 400;
+      return next(e);
+    }
+    try {
+      req.hull.message = JSON.parse(body);
+    } catch (parseError) {
+      const e = new Error("Invalid Body");
+      e.status = 400;
+      return next(e);
+    }
+    return next();
+  });
 }
 
 function verifySignature(options = {}) {
-  const validator = new MessageValidator(/sns\.us-east-1\.amazonaws\.com/, 'utf8');
+  const validator = new MessageValidator(/sns\.us-east-1\.amazonaws\.com/, "utf8");
 
-  return function(req, res, next) {
+  return function verify(req, res, next) {
     if (!req.hull.message) {
-      return res.handleError('Empty Message', 400);
+      const e = new Error("Empty Message");
+      e.status = 400;
+      return next(e);
     }
 
-    validator.validate(req.hull.message, function(err) {
+    validator.validate(req.hull.message, function validate(err) {
       if (err) {
         if (options.enforceValidation) {
-          return res.handleError(err.toString(), 400);
+          err.status = 400;
+          return next(err);
         }
-        console.warn('Invalid signature error', req.hull.message);
+        console.warn("Invalid signature error", req.hull.message);
       }
 
       const { message } = req.hull;
 
-      if (message.Type === 'SubscriptionConfirmation') {
+      if (message.Type === "SubscriptionConfirmation") {
         https.get(message.SubscribeURL, () => {
-          if (typeof options.onSubscribe === 'function') {
+          if (typeof options.onSubscribe === "function") {
             options.onSubscribe(req);
           }
-          return res.end('subscribed');
+          return res.end("subscribed");
         }, () => {
-          return res.handleError('Failed to subscribe', 400);
+          const e = new Error("Failed to subscribe");
+          e.status = 400;
+          return next(e);
         });
-      } else if (message.Type === 'Notification') {
+      } else if (message.Type === "Notification") {
         try {
           const payload = JSON.parse(message.Message);
           if (payload && payload.user && options.groupTraits) {
@@ -62,17 +70,29 @@ function verifySignature(options = {}) {
             message: payload,
             timestamp: new Date(message.Timestamp)
           };
-          next();
+          return next();
         } catch (error) {
-          res.handleError('Invalid message', 400);
+          const e = new Error("Invalid Message");
+          e.status = 400;
+          return next(e);
         }
       }
     });
   };
 }
 
+function getHandlerName(eventName) {
+  const ModelsMapping = {
+    user_report: "user",
+    users_segment: "segment"
+  };
+  const [modelName, action] = eventName.split(":");
+  const model = ModelsMapping[modelName] || modelName;
+  return _.compact([model, action]).join(":");
+}
+
 function processHandlers(handlers) {
-  return function(req, res, next) {
+  return function process(req, res, next) {
     try {
       const { message, notification, client, ship } = req.hull;
       const eventName = getHandlerName(message.Subject);
@@ -90,21 +110,21 @@ function processHandlers(handlers) {
         });
       }
 
-      const eventHandlers = handlers['event'] || [];
+      const eventHandlers = handlers.event || [];
 
-      if (eventHandlers.length > 0 && eventName === 'user:update' && notification.message) {
-        const { user, events=[], segments = [] } = notification.message;
+      if (eventHandlers.length > 0 && eventName === "user:update" && notification.message) {
+        const { user, events = [], segments = [] } = notification.message;
         if (events.length > 0) {
           events.map(event => {
             eventHandlers.map(fn => {
               const payload = {
                 message: { user, segments, event },
-                subject: 'event',
+                subject: "event",
                 timestamp: message.Timestamp
               };
-              processing.push(fn(payload, context))
-            })
-          })
+              processing.push(fn(payload, context));
+            });
+          });
         }
       }
 
@@ -112,89 +132,19 @@ function processHandlers(handlers) {
         Promise.all(processing).then(() => {
           next();
         }, (err) => {
-          res.handleError(err.toString(), err.status || 400);
+          err.status = err.status || 400;
+          return next(err);
         });
       } else {
         next();
       }
-    } catch ( err ) {
-      res.handleError(err.toString(), 500);
+    } catch (err) {
+      err.status = 400;
+      return next(err);
     }
   };
 }
 
-
-function enrichWithHullClient() {
-  var _cache = [];
-
-  function getCurrentShip(shipId, client, forceUpdate) {
-    if (forceUpdate) _cache[shipId] = null;
-    _cache[shipId] = _cache[shipId] || client.get(shipId);
-    return _cache[shipId];
-  }
-
-  return function(req, res, next) {
-    const config = ['organization', 'ship', 'secret'].reduce((cfg, k)=> {
-      const val = req.query[k];
-      if (typeof val === 'string') {
-        cfg[k] = val;
-      } else if (val && val.length) {
-        cfg[k] = val[0];
-      }
-
-      if (typeof cfg[k] === 'string') {
-        cfg[k] = cfg[k].trim();
-      }
-
-      return cfg;
-    }, {});
-
-    req.hull = req.hull || {};
-
-    const { message } = req.hull;
-    let forceShipUpdate = false;
-    if (message && message.Subject === 'ship:update') {
-      forceShipUpdate = true;
-    }
-
-    if (config.organization && config.ship && config.secret) {
-      const client = req.hull.client = new Client({
-        organization: config.organization,
-        id: config.ship,
-        secret: config.secret
-      });
-      getCurrentShip(config.ship, client, forceShipUpdate).then((ship) => {
-        req.hull.ship = ship;
-        next();
-      }, (err) => {
-        res.handleError(err.toString(), 400);
-      });
-    } else {
-      next();
-    }
-  };
-}
-
-function errorHandler(onError) {
-  return function(req, res, next) {
-    res.handleError = function(message, status) {
-      if (onError) onError(message, status);
-      res.status(status);
-      res.end(message);
-    };
-    next();
-  };
-}
-
-function getHandlerName(eventName) {
-  const ModelsMapping = {
-    'user_report': 'user',
-    'users_segment': 'segment'
-  }
-  const [ modelName, action ] = eventName.split(':');
-  const model = ModelsMapping[modelName] || modelName;
-  return _.compact([model, action]).join(':');
-}
 
 module.exports = function NotifHandler(options = {}) {
   const _handlers = {};
@@ -216,16 +166,15 @@ module.exports = function NotifHandler(options = {}) {
     addEventHandlers(options.handlers);
   }
 
-  app.use(errorHandler(options.onError));
-  app.use(parseRequest());
+  app.use(parseRequest);
   app.use(verifySignature({
     onSubscribe: options.onSubscribe,
     enforceValidation: false,
     groupTraits: options.groupTraits !== false
   }));
-  app.use(enrichWithHullClient());
+  app.use(hullClient(Client, { fetchShip: true, cacheShip: true }));
   app.use(processHandlers(_handlers));
-  app.use((req, res) => { res.end('ok'); });
+  app.use((req, res) => { res.end("ok"); });
 
   function handler(req, res) {
     return app.handle(req, res);

@@ -1,19 +1,16 @@
-'use strict';
+import _ from "lodash";
+import Configuration from "./configuration";
+import restAPI from "./rest-api";
+import crypto from "./lib/crypto";
+import currentUserMiddleware from "./middleware/current-user";
+import trait from "./trait";
 
-import _ from 'lodash';
-import Configuration from './configuration';
-import restAPI from './rest-api';
-import crypto from './crypto';
-import currentUserMiddleware from './current-user';
-import webhookMiddleware from './webhook';
-import trait from './trait';
+const PUBLIC_METHODS = ["get", "post", "del", "put"];
 
-const PUBLIC_METHODS = ['get', 'post', 'del', 'put'];
-
-module.exports = function Client(config = {}) {
+const Client = function Client(config = {}) {
   if (!(this instanceof Client)) { return new Client(config); }
 
-  var clientConfig = new Configuration(config);
+  const clientConfig = new Configuration(config);
 
   this.configuration = function configuration() {
     return clientConfig.get();
@@ -22,39 +19,40 @@ module.exports = function Client(config = {}) {
   this.api = function api(url, method, options) {
     return restAPI(clientConfig, url, method, options);
   };
-  _.each(PUBLIC_METHODS, (method)=>{
-    this[method] = (url, options)=>{
+  _.each(PUBLIC_METHODS, (method) => {
+    this[method] = (url, options) => {
       return restAPI(clientConfig, url, method, options);
     };
-    this.api[method] = (url, options)=>{
+    this.api[method] = (url, options) => {
       return restAPI(clientConfig, url, method, options);
     };
   });
 
-  this.userToken = function(data = clientConfig.get('userId'), claims) {
+  this.userToken = function userToken(data = clientConfig.get("userId"), claims) {
     return crypto.userToken(clientConfig.get(), data, claims);
   };
 
-  this.currentUserMiddleware = function(req, res, next) {
-    return currentUserMiddleware(clientConfig.get(), req, res, next);
-  };
 
-  this.webhookMiddleware = function(req, res, next) {
-    return webhookMiddleware(clientConfig, req, res, next);
-  };
+  this.currentUserMiddleware = currentUserMiddleware.bind(this, clientConfig.get());
 
   const shipId = `[${config && config.id}]`;
-  var log = console.log.bind(undefined, shipId);
-  var warn = console.warn.bind(undefined, shipId);
+  const self = this;
+  const context = _.omit((this.configuration() || {}), ["secret", "accessToken"]);
   this.utils = {
     groupTraits: trait.group,
-    log: function(){
-      log.apply(undefined, arguments)
+    log: function log(message, data) {
+      self.log(`[${shipId}] ${message}`, data, context);
     },
-    debug: function(){
-      if(process.env.DEBUG){
-        warn.apply(undefined, arguments)
+    debug: function debug(message, ...data) {
+      if (process.env.DEBUG) {
+        self.debug(`[${shipId}] ${message}`, data, context);
       }
+    },
+    metric: (metric = "", value = "", ctx = {}) => {
+      self.metric(metric, value, {
+        ...context,
+        ...ctx
+      });
     }
   };
 
@@ -63,24 +61,24 @@ module.exports = function Client(config = {}) {
   // When to pass org scret or not
 
   if (config.userId || config.accessToken) {
-    this.traits = function(traits, context = {}) {
+    this.traits = (traits, context = {}) => {
       // Quick and dirty way to add a source prefix to all traits we want in.
       const source = context.source;
       let dest = {};
       if (source) {
-        _.reduce(traits, (d, value, key)=>{
+        _.reduce(traits, (d, value, key) => {
           const k = `${source}/${key}`;
           d[k] = value;
           return d;
         }, dest);
       } else {
-        dest = {...traits};
+        dest = { ...traits };
       }
-      return this.api('me/traits', 'put', trait.normalize(dest));
+      return this.api("me/traits", "put", trait.normalize(dest));
     };
 
-    this.track = function(event, properties = {}, context = {}) {
-      return this.api('/t', 'POST', {
+    this.track = (event, properties = {}, context = {}) => {
+      return this.api("/t", "POST", {
         ip: null,
         url: null,
         referer: null,
@@ -90,13 +88,38 @@ module.exports = function Client(config = {}) {
       });
     };
   } else {
-    this.as = function(userId, sudo = false) {
+    this.as = (userId, sudo = false) => {
       // Sudo allows to be a user yet have admin rights... Use with care.
       if (!userId) {
-        throw new Error('User Id was not defined when calling hull.as()');
+        throw new Error("User Id was not defined when calling hull.as()");
       }
-      // const scopedClientConfig = _.omit(config, 'secret');
+      // const scopedClientConfig = _.omit(config, "secret");
       return new Client({ ...config, userId, sudo });
     };
   }
 };
+
+Client.metric = (...args) => {
+  console.log(...args);
+};
+Client.onMetric = (method) => { Client.metric = method; };
+
+Client.log = (message, data, context = {}) => {
+  if (context.shipId) {
+    console.log(`[${context.shipId}] ${message}`, data);
+  } else {
+    console.log(message, data);
+  }
+};
+Client.onLog = (method) => { Client.log = method; };
+
+Client.debug = (message, data, context = {}) => {
+  if (context.shipId) {
+    console.log(`[${context.shipId}] ${message}`, data);
+  } else {
+    console.log(message, data);
+  }
+};
+Client.onDebug = (method) => { Client.debug = process.env.DEBUG ? method : function(){}; };
+
+module.exports = Client;

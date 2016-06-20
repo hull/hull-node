@@ -1,8 +1,18 @@
-import NotifHandler from './notif-handler';
-import ReadmeHandler from './readme-handler';
-import Hull from './client';
+import NotifHandler from "./notif-handler";
+import hullClient from "./middleware/client";
+import Client from "./client";
 
-Hull.NotifHandler = NotifHandler;
-Hull.ReadmeHandler = ReadmeHandler;
+import Readme from "./route/readme";
+import Manifest from "./route/manifest";
+import OAuth from "./route/oauth";
 
-module.exports = Hull;
+Client.NotifHandler = NotifHandler;
+Client.Routes = {
+  Readme,
+  OAuth,
+  Manifest
+};
+Client.Middlewares = {
+  hullClient: hullClient.bind(undefined, Client)
+};
+module.exports = Client;

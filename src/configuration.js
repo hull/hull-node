@@ -2,7 +2,7 @@
 
 import _ from 'lodash';
 import pkg from '../package.json';
-import crypto from './crypto';
+import crypto from './lib/crypto';
 
 const GLOBALS = {
   prefix: '/api/v1',

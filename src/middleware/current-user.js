@@ -1,13 +1,11 @@
-'use strict';
-
-import crypto from './crypto';
+import crypto from "../lib/crypto";
 
 function parseSignedCookie(signedCookie) {
   if (!signedCookie) { return null; }
   try {
-    return JSON.parse(new Buffer(signedCookie, 'base64').toString('utf8'));
+    return JSON.parse(new Buffer(signedCookie, "base64").toString("utf8"));
   } catch (e) {
-    console.warn('Error parsing signed cookie', signedCookie, e.message);
+    console.warn("Error parsing signed cookie", signedCookie, e.message);
   }
   return null;
 }
@@ -20,8 +18,8 @@ module.exports = function CurrentUser(config = {}, req, res, next) {
   if (!(cookieName in cookies)) { return next(); }
 
   const signedUser = parseSignedCookie(cookies[cookieName]);
-  const userId = signedUser['Hull-User-Id'];
-  const userSig = signedUser['Hull-User-Sig'];
+  const userId = signedUser["Hull-User-Id"];
+  const userSig = signedUser["Hull-User-Sig"];
 
   if (signedUser) {
     const valid = crypto.currentUserId(config, userId, userSig);
