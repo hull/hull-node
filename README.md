@@ -374,7 +374,7 @@ app.use(function(req, res){
 
 A simple set of route handlers to reduce boilerplate by a tiny bit.
 
-## Hull.Routers.Readme
+## Hull.Routes.Readme
 
 ```js
 import Hull from 'hull';
@@ -387,7 +387,7 @@ app.get("/", Routes.Readme);
 ```
 
 
-## Hull.Routers.Manifest
+## Hull.Routes.Manifest
 
 ```js
 import Hull from 'hull';
