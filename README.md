@@ -254,7 +254,7 @@ They come in both flavors, `Hull.xxx` and `hull.utils.xxx` - The first one is a 
 
 ## NotifHandler()
 
-NotifHandler is a packaged solution to receive User and Segment Notifications from Hull. It's built to be used as an express route. Hull will receive notificaitons if your ship's `manifest.json` exposes a `subscriptions` key:
+NotifHandler is a packaged solution to receive User and Segment Notifications from Hull. It's built to be used as an express route. Hull will receive notifications if your ship's `manifest.json` exposes a `subscriptions` key:
 
 ```json
 {
@@ -272,13 +272,14 @@ const handler = NotifHandler({
   onSubscribe() {} // called when a new subscription is installed
   onError() {} // called when an error is raised
   handlers: {
+    groupTraits: true, //Receive a nested object or a flat object for user properties containing '/'
     'event': function() {
       console.log('Event Handler here', notif, context);
       // notif: { 
       //    message: { 
       //      user: { id: '123', ... }, 
       //      segments: [ { } ],
-      //      event: {}
+      //      event: []
       //    }, 
       //    subject: 'event', 
       //    timestamp: "2016-02-03T17:01:57.393Z' }
@@ -291,6 +292,7 @@ const handler = NotifHandler({
 
     },
     'ship:update': function(notif, context){},
+    'event':       function(notif, context){},
     'segment:update': function(notif, context){},
     'segment:delete': function(notif, context){},
     'user:delete': function(notif, context){},
@@ -322,6 +324,36 @@ app.post('/notify', handler);
 
 Your app can subscribe to events from Hull and receive Events via http POST. 
 For this we provide a helper called NotifHandler that handles all the complexity of subscribing to events and routing them to specific methods. All you need to do is declare which methods handle what Events.
+
+
+## BatchHandler()
+
+BatchHandler is a packaged solution to receive Batches of Users. It's built to be used as an express route. Hull will receive notifications if your ship's `manifest.json` exposes a `batch` tag in `tags`:
+
+```json
+{
+  "tags" : [ "batch" ]
+}
+```
+
+Here is how you use it: 
+
+```js
+const app = express();
+import { NotifHandler } from 'hull';
+
+const handler = BatchHandler({
+  groupTraits: false,
+  handlers: {
+    'event': function(notifications=[], context) {
+      //notifications itms are the same format as individual notifications from NotifHandler, but only contain a `message` object containing the user.
+      //Context is the same as in NotifHandler
+      notifications.map(n => updateUser(n, context));
+    }
+  }
+})
+app.post('/batch', handler);
+```
 
 # Middlewares
 
