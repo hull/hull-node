@@ -36,21 +36,20 @@ const Client = function Client(config = {}) {
   this.currentUserMiddleware = currentUserMiddleware.bind(this, clientConfig.get());
 
   const shipId = `[${config && config.id}]`;
-  const self = this;
-  const context = _.omit((this.configuration() || {}), ["secret", "accessToken"]);
+  const ctxe = _.omit((this.configuration() || {}), ["secret", "accessToken"]);
   this.utils = {
     groupTraits: trait.group,
     log: function log(message, data) {
-      self.log(`[${shipId}] ${message}`, data, context);
+      Client.log(message, data, ctxe);
     },
     debug: function debug(message, ...data) {
       if (process.env.DEBUG) {
-        self.debug(`[${shipId}] ${message}`, data, context);
+        Client.debug(message, data, ctxe);
       }
     },
     metric: (metric = "", value = "", ctx = {}) => {
-      self.metric(metric, value, {
-        ...context,
+      Client.metric(metric, value, {
+        ...ctxe,
         ...ctx
       });
     }
@@ -99,27 +98,28 @@ const Client = function Client(config = {}) {
   }
 };
 
-Client.metric = (...args) => {
-  console.log(...args);
+Client.metric = (message, ...args) => {
+  console.log(message, JSON.stringify(args));
 };
-Client.onMetric = (method) => { Client.metric = method; };
 
 Client.log = (message, data, context = {}) => {
   if (context.shipId) {
-    console.log(`[${context.shipId}] ${message}`, data);
+    console.log(`[${context.shipId}] ${message}`, JSON.stringify(data));
   } else {
     console.log(message, data);
   }
 };
-Client.onLog = (method) => { Client.log = method; };
 
 Client.debug = (message, data, context = {}) => {
   if (context.shipId) {
-    console.log(`[${context.shipId}] ${message}`, data);
+    console.log(`[${context.shipId}] ${message}`, JSON.stringify(data));
   } else {
     console.log(message, data);
   }
 };
+
+Client.onMetric = (method) => { Client.metric = method; };
+Client.onLog = (method) => { Client.log = method; };
 Client.onDebug = (method) => { Client.debug = process.env.DEBUG ? method : function(){}; };
 
 module.exports = Client;

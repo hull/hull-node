@@ -88,7 +88,7 @@ function getHandlerName(eventName) {
   };
   const [modelName, action] = eventName.split(":");
   const model = ModelsMapping[modelName] || modelName;
-  return _.compact([model, action]).join(":");
+  return `${model}:${action}`;
 }
 
 function processHandlers(handlers) {
@@ -149,6 +149,7 @@ function processHandlers(handlers) {
 module.exports = function NotifHandler(options = {}) {
   const _handlers = {};
   const app = connect();
+  const { handlers = [], groupTraits, onSubscribe } = options;
 
   function addEventHandler(evt, fn) {
     const eventName = getHandlerName(evt);
@@ -162,15 +163,15 @@ module.exports = function NotifHandler(options = {}) {
     return this;
   }
 
-  if (options.handlers) {
-    addEventHandlers(options.handlers);
+  if (handlers) {
+    addEventHandlers(handlers);
   }
 
   app.use(parseRequest);
   app.use(verifySignature({
-    onSubscribe: options.onSubscribe,
+    onSubscribe,
     enforceValidation: false,
-    groupTraits: options.groupTraits !== false
+    groupTraits: groupTraits !== false
   }));
   app.use(hullClient(Client, { fetchShip: true, cacheShip: true }));
   app.use(processHandlers(_handlers));
