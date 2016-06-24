@@ -17,11 +17,9 @@ function fetchStream({ groupTraits }, callback) {
     const decoder = format === "csv" ? CSVStream.createStream({ escapeChar: "\"", enclosedChar: "\"" }) : JSONStream.parse();
 
 
-    return client
-    .get("segments", { limit: 500 })
-    .then((list) => {
+    client.get("segments", { limit: 500 }).then((list) => {
       // Fetch all segments from Hull;
-      const segments = list.reduce((ss,s) => {
+      const segments = list.reduce((ss, s) => {
         ss[s.id] = s;
         return ss;
       }, {});
@@ -31,7 +29,7 @@ function fetchStream({ groupTraits }, callback) {
         return ids.map(id => segments[id]);
       }
 
-      //Batch
+      // Batch
       const flush = (user) => {
         if (user) {
           const u = _.omit(user, "segment_ids");
@@ -43,7 +41,7 @@ function fetchStream({ groupTraits }, callback) {
             }
           });
         }
-        if (notifications.length >= 500 || !user) callback(notifications.splice(0),{ req, ship, hull : client });
+        if (notifications.length >= 500 || !user) callback(notifications.splice(0), { req, ship, hull: client });
       };
 
       return request({ url })
@@ -52,8 +50,7 @@ function fetchStream({ groupTraits }, callback) {
         .on("end", flush);
     });
 
-    res.end("thanks !");
-
+    return res.end("thanks !");
   };
 }
 
