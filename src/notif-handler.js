@@ -5,7 +5,6 @@ import _ from "lodash";
 import rawBody from "raw-body";
 import { group } from "./trait";
 import hullClient from "./middleware/client";
-import Client from "./client";
 
 function parseRequest(req, res, next) {
   req.hull = req.hull || {};
@@ -146,10 +145,9 @@ function processHandlers(handlers) {
 }
 
 
-module.exports = function NotifHandler(options = {}) {
+module.exports = function NotifHandler(Client, { handlers = [], groupTraits, onSubscribe }) {
   const _handlers = {};
   const app = connect();
-  const { handlers = [], groupTraits, onSubscribe } = options;
 
   function addEventHandler(evt, fn) {
     const eventName = getHandlerName(evt);

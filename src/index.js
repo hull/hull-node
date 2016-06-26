@@ -7,9 +7,8 @@ import Readme from "./route/readme";
 import Manifest from "./route/manifest";
 import OAuth from "./route/oauth";
 
-Client.NotifHandler = NotifHandler;
-Client.BatchHandler = BatchHandler;
-
+Client.NotifHandler = NotifHandler.bind(undefined, Client);
+Client.BatchHandler = BatchHandler.bind(undefined, Client);
 Client.Routes = {
   Readme,
   OAuth,

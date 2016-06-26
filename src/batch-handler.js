@@ -2,7 +2,6 @@ import _ from "lodash";
 import connect from "connect";
 import bodyParser from "body-parser";
 import hullClient from "./middleware/client";
-import Client from "./client";
 import CSVStream from "csv-stream";
 import JSONStream from "JSONStream";
 import request from "request";
@@ -54,9 +53,8 @@ function fetchStream({ groupTraits }, callback) {
   };
 }
 
-module.exports = function BatchHandler(options = {}) {
+module.exports = function BatchHandler(Client, { handler, groupTraits }) {
   const app = connect();
-  const { handler, groupTraits } = options;
 
   app.use(bodyParser.json());
   app.use(hullClient(Client, { fetchShip: true, cacheShip: true }));
