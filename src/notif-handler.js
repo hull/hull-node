@@ -111,7 +111,7 @@ function processHandlers(handlers) {
 
       const eventHandlers = handlers.event || [];
 
-      if (eventHandlers.length > 0 && eventName === "user:update" && notification.message) {
+      if (eventHandlers.length > 0 && eventName === "report:update" && notification.message) {
         const { user, events = [], segments = [] } = notification.message;
         if (events.length > 0) {
           events.map(event => {
