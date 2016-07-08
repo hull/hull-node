@@ -344,13 +344,11 @@ import { NotifHandler } from 'hull';
 
 const handler = BatchHandler({
   groupTraits: false,
-  handlers: {
-    'event': function(notifications=[], context) {
-      //notifications itms are the same format as individual notifications from NotifHandler, but only contain a `message` object containing the user.
-      //Context is the same as in NotifHandler
-      notifications.map(n => updateUser(n, context));
-    }
-  }
+  handler: function(notifications=[], context) {
+    //notifications itms are the same format as individual notifications from NotifHandler, but only contain a `message` object containing the user.
+    //Context is the same as in NotifHandler
+    notifications.map(n => updateUser(n, context));
+}
 })
 app.post('/batch', handler);
 ```
