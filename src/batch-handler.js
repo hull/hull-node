@@ -7,7 +7,7 @@ import JSONStream from "JSONStream";
 import request from "request";
 import { group } from "./trait";
 
-function fetchStream({ groupTraits }, callback) {
+function fetchStream({ groupTraits, batchSize }, callback) {
   return function stream(req, res) {
     const { format, url } = req.body;
     const { client, ship } = req.hull;
@@ -40,7 +40,7 @@ function fetchStream({ groupTraits }, callback) {
             }
           });
         }
-        if (notifications.length >= 500 || !user) callback(notifications.splice(0), { req, ship, hull: client });
+        if (notifications.length >= batchSize || !user) callback(notifications.splice(0), { req, ship, hull: client });
       };
 
       return request({ url })
@@ -53,12 +53,12 @@ function fetchStream({ groupTraits }, callback) {
   };
 }
 
-module.exports = function BatchHandler(Client, { handler, groupTraits }) {
+module.exports = function BatchHandler(Client, { handler, groupTraits = false, batchSize = 500 }) {
   const app = connect();
 
   app.use(bodyParser.json());
   app.use(hullClient(Client, { fetchShip: true, cacheShip: true }));
-  app.use(fetchStream({ groupTraits }, handler));
+  app.use(fetchStream({ groupTraits, batchSize }, handler));
 
   return function batch(req, res) {
     return app.handle(req, res);
