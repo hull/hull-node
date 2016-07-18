@@ -219,7 +219,7 @@ user.traits({
   opened_tickets: 12 
 }, { source: 'zendesk' }); 
 // 'source' is optional. Will store the traits grouped under the source name.
-// Alternatively, you can send properties for multiple groups with the flat syntax: 
+// Alternatively, you can send properties for multiple groups with the flat syntax:
 // user.traits({ "zendesk/opened_tickets": 12, "clearbit/name": "toto"});
 ```
 
@@ -354,7 +354,7 @@ OAuth Handler is a packaged authentication handler using [Passport](http://passp
 
 It exposes hooks to check if the ship is Set up correctly, inject additional parameters during login, and save the returned settings during callback.
 
-Here is how to use it: 
+Here is how to use it:
 
 ```js
 import Hull from "hull";
@@ -362,7 +362,7 @@ import { Strategy as HubspotStrategy } from "passport-hubspot";
 
 const { OAuthHandler } = Hull;
 app.use("/auth", OAuthHandler({
-  hostSecret, 
+  hostSecret,
   name: "Hubspot",
   Strategy: HubspotStrategy,
   options: {
