@@ -1,6 +1,6 @@
 import mapper from "object-mapper";
 import _ from "lodash";
-
+import { escape, unescape } from "querystring" ;
 // var user = {
 //   "email": "romain@user",
 //   "name": "name",
@@ -13,31 +13,22 @@ import _ from "lodash";
 // };
 /* first build the destination object from the key names of the source object */
 
-function buildMap(user) {
-  return _.reduce(user, (m, value, key) => {
-    if (key.match(/^traits_/)) {
-      let dest = key;
-      if (key.match(/\//)) {
-        dest = key.replace(/^traits_/, "").replace(/\//g, ".");
-      } else {
-        dest = key.replace(/^traits_/, "traits.");
-      }
-
-      // Skip entire entry if the User already has a key by that name.
-      if (!user.hasOwnProperty(dest.split(".")[0])) {
-        m[key] = dest;
-      }
-    } else {
-      m[key] = key;
-    }
-    return m;
-  }, {});
-}
-
 module.exports = {
+
   group(user) {
-    return mapper.merge(user, {}, buildMap(user));
+    return _.reduce(user, (grouped, value, key) => {
+      let dest = key
+      if (key.match(/^traits_/)) {
+        if (key.match(/\//)) {
+          dest = key.replace(/^traits_/, "");
+        } else {
+          dest = key.replace(/^traits_/, "traits/");
+        }
+      }
+      return _.set(grouped, dest.split('/'), value);
+    }, {});
   },
+
   normalize(traits) {
     return _.reduce(traits, (memo, value, key) => {
       if (!_.isObject(value)) {

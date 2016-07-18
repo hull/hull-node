@@ -21,7 +21,10 @@ describe('Traits.group', () => {
     'traits_cb/twitter_bio': 'parisian',
     'traits_cb/twitter_name': 'romain',
     'traits_group/name': 'groupname',
-    'traits_zendesk/open_tickets': 18
+    'traits_zendesk/open_tickets': 18,
+    'traits_zendesk/open/tickets': 18,
+    'traits_boom/hello[boom]': 42,
+    'traits_boom/hello boom]': 492
   };
 
   it('should group traits', () => {
@@ -40,7 +43,12 @@ describe('Traits.group', () => {
         coconut_size: "large"
       },
       zendesk: {
-        open_tickets: 18
+        open_tickets: 18,
+        open: { tickets: 18 }
+      },
+      boom: {
+        'hello[boom]' : 42,
+        'hello boom]' : 492
       }
     };
 
