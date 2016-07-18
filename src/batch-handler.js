@@ -53,11 +53,11 @@ function fetchStream({ groupTraits, batchSize }, callback) {
   };
 }
 
-module.exports = function BatchHandler(Client, { handler, groupTraits = false, batchSize = 500 }) {
+module.exports = function BatchHandler(Client, { handler, hostSecret, groupTraits = false, batchSize = 500 }) {
   const app = connect();
 
   app.use(bodyParser.json());
-  app.use(hullClient(Client, { fetchShip: true, cacheShip: true }));
+  app.use(hullClient(Client, { hostSecret, fetchShip: true, cacheShip: true }));
   app.use(fetchStream({ groupTraits, batchSize }, handler));
 
   return function batch(req, res) {

@@ -36,7 +36,7 @@ module.exports = function hullClientMiddlewareFactory(Client, { hostSecret, fetc
       _cache[id] = null;
     }
     const ship = _cache[id] || client.get(id);
-    if (cacheShip) {
+    if (cacheShip && !_cache[id]) {
       client.logger.info("ship.cache.save");
       _cache[id] = ship;
     }
