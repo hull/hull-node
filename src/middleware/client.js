@@ -30,9 +30,16 @@ module.exports = function hullClientMiddlewareFactory(Client, { hostSecret, fetc
 
   /* TODO: Expire Cache after x minutes. For now, doesnt expire... Returns a Promise<ship> */
   function getCurrentShip(id, client, bust) {
-    if (cacheShip && bust) { _cache[id] = null; }
+    client.logger.debug("ship.cache.access", !!_cache[id]);
+    if (cacheShip && bust) {
+      client.logger.info("ship.cache.bust", !!_cache[id]);
+      _cache[id] = null;
+    }
     const ship = _cache[id] || client.get(id);
-    if (cacheShip) { _cache[id] = ship; }
+    if (cacheShip) {
+      client.logger.info("ship.cache.save");
+      _cache[id] = ship;
+    }
     return ship;
   }
 
@@ -48,11 +55,11 @@ module.exports = function hullClientMiddlewareFactory(Client, { hostSecret, fetc
         {};
       const { message, config } = req.hull;
       const { organization, ship: id, secret } = config;
-
       if (organization && id && secret) {
         const client = req.hull.client = new Client({ id, secret, organization });
-
+        req.hull.token = jwt.encode(config, hostSecret);
         if (fetchShip) {
+
           const bust = (message && message.Subject === "ship:update");
           // Promise<ship>
           return getCurrentShip(id, client, bust).then((ship = {}) => {

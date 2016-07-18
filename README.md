@@ -200,8 +200,7 @@ When you do this, you get a new client that has a different behaviour. It's now 
 ## user.track(event, props, context)
 
 ```js
-user.track('new support ticket', {
-  messages: 3,
+user.track('new support ticket', { messages: 3,
   priority:'high'  
 }, {
   source: 'zendesk',
@@ -213,44 +212,41 @@ user.track('new support ticket', {
 
 Stores a new event, which you can namespace using the `source` property in the `context` parameter
 
-## user.trait(properties, context)
+## user.traits(properties, context)
 
 ```js
 user.traits({
   opened_tickets: 12 
 }, { source: 'zendesk' }); 
 // 'source' is optional. Will store the traits grouped under the source name.
+// Alternatively, you can send properties for multiple groups with the flat syntax:
+// user.traits({ "zendesk/opened_tickets": 12, "clearbit/name": "toto"});
 ```
 
 Stores Properties on the user.
 
 # Class Methods
 
-### Logging Methods: Hull.log(), Hull.debug(), Hull.metric()
+### Logging Methods: Hull.logger.debug(), Hull.logger.info() ...
+
 
 ```js
-Hull.onLog(function(message="", data={}, context={}){
-  //context can contain custom data.
-  //When used from hull.utils.log, context will contain current client configuration
-  // context = { id, organization, sudo, prefix, domain, protocol, userId }
-});
-Hull.log("message", { object });
-hull.utils.log("message", { object });
+Hull.logger.info("message", { object }); //Class logging method,
+hull.logger.info("message", { object }); //Instance logging method, adds Ship ID and Organization to Context. Use if available.
 
 //Debug works the same way but only logs if process.env.DEBUG===true
-Hull.onDebug(function(message="", data={}, context={}){});
-Hull.log("message", { object });
-hull.utils.log("message", { object });
+Hull.logger.info("message", { object }); //Class logging method,
+hull.logger.info("message", { object });
 
-//Metric lets you increment a counter for metrics of your choosing
-Hull.onMetric(function(metric="", value=1, context={}){});
-Hull.metric('request', 1);
-hull.utils.metric('request', 1);
+//You can add more logging destinations like this:
+import winstonSlacker from "winston-slacker";
+Hull.logger.add(winstonSlacker,  { ... });
+
 ```
 
-By default, those 3 methods dump to `console` but they let you easily instument your code with more advanced loggers.
+Uses [Winston](https://github.com/winstonjs/winston)
 
-They come in both flavors, `Hull.xxx` and `hull.utils.xxx` - The first one is a generic logger, the second one injects the current instance of `Hull` so you can retreive ship name, id and organization for more precision.
+The Logger comes in two flavors, `Hull.logger.xxx` and `hull.logger.xxx` - The first one is a generic logger, the second one injects the current instance of `Hull` so you can retreive ship name, id and organization for more precision.
 
 ## NotifHandler()
 
@@ -292,7 +288,6 @@ const handler = NotifHandler({
 
     },
     'ship:update': function(notif, context){},
-    'event':       function(notif, context){},
     'segment:update': function(notif, context){},
     'segment:delete': function(notif, context){},
     'user:delete': function(notif, context){},
@@ -336,7 +331,7 @@ BatchHandler is a packaged solution to receive Batches of Users. It's built to b
 }
 ```
 
-Here is how you use it: 
+Here is how to use it:
 
 ```js
 const app = express();
@@ -351,6 +346,109 @@ const handler = BatchHandler({
 }
 })
 app.post('/batch', handler);
+```
+
+## OAuthHandler()
+
+OAuth Handler is a packaged authentication handler using [Passport](http://passportjs.org/). You give it the right parameters, it handles the entire auth scenario for you.
+
+It exposes hooks to check if the ship is Set up correctly, inject additional parameters during login, and save the returned settings during callback.
+
+Here is how to use it:
+
+```js
+import Hull from "hull";
+import { Strategy as HubspotStrategy } from "passport-hubspot";
+
+const { OAuthHandler } = Hull;
+app.use("/auth", OAuthHandler({
+  hostSecret,
+  name: "Hubspot",
+  Strategy: HubspotStrategy,
+  options: {
+    clientID: "xxxxxxxxx",
+    clientSecret: "xxxxxxxxx", //Client Secret
+    scope: ["offline", "contacts-rw", "events-rw"] //App Scope
+  },
+  isSetup(req, { /* hull,*/ ship }) {
+    if (!!req.query.reset) return Promise.reject();
+    const { token } = ship.private_settings || {};
+    return (!!token) ? Promise.resolve() : Promise.reject();
+  },
+  onLogin: (req, { hull, ship }) => {
+    req.authParams = { ...req.body, ...req.query };
+    return save(hull, ship, {
+      portalId: req.authParams.portalId
+    });
+  },
+  onAuthorize: (req, { hull, ship }) => {
+    const { refreshToken, accessToken } = (req.account || {});
+    return save(hull, ship, {
+      refresh_token: refreshToken,
+      token: accessToken
+    });
+  },
+  views: {
+    login: "login.html",
+    home: "home.html",
+    failure: "failure.html",
+    success: "success.html"
+  },
+}));
+```
+
+### Params:
+
+##### hostSecret
+The ship hosted secret (Not the one received from Hull. The one the hosted app itself defines. Will be used to encode tokens).
+
+##### name
+The name displayed to the User in the various screens.
+
+##### Strategy
+A Passport Strategy.
+
+##### options
+An options hash passed to Passport to configure the OAuth Strategy. (See [Passport OAuth Configuration](http://passportjs.org/docs/oauth))
+
+##### isSetup()
+A method returning a Promise, resolved if the ship is correctly setup, or rejected if it needs to display the Login screen.
+
+Lets you define in the Ship the name of the parameters you need to check for.
+
+##### onLogin()
+A method returning a Promise, resolved when ready.
+
+Best used to process form parameters, and place them in `req.authParams` to be submitted to the Login sequence. Useful to add strategy-specific parameters, such as a portal ID for Hubspot for instance.
+
+##### onAuthorize()
+
+A method returning a Promise, resolved when complete.
+Best used to save tokens and continue the sequence once saved.
+
+##### views
+
+Required, A hash of view files for the different screens.
+Each view will receive the following data:
+
+```js
+views: {
+  login: "login.html",
+  home: "home.html",
+  failure: "failure.html",
+  success: "success.html"
+}
+//each view will receive the following data:
+{
+  name: "The name passed as handler",
+  urls: {
+    login: '/auth/login',
+    success: '/auth/success',
+    failure: '/auth/failure',
+    home: '/auth/home',
+  },
+  ship: ship //The entire Ship instance's config
+}
 ```
 
 # Middlewares
