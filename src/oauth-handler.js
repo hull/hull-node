@@ -11,9 +11,10 @@ const FAILURE_URL = "/failure";
 const SUCCESS_URL = "/success";
 
 function fetchToken(req, res, next) {
-  if (req.query.token) {
+  const token = req.query.token || req.query.state;
+  if (token && token.split(".").length === 3) {
     req.hull = req.hull || {};
-    req.hull.token = req.query.token;
+    req.hull.token = token;
   }
   next();
 }
@@ -81,7 +82,13 @@ export default function oauth(Client, {
   router.all(LOGIN_URL, hullMiddleware, (req, res, next) => {
     onLogin(req, { hull: req.hull.client, ship: req.hull.ship })
       .then(() => next())
-      .catch(()=> next());
+      .catch(() => next());
+  }, (req, res, next) => {
+    req.authParams = {
+      ...req.authParams,
+      state: req.hull.token
+    };
+    next();
   }, authorize);
 
   router.get(FAILURE_URL, hullMiddleware, function loginFailue(req, res) { return res.render(views.failure, { name, urls: getURLs(req) }); });

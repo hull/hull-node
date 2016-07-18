@@ -265,6 +265,7 @@ const app = express();
 import { NotifHandler } from 'hull';
 
 const handler = NotifHandler({
+  hostSecret: hostSecret //Ship's Host secret
   onSubscribe() {} // called when a new subscription is installed
   onError() {} // called when an error is raised
   handlers: {
@@ -359,8 +360,18 @@ Here is how to use it:
 ```js
 import Hull from "hull";
 import { Strategy as HubspotStrategy } from "passport-hubspot";
+import { renderFile } from "ejs";
+import express from "express";
+
+
+app.set("views", `${__dirname}/../views`);
+app.set("view engine", "ejs");
+app.engine("html", renderFile);
+app.use(express.static(path.resolve(__dirname, "..", "dist")));
+app.use(express.static(path.resolve(__dirname, "..", "assets")));
 
 const { OAuthHandler } = Hull;
+
 app.use("/auth", OAuthHandler({
   hostSecret,
   name: "Hubspot",
@@ -397,6 +408,13 @@ app.use("/auth", OAuthHandler({
 }));
 ```
 
+
+### manifest.json
+```json
+{
+  "admin" : "/auth/",
+}
+```
 ### Params: 
 
 ##### hostSecret
