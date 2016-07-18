@@ -1,4 +1,5 @@
 import _ from "lodash";
+import winston from "winston";
 import Configuration from "./configuration";
 import restAPI from "./rest-api";
 import crypto from "./lib/crypto";
@@ -6,6 +7,13 @@ import currentUserMiddleware from "./middleware/current-user";
 import trait from "./trait";
 
 const PUBLIC_METHODS = ["get", "post", "del", "put"];
+
+const logger = new (winston.Logger)({
+  transports: [
+    new (winston.transports.Console)({ level: "info" })
+  ]
+});
+
 
 const Client = function Client(config = {}) {
   if (!(this instanceof Client)) { return new Client(config); }
@@ -35,24 +43,19 @@ const Client = function Client(config = {}) {
 
   this.currentUserMiddleware = currentUserMiddleware.bind(this, clientConfig.get());
 
-  const shipId = `[${config && config.id}]`;
-  const ctxe = _.omit((this.configuration() || {}), ["secret", "accessToken"]);
   this.utils = {
     groupTraits: trait.group,
-    log: function log(message, data) {
-      Client.log(message, data, ctxe);
-    },
-    debug: function debug(message, ...data) {
-      if (process.env.DEBUG) {
-        Client.debug(message, data, ctxe);
-      }
-    },
-    metric: (metric = "", value = "", ctx = {}) => {
-      Client.metric(metric, value, {
-        ...ctxe,
-        ...ctx
-      });
-    }
+  };
+
+  const ctxe = _.omit((this.configuration() || {}), ["prefix", "secret", "accessToken", "protocol", "domain", "version"]);
+  const logFactory = level => (message, ...data) => logger[level](message, { context: ctxe, data });
+  const logs = {};
+  ["silly", "debug", "verbose", "info", "warn", "error"].map(level => { logs[level] = logFactory(level); return level; });
+
+
+  this.logger = {
+    log: logFactory("info"),
+    ...logs
   };
 
   // TODO
@@ -98,28 +101,6 @@ const Client = function Client(config = {}) {
   }
 };
 
-Client.metric = (message, ...args) => {
-  console.log(message, JSON.stringify(args));
-};
-
-Client.log = (message, data, context = {}) => {
-  if (context.shipId) {
-    console.log(`[${context.shipId}] ${message}`, JSON.stringify(data));
-  } else {
-    console.log(message, data);
-  }
-};
-
-Client.debug = (message, data, context = {}) => {
-  if (context.shipId) {
-    console.log(`[${context.shipId}] ${message}`, JSON.stringify(data));
-  } else {
-    console.log(message, data);
-  }
-};
-
-Client.onMetric = (method) => { Client.metric = method; };
-Client.onLog = (method) => { Client.log = method; };
-Client.onDebug = (method) => { Client.debug = process.env.DEBUG ? method : function(){}; };
+Client.logger = logger;
 
 module.exports = Client;

@@ -3,8 +3,8 @@ import connect from "connect";
 import https from "https";
 import _ from "lodash";
 import rawBody from "raw-body";
-import { group } from "./trait";
 import hullClient from "./middleware/client";
+import { group } from "./trait";
 
 function parseRequest(req, res, next) {
   req.hull = req.hull || {};
@@ -105,7 +105,7 @@ function processHandlers(handlers) {
 
       if (messageHandlers && messageHandlers.length > 0) {
         messageHandlers.map(fn => {
-          processing.push(fn(notification, context));
+          return processing.push(fn(notification, context));
         });
       }
 
@@ -115,7 +115,7 @@ function processHandlers(handlers) {
         const { user, events = [], segments = [] } = notification.message;
         if (events.length > 0) {
           events.map(event => {
-            eventHandlers.map(fn => {
+            return eventHandlers.map(fn => {
               const payload = {
                 message: { user, segments, event },
                 subject: "event",
@@ -134,9 +134,8 @@ function processHandlers(handlers) {
           err.status = err.status || 400;
           return next(err);
         });
-      } else {
-        next();
       }
+      return next();
     } catch (err) {
       err.status = 400;
       return next(err);
@@ -145,7 +144,7 @@ function processHandlers(handlers) {
 }
 
 
-module.exports = function NotifHandler(Client, { handlers = [], groupTraits, onSubscribe }) {
+module.exports = function NotifHandler(Client, { handlers = [], hostSecret, groupTraits, onSubscribe }) {
   const _handlers = {};
   const app = connect();
 
@@ -171,7 +170,7 @@ module.exports = function NotifHandler(Client, { handlers = [], groupTraits, onS
     enforceValidation: false,
     groupTraits: groupTraits !== false
   }));
-  app.use(hullClient(Client, { fetchShip: true, cacheShip: true }));
+  app.use(hullClient(Client, { hostSecret, fetchShip: true, cacheShip: true }));
   app.use(processHandlers(_handlers));
   app.use((req, res) => { res.end("ok"); });
 
