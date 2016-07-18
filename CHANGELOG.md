@@ -1,3 +1,7 @@
+# 0.9.3
+
+* Fix unsupported traits with special characters
+
 # 0.9.0
 
 ### Added OAuth Handler
