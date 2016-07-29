@@ -67,8 +67,8 @@ export default function oauth(Client, {
     const data = { name, urls: getURLs(req), ship };
     isSetup(req, { hull: client, ship })
       .then(
-        () => { res.render(views.home, data); },
-        () => { res.render(views.login, data); }
+        (setup = {}) => { res.render(views.home, { ...data, ...setup }); },
+        (setup = {}) => { res.render(views.login, { ...data, ...setup }); }
       );
   });
 
