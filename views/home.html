@@ -1,0 +1,49 @@
+<html>
+<head>
+  <title>Hull <%= name %></title>
+  <link rel="stylesheet" href="//dd04rofzygnm0.cloudfront.net/releases/master/865f04865d2448286626bac92c518a8f8ea8bafe/stylesheets/neue.css" />
+</head>
+<body>
+  <div class="row">
+    <div class="col-md-6 col-md-offset-3 col-sm-offset-2 col-sm-8 col-xs-offset-1 col-xs-10 mt-2 panel">
+      <div class="panel-body">
+        <div class="mb-1">
+          <h1 class="mb-0 mt-05  text-center"><i class="icon icon-hull" style="font-size:64px;"></i></h1>
+          <div class="mb-1 media ps-4 pb-1">
+            <div class="media-left">
+              <div class="media-object pr-1 pt-1">
+                <div class="check valid"><i class="icon icon-valid"></i></div>
+              </div>
+            </div>
+            <div class="media-body pt-1">
+              <span class='pull-right'><a href="<%=urls.home%>&reset=true" class='btn btn-rounded btn-pill btn-secondary'>Start over</a></span>
+              <h4 class="m-0 pt-05 text-muted">Connected to <%=name%></h4>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <script>window.hullAuthCompleted = function authCompleted() { window.location.href = window.location.href.replace("&reset=true",""); };</script>
+  <style type="text/css" media="screen">
+    .check i.icon {
+      color: rgba(75, 222, 122, 0.52);
+      font-size: 2pc;
+      position: relative;
+      top: -11px;
+      left: 3px;
+    }
+    .check.valid {
+      border-color: rgba(75, 222, 122, 0.52);
+    }
+    .check {
+      border-radius: 100px;
+      border: 2px solid transparent;
+      padding: 0 5px;
+      height: 37px;
+      width: 37px;
+      position: relative;
+    }
+  </style>
+</body>
+</html>

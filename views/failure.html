@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <link rel="stylesheet" href="//dd04rofzygnm0.cloudfront.net/releases/master/865f04865d2448286626bac92c518a8f8ea8bafe/stylesheets/neue.css" />
+  <title>Close this window now</title>
+</head>
+<body>
+  <div class="row">
+    <div class="col-md-6 col-md-offset-3 col-sm-offset-2 col-sm-8 col-xs-offset-1 col-xs-10 mt-2 panel">
+      <div class="panel-body text-center">
+        <div class="mb-1">
+          <h1 class="mb-0 mt-05">
+            <i class="icon icon-hull" style="font-size:64px;"></i>
+          </h1>
+          <h5 class="uppercase text-accented underlined mb-1">Authentication Failed</h5>
+          <a href="<%=urls.home%>&reset=true" target="_blank" id='login' class='btn btn-rounded btn-pill btn-secondary'>Try again</a>
+        </div>
+      </div>
+    </div>
+  </div>
+  <script>(function finish(){ window.opener.hullAuthCompleted(); window.close(); })();</script>
+</body>
+</html>
