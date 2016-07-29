@@ -1,3 +1,7 @@
+# 0.9.4
+
+* isSetup method in oAuth handler accepts parameters in resolve and reject to pass to the view
+
 # 0.9.3
 
 * Fix unsupported traits with special characters

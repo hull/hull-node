@@ -384,7 +384,7 @@ app.use("/auth", OAuthHandler({
   isSetup(req, { /* hull,*/ ship }) {
     if (!!req.query.reset) return Promise.reject();
     const { token } = ship.private_settings || {};
-    return (!!token) ? Promise.resolve() : Promise.reject();
+    return (!!token) ? Promise.resolve({ valid: true, total: 2}) : Promise.reject({ valid: false, total: 0});
   },
   onLogin: (req, { hull, ship }) => {
     req.authParams = { ...req.body, ...req.query };
@@ -433,6 +433,8 @@ An options hash passed to Passport to configure the OAuth Strategy. (See [Passpo
 A method returning a Promise, resolved if the ship is correctly setup, or rejected if it needs to display the Login screen.
 
 Lets you define in the Ship the name of the parameters you need to check for.
+
+You can return parameters in the Promise resolve and reject methods, that will be passed to the view. This lets you display status and show buttons and more to the customer
 
 ##### onLogin()
 A method returning a Promise, resolved when ready.
