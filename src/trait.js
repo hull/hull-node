@@ -25,7 +25,7 @@ module.exports = {
           dest = key.replace(/^traits_/, "traits/");
         }
       }
-      return _.set(grouped, dest.split('/'), value);
+      return _.setWith(grouped, dest.split("/"), value, Object);
     }, {});
   },
 

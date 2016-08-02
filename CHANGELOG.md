@@ -1,3 +1,7 @@
+# 0.9.5
+
+* Ensure `Hull.utils.groupTraits` returns an Object everytime, even if index values such as `traits_0` are set.
+
 # 0.9.4
 
 * isSetup method in oAuth handler accepts parameters in resolve and reject to pass to the view
