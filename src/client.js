@@ -5,6 +5,7 @@ import restAPI from "./rest-api";
 import crypto from "./lib/crypto";
 import currentUserMiddleware from "./middleware/current-user";
 import trait from "./trait";
+import FirehoseBatcher from "./firehose-batcher";
 
 const PUBLIC_METHODS = ["get", "post", "del", "put"];
 
@@ -24,6 +25,10 @@ const Client = function Client(config = {}) {
     return clientConfig.get();
   };
 
+  const batch = FirehoseBatcher.getInstance(clientConfig.get(), (params, batcher) => {
+    return restAPI(batcher.config, 'firehose', 'post', params);
+  });
+
   this.api = function api(url, method, options) {
     return restAPI(clientConfig, url, method, options);
   };
@@ -39,7 +44,6 @@ const Client = function Client(config = {}) {
   this.userToken = function userToken(data = clientConfig.get("userId"), claims) {
     return crypto.userToken(clientConfig.get(), data, claims);
   };
-
 
   this.currentUserMiddleware = currentUserMiddleware.bind(this, clientConfig.get());
 
@@ -66,27 +70,30 @@ const Client = function Client(config = {}) {
     this.traits = (traits, context = {}) => {
       // Quick and dirty way to add a source prefix to all traits we want in.
       const source = context.source;
-      let dest = {};
+      let body = {};
       if (source) {
         _.reduce(traits, (d, value, key) => {
           const k = `${source}/${key}`;
           d[k] = value;
           return d;
-        }, dest);
+        }, body);
       } else {
-        dest = { ...traits };
+        body = { ...traits };
       }
-      return this.api("me/traits", "put", trait.normalize(dest));
+      return batch({ type: "traits", body });
     };
 
     this.track = (event, properties = {}, context = {}) => {
-      return this.api("/t", "POST", {
-        ip: null,
-        url: null,
-        referer: null,
-        ...context,
-        properties,
-        event
+      return batch({
+        type: "track",
+        body: {
+          ip: null,
+          url: null,
+          referer: null,
+          ...context,
+          properties,
+          event
+        }
       });
     };
   } else {

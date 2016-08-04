@@ -20,6 +20,9 @@ const VALID = {
   },
   string(str) {
     return _.isString(str) && str.length > 0;
+  },
+  number(num) {
+    return _.isNumber(num) && num > 0;
   }
 };
 
@@ -36,7 +39,9 @@ const VALID_PROPS = {
   domain: VALID.string,
   protocol: VALID.string,
   userId: VALID.string,
-  accessToken: VALID.string
+  accessToken: VALID.string,
+  flushAt: VALID.number,
+  flushAfter: VALID.number
 };
 
 class Configuration {
