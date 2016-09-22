@@ -80,6 +80,11 @@ const Client = function Client(config = {}) {
       } else {
         body = { ...traits };
       }
+
+      if (context.sync === true) {
+        return this.post('me/traits', body);
+      }
+
       return batch({ type: "traits", body });
     };
 

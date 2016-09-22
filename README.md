@@ -225,6 +225,16 @@ user.traits({
 
 Stores Properties on the user.
 
+If you need to be sure the properties are set immediately on the user, you can use the context param `{ sync: true }`.
+
+
+```js
+user.traits({
+  fetched_at: new Date().toISOString()
+}, { source: 'mailchimp', sync: true }); 
+```
+
+
 # Class Methods
 
 ### Logging Methods: Hull.logger.debug(), Hull.logger.info() ...
