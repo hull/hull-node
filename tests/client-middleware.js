@@ -92,4 +92,19 @@ describe("Client Middleware", () => {
       });
     });
   });
+
+  it("should bust the cache for specific requests", function (done) {
+    const instance = Middleware(HullStub, { hostSecret: "secret", fetchShip: true, cacheShip: true });
+    instance(reqStub, {}, () => {
+      expect(reqStub.hull.ship.private_settings.value).to.equal("test");
+      reqStub.hull.message = {
+        Subject: "ship:update"
+      };
+      instance(reqStub, {}, () => {
+        expect(reqStub.hull.ship.private_settings.value).to.equal("test1");
+        expect(this.getStub.calledTwice).to.be.true;
+        done();
+      });
+    });
+  });
 });
