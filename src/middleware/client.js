@@ -1,4 +1,5 @@
 import jwt from "jwt-simple";
+import cacheManager from "cache-manager";
 
 function parseQueryString(query) {
   return ["organization", "ship", "secret"].reduce((cfg, k) => {
@@ -25,7 +26,7 @@ function parseToken(token, secret) {
 }
 
 
-module.exports = function hullClientMiddlewareFactory(Client, { hostSecret, fetchShip = true, cacheShip = true }) {
+module.exports = function hullClientMiddlewareFactory(Client, { hostSecret, fetchShip = true, cacheShip = true, cachingAdapter = null }) {
   const _cache = [];
 
   /* TODO: Expire Cache after x minutes. For now, doesnt expire... Returns a Promise<ship> */
