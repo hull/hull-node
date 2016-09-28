@@ -26,20 +26,25 @@ function parseToken(token, secret) {
   }
 }
 
+function shipCacheFactory(cacheShip) {
+  // setup default CacheManager
+  const cacheAdapter = CacheManager.caching({
+    store: 'memory',
+    isCacheableValue: (val) => val !== undefined && cacheShip,
+    max: 100,
+    ttl: 10/*seconds*/
+  });
 
-module.exports = function hullClientMiddlewareFactory(Client, { hostSecret, fetchShip = true, cacheShip = true, cacheAdapter = null }) {
-  if (cacheAdapter === null) {
-    // setup default CacheManager
-    cacheAdapter = CacheManager.caching({
-      store: 'memory',
-      isCacheableValue: (val) => val !== undefined && cacheShip,
-      max: 100,
-      ttl: 10/*seconds*/
-    });
+  return new ShipCache(cacheAdapter);
+}
+
+
+module.exports = function hullClientMiddlewareFactory(Client, { hostSecret, fetchShip = true, cacheShip = true, shipCache = null }) {
+  if (shipCache === null) {
+    shipCache = shipCacheFactory(cacheShip);
   }
 
   function getCurrentShip(id, client, bust) {
-    const shipCache = new ShipCache(cacheAdapter);
     return (() => {
       if (bust) {
         return shipCache.del(id);
