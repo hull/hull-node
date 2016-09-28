@@ -52,7 +52,7 @@ class Configuration {
     }
 
     if (config.userId) {
-      const accessToken = crypto.userToken(config, config.userId);
+      const accessToken = crypto.lookupToken(config, config.userId);
       config = { ...config, accessToken };
     }
 

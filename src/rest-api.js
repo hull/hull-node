@@ -27,10 +27,9 @@ function perform(config = {}, method = 'get', path, params = {}) {
     }
   };
 
-  if (config.userId) {
+  if (config.userId && typeof(config.userId) === 'string') {
     opts.headers['Hull-User-Id'] = config.userId;
   }
-
 
   if (method === 'get') {
     opts.query = params;

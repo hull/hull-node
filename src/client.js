@@ -45,6 +45,10 @@ const Client = function Client(config = {}) {
     return crypto.userToken(clientConfig.get(), data, claims);
   };
 
+  this.lookupToken = function userToken(data = clientConfig.get("userId"), claims) {
+    return crypto.lookupToken(clientConfig.get(), data, claims);
+  };
+
   this.currentUserMiddleware = currentUserMiddleware.bind(this, clientConfig.get());
 
   this.utils = {

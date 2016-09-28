@@ -42,7 +42,7 @@ module.exports = {
     return sign(config, data);
   },
   /**
-   * Calculates the hash for a user so an external userbase can be linked to hull.io services
+   * Calculates the hash for a user so an external userbase can be linked to hull.io services - io.hull.user
    *
    * @param {Object} config object
    * @param {Object} user object or user ID as string
@@ -59,6 +59,28 @@ module.exports = {
         throw new Error('you need to pass a User hash with an `email` or `external_id` or `guest_id` field');
       }
       claims['io.hull.user'] = user;
+    }
+    return buildToken(config, claims);
+  },
+
+  /**
+   * Calculates the hash for a user lookup - io.hull.as
+   *
+   * @param {Object} config object
+   * @param {Object} user object or user ID as string
+   * @param {Object} additionnal claims
+   * @returns {String} The jwt token to identity the user.
+   */
+  lookupToken(config, user = {}, claims = {}) {
+    checkConfig(config);
+    if (_.isString(user)) {
+      if (!user) { throw new Error('Missing user ID'); }
+      claims.sub = user;
+    } else {
+      if (!_.isObject(user) || (!user.email && !user.external_id && !user.guest_id)) {
+        throw new Error('you need to pass a User hash with an `email` or `external_id` or `guest_id` field');
+      }
+      claims['io.hull.as'] = user;
     }
     return buildToken(config, claims);
   },
