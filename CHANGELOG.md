@@ -1,3 +1,11 @@
+# 0.9.7 
+
+* Add support for `sync:true` option on `Hull.traits`
+
+# 0.9.6
+
+* Automatically batch calls to firehose endpoint
+
 # 0.9.5
 
 * Ensure `Hull.utils.groupTraits` returns an Object everytime, even if index values such as `traits_0` are set.
