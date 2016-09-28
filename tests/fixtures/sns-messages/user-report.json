@@ -1,0 +1,5 @@
+{
+  "Type": "Notification",
+  "Subject": "user:update",
+  "Message": "{}"
+}

@@ -27,7 +27,8 @@ export default function oauth(Client, {
   hostSecret = "",
   Strategy,
   views = {},
-  options = {}
+  options = {},
+  shipCache = null
 }) {
   function getURL(req, url, qs = { token: req.hull.token }) {
     return `https://${req.hostname}${req.baseUrl}${url}?${querystring.stringify(qs)}`;
@@ -60,7 +61,7 @@ export default function oauth(Client, {
   passport.use(strategy);
 
 
-  const hullMiddleware = hullClient(Client, { hostSecret, fetchShip: true, cacheShip: false });
+  const hullMiddleware = hullClient(Client, { hostSecret, fetchShip: true, cacheShip: false, shipCache });
 
   router.get(HOME_URL, hullMiddleware, (req, res) => {
     const { client, ship = {}, } = req.hull;

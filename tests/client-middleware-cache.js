@@ -49,7 +49,7 @@ describe("Client Middleware", () => {
     this.putStub.restore();
   });
 
-  it("can take a cachingAdapter", function (done) {
+  it("should take a ShipCache", function (done) {
     const cacheAdapter = cacheManager.caching({ store: "memory", max: 100, ttl: 1/*seconds*/ });
     const shipCache = new ShipCache(cacheAdapter);
     const instance = Middleware(HullStub, { hostSecret: "secret", shipCache });
@@ -72,7 +72,7 @@ describe("Client Middleware", () => {
     });
   });
 
-  it("can disable caching", function (done) {
+  it("should allow for disabling caching", function (done) {
     const cacheAdapter = cacheManager.caching({ store: "memory", isCacheableValue: () => false });
     const shipCache = new ShipCache(cacheAdapter);
     const instance = Middleware(HullStub, { hostSecret: "secret", shipCache });
