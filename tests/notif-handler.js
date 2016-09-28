@@ -131,12 +131,11 @@ describe("NotifHandler", () => {
       post({ port, body: userUpdate })
         .then(() => {
           const newShip = {
-            id: "ship_id",
             private_settings: {
               value: "test2"
             }
           };
-          return shipCache.set(newShip);
+          return shipCache.set("ship_id", newShip);
         })
         .then(() => {
           return post({ port, body: userUpdate });

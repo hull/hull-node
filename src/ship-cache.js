@@ -38,11 +38,12 @@ export default class ShipCache {
 
   /**
    * Saves ship data to the cache
+   * @param  {String} id ship id
    * @param  {Object} ship
    * @return {Promise}
    */
-  set(ship) {
-    const shipCacheKey = this.getShipKey(ship.id);
+  set(id, ship) {
+    const shipCacheKey = this.getShipKey(id);
     return this.cache.set(shipCacheKey, ship);
   }
 

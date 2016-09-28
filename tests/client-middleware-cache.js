@@ -56,12 +56,11 @@ describe("Client Middleware", () => {
     instance(reqStub, {}, (err) => {
       expect(reqStub.hull.ship.private_settings.value).to.equal("test");
       const newShip = {
-        id: "ship_id",
         private_settings: {
           value: "test2"
         }
       };
-      shipCache.set(newShip)
+      shipCache.set("ship_id", newShip)
         .then((arg) => {
           instance(reqStub, {}, () => {
             expect(reqStub.hull.ship.private_settings.value).to.equal("test2");
@@ -99,12 +98,11 @@ describe("Client Middleware", () => {
         expect(reqStub.hull.ship.private_settings.value).to.equal("test");
         expect(this.getStub.calledOnce).to.be.true;
         const newShip = {
-          id: "ship_id",
           private_settings: {
             value: "test2"
           }
         };
-        shipCache1.set(newShip)
+        shipCache1.set("ship_id", newShip)
           .then((arg) => {
             instance1(reqStub, {}, () => {
               expect(reqStub.hull.ship.private_settings.value).to.equal("test2");
@@ -133,12 +131,11 @@ describe("Client Middleware", () => {
         expect(reqStub.hull.ship.private_settings.value).to.equal("test1");
         expect(this.getStub.calledTwice).to.be.true;
         const newShip = {
-          id: "ship_id",
           private_settings: {
             value: "test2"
           }
         };
-        shipCache1.set(newShip)
+        shipCache1.set("ship_id", newShip)
           .then((arg) => {
             instance1(reqStub, {}, () => {
               expect(reqStub.hull.ship.private_settings.value).to.equal("test2");
