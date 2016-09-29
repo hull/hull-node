@@ -1,4 +1,6 @@
 import jwt from "jwt-simple";
+import CacheManager from "cache-manager";
+import ShipCache from "../ship-cache";
 
 function parseQueryString(query) {
   return ["organization", "ship", "secret"].reduce((cfg, k) => {
@@ -24,23 +26,36 @@ function parseToken(token, secret) {
   }
 }
 
+function shipCacheFactory(cacheShip) {
+  // setup default CacheManager
+  const cacheAdapter = CacheManager.caching({
+    store: 'memory',
+    isCacheableValue: (val) => val !== undefined && cacheShip,
+    max: 100,
+    ttl: 10/*seconds*/
+  });
 
-module.exports = function hullClientMiddlewareFactory(Client, { hostSecret, fetchShip = true, cacheShip = true }) {
-  const _cache = [];
+  return new ShipCache(cacheAdapter);
+}
 
-  /* TODO: Expire Cache after x minutes. For now, doesnt expire... Returns a Promise<ship> */
+
+module.exports = function hullClientMiddlewareFactory(Client, { hostSecret, fetchShip = true, cacheShip = true, shipCache = null }) {
+  if (shipCache === null) {
+    shipCache = shipCacheFactory(cacheShip);
+  }
+
   function getCurrentShip(id, client, bust) {
-    client.logger.debug("ship.cache.access", !!_cache[id]);
-    if (cacheShip && bust) {
-      client.logger.info("ship.cache.bust", !!_cache[id]);
-      _cache[id] = null;
-    }
-    const ship = _cache[id] || client.get(id);
-    if (cacheShip && !_cache[id]) {
-      client.logger.info("ship.cache.save");
-      _cache[id] = ship;
-    }
-    return ship;
+    return (() => {
+      if (bust) {
+        return shipCache.del(id);
+      }
+      return Promise.resolve();
+    })()
+    .then(() => {
+      return shipCache.wrap(id, () => {
+        return client.get(id);
+      });
+    });
   }
 
   return function hullClientMiddleware(req, res, next) {

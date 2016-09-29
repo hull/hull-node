@@ -144,7 +144,7 @@ function processHandlers(handlers) {
 }
 
 
-module.exports = function NotifHandler(Client, { handlers = [], hostSecret, groupTraits, onSubscribe }) {
+module.exports = function NotifHandler(Client, { handlers = [], hostSecret, groupTraits, onSubscribe, shipCache = null }) {
   const _handlers = {};
   const app = connect();
 
@@ -170,7 +170,7 @@ module.exports = function NotifHandler(Client, { handlers = [], hostSecret, grou
     enforceValidation: false,
     groupTraits: groupTraits !== false
   }));
-  app.use(hullClient(Client, { hostSecret, fetchShip: true, cacheShip: true }));
+  app.use(hullClient(Client, { hostSecret, fetchShip: true, cacheShip: true, shipCache }));
   app.use(processHandlers(_handlers));
   app.use((req, res) => { res.end("ok"); });
 

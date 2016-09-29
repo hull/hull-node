@@ -1,6 +1,7 @@
 import NotifHandler from "./notif-handler";
 import BatchHandler from "./batch-handler";
 import OAuthHandler from "./oauth-handler";
+import ShipCache from "./ship-cache";
 
 import hullClient from "./middleware/client";
 import Client from "./client";
@@ -14,5 +15,6 @@ Client.Routes = { Readme, Manifest };
 Client.NotifHandler = NotifHandler.bind(undefined, Client);
 Client.BatchHandler = BatchHandler.bind(undefined, Client);
 Client.OAuthHandler = OAuthHandler.bind(undefined, Client);
+Client.ShipCache = ShipCache;
 
 module.exports = Client;
