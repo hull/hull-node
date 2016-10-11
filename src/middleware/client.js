@@ -45,14 +45,18 @@ module.exports = function hullClientMiddlewareFactory(Client, { hostSecret, fetc
   }
 
   function getCurrentShip(id, client, bust) {
+
+    const { secret, organization } = client.configuration();
+    const cacheKey = jwt.encode({ sub: id, iss: organization }, secret);
+
     return (() => {
       if (bust) {
-        return shipCache.del(id);
+        return shipCache.del(cacheKey);
       }
       return Promise.resolve();
     })()
     .then(() => {
-      return shipCache.wrap(id, () => {
+      return shipCache.wrap(cacheKey, () => {
         return client.get(id);
       });
     });
