@@ -1,3 +1,15 @@
+# 0.10.2
+
+* Sign ship cache key with secret
+
+# 0.10.1
+
+* Ship caching
+
+# 0.10.0
+
+* Hull.as uses lookup tokens by default
+
 # 0.9.7 
 
 * Add support for `sync:true` option on `Hull.traits`
