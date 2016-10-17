@@ -122,18 +122,16 @@ The Events handler  Returns a grouped version of the traits in the flat user rep
 # Impersonating a User
 
 ```js
-//If you only have an anonymous ID, use the `guest_id` field
-var user = hull.as({ guest_id: '123456789' });
+//If you only have an anonymous ID, use the `anonymous_id` field
+var user = hull.as({ anonymous_id: '123456789' });
 
 //if you have a user id from your database, use the `external_id` field
 var user = hull.as({ external_id: 'dkjf565wd654e' });
 
 //if you retrieved a Hull Internal User Id:
+//second argument is optional and specifies wether we get the user's right or admin rights.
 var user = hull.as('5718b59b7a85ebf20e000169', false);
 
-//second argument is optional and specifies wether we get the user's right or admin rights.
-//or with an Instagram or other social service ID:
-var user = hull.as('instagram:1234');
 //user is an instance of Hull, scoped to a specific user.
 //Default is false: "get user rights". 
 user.get('/me').then(function(me){
