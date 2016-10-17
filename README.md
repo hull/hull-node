@@ -143,7 +143,7 @@ user.userToken();
 
 One of the more frequent use case is to perform API calls with the identity of a given user. We provide several methods to do so.
 
-You can use an internal Hull `id`, an Anonymous ID from that we call a `guest_id`, an ID from your database that we call `external_id`, or even the ID from a supported social service such as Instagram;
+You can use an internal Hull `id`, an Anonymous ID from that we call a `anonymous_id`, an ID from your database that we call `external_id`, or even the ID from a supported social service such as Instagram;
 
 Assigning the `user` variable doesn't make an API call, it scopes the calls to another instance of `hull` client. This means `user` is an instance of the `hull` client scoped to this user.
 
@@ -171,7 +171,7 @@ hull.as({external_id:'externalId'}, sudo)
 > Return a hull `client` scoped to the user identified by it's External ID (from your dashboard). Lazily created if [Guest Users](http://www.hull.io/docs/users/guest_users) are enabled
 
 ```js
-hull.as({guest_id:'anonymousId'}, sudo)
+hull.as({anonymous_id:'anonymousId'}, sudo)
 ```
 
 > Return a hull `client` scoped to the user identified by only by an anonymousId. Lets you start tracking and storing properties from a user before you have a UserID ready for him. Lazily created if [Guest Users](http://www.hull.io/docs/users/guest_users) are enabled
@@ -190,7 +190,7 @@ const userId = '5718b59b7a85ebf20e000169';
 const externalId = 'dkjf565wd654e';
 const anonymousId = '44564-EJVWE-1CE56SE-SDVE879VW8D4';
 
-const user = hull.as({external_id: externalId, guest_id: anonymousId})
+const user = hull.as({external_id: externalId, anonymous_id: anonymousId})
 ```
 
 When you do this, you get a new client that has a different behaviour. It's now behaving as a User would. It means it does API calls as a user and has new methods to track and store properties
