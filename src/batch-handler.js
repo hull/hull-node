@@ -28,9 +28,13 @@ function fetchStream({ groupTraits, batchSize }, callback) {
         return ids.map(id => segments[id]);
       }
 
+
+      let processed = 0;
+
       // Batch
       const flush = (user) => {
         if (user) {
+          processed += 1;
           const u = _.omit(user, "segment_ids");
           notifications.push({
             message: {
@@ -40,7 +44,9 @@ function fetchStream({ groupTraits, batchSize }, callback) {
             }
           });
         }
-        if (notifications.length >= batchSize || !user) callback(notifications.splice(0), { req, ship, hull: client });
+        if (notifications.length >= batchSize || !user) {
+          callback(notifications.splice(0), { req, ship, hull: client, processed });
+        }
       };
 
       return request({ url })
