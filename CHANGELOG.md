@@ -1,3 +1,11 @@
+# 0.10.4
+
+* All to bypass requireCredentials on Middleware
+
+# 0.10.3
+
+* Add processed count in batch handler context
+
 # 0.10.2
 
 * Sign ship cache key with secret
