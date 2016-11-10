@@ -39,7 +39,7 @@ function shipCacheFactory(cacheShip) {
 }
 
 
-module.exports = function hullClientMiddlewareFactory(Client, { hostSecret, fetchShip = true, cacheShip = true, shipCache = null }) {
+module.exports = function hullClientMiddlewareFactory(Client, { hostSecret, fetchShip = true, cacheShip = true, shipCache = null, requireCredentials = true }) {
   if (shipCache === null) {
     shipCache = shipCacheFactory(cacheShip);
   }
@@ -93,9 +93,13 @@ module.exports = function hullClientMiddlewareFactory(Client, { hostSecret, fetc
 
         return next();
       }
-      const e = new Error("Missing Credentials");
-      e.status = 400;
-      return next(e);
+      if (requireCredentials) {
+        const e = new Error("Missing Credentials");
+        e.status = 400;
+        return next(e);
+      } else {
+        return next();
+      }
     } catch (err) {
       try {
         err.status = 401;
