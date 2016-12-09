@@ -12,11 +12,14 @@ export default class ShipCache {
    * @param {Object} cache instance of cache-manager
    * @param {String} namespace name of the namespace
    */
-  constructor(cache, namespace) {
+  constructor(cache, namespace = "global") {
     this.cache = cache;
-    this.namespace
+    this.namespace = namespace;
   }
 
+  /**
+   * @param {Object} client Hull Client
+   */
   setClient(client) {
     this.client = client;
   }
@@ -27,7 +30,7 @@ export default class ShipCache {
    */
   getShipKey(id) {
     const { secret, organization } = this.client.configuration();
-    return jwt.encode({ sub: id, iss: organization }, secret);
+    return this.namespace + '_' + jwt.encode({ sub: id, iss: organization }, secret);
   }
 
   /**

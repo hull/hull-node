@@ -26,7 +26,7 @@ function parseToken(token, secret) {
   }
 }
 
-function shipCacheFactory(cacheShip, client) {
+function shipCacheFactory(cacheShip) {
   // setup default CacheManager
   const cacheAdapter = CacheManager.caching({
     store: 'memory',
@@ -35,14 +35,13 @@ function shipCacheFactory(cacheShip, client) {
     ttl: 10/*seconds*/
   });
 
-  return new ShipCache(cacheAdapter, client);
+  return new ShipCache(cacheAdapter);
 }
 
 
 module.exports = function hullClientMiddlewareFactory(Client, { hostSecret, fetchShip = true, cacheShip = true, shipCache = null, requireCredentials = true }) {
-
   if (shipCache === null) {
-    shipCache = shipCacheFactory(cacheShip, client);
+    shipCache = shipCacheFactory(cacheShip);
   }
 
   function getCurrentShip(id, client, bust) {
