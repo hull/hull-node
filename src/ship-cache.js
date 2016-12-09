@@ -12,8 +12,12 @@ export default class ShipCache {
    * @param {Object} cache instance of cache-manager
    * @param {String} namespace name of the namespace
    */
-  constructor(cache, client) {
+  constructor(cache, namespace) {
     this.cache = cache;
+    this.namespace
+  }
+
+  setClient(client) {
     this.client = client;
   }
 

@@ -41,6 +41,10 @@ function shipCacheFactory(cacheShip, client) {
 
 module.exports = function hullClientMiddlewareFactory(Client, { hostSecret, fetchShip = true, cacheShip = true, shipCache = null, requireCredentials = true }) {
 
+  if (shipCache === null) {
+    shipCache = shipCacheFactory(cacheShip, client);
+  }
+
   function getCurrentShip(id, client, bust) {
 
     return (() => {
@@ -70,10 +74,7 @@ module.exports = function hullClientMiddlewareFactory(Client, { hostSecret, fetc
       const { organization, ship: id, secret } = config;
       if (organization && id && secret) {
         const client = req.hull.client = new Client({ id, secret, organization });
-
-        if (shipCache === null) {
-          shipCache = shipCacheFactory(cacheShip, client);
-        }
+        shipCache.setClient(client);
 
         req.hull.token = jwt.encode(config, hostSecret);
         if (fetchShip) {
