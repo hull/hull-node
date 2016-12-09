@@ -15,6 +15,12 @@ class HullStub {
   }
   get() {}
   put() {}
+  configuration() {
+    return {
+      secret: "secret",
+      organization: "local"
+    };
+  }
 }
 
 const reqStub = {
@@ -51,7 +57,7 @@ describe("Client Middleware", () => {
 
   it("should take a ShipCache", function (done) {
     const cacheAdapter = cacheManager.caching({ store: "memory", max: 100, ttl: 1/*seconds*/ });
-    const shipCache = new ShipCache(cacheAdapter);
+    const shipCache = new ShipCache(cacheAdapter, new HullStub());
     const instance = Middleware(HullStub, { hostSecret: "secret", shipCache });
     instance(reqStub, {}, (err) => {
       expect(reqStub.hull.ship.private_settings.value).to.equal("test");
@@ -73,7 +79,7 @@ describe("Client Middleware", () => {
 
   it("should allow for disabling caching", function (done) {
     const cacheAdapter = cacheManager.caching({ store: "memory", isCacheableValue: () => false });
-    const shipCache = new ShipCache(cacheAdapter);
+    const shipCache = new ShipCache(cacheAdapter, new HullStub);
     const instance = Middleware(HullStub, { hostSecret: "secret", shipCache });
     instance(reqStub, {}, () => {
       expect(reqStub.hull.ship.private_settings.value).to.equal("test");
@@ -87,8 +93,8 @@ describe("Client Middleware", () => {
 
   it("should share the cache using the same adapter", function (done) {
     const cacheAdapter = cacheManager.caching({ store: "memory", max: 100, ttl: 1/*seconds*/ });
-    const shipCache1 = new ShipCache(cacheAdapter);
-    const shipCache2 = new ShipCache(cacheAdapter);
+    const shipCache1 = new ShipCache(cacheAdapter, new HullStub);
+    const shipCache2 = new ShipCache(cacheAdapter, new HullStub);
     const instance1 = Middleware(HullStub, { hostSecret: "secret", shipCache: shipCache1 });
     const instance2 = Middleware(HullStub, { hostSecret: "secret", shipCache: shipCache2 });
     instance1(reqStub, {}, (err) => {
@@ -110,39 +116,6 @@ describe("Client Middleware", () => {
               instance2(reqStub, {}, () => {
                 expect(reqStub.hull.ship.private_settings.value).to.equal("test2");
                 expect(this.getStub.calledOnce).to.be.true;
-                done();
-              });
-            });
-          });
-      });
-    });
-  });
-
-  it("should shupport different namespaces when using the same adapter", function (done) {
-    const cacheAdapter = cacheManager.caching({ store: "memory", max: 100, ttl: 1/*seconds*/ });
-    const shipCache1 = new ShipCache(cacheAdapter, "namespace1");
-    const shipCache2 = new ShipCache(cacheAdapter, "namespace2");
-    const instance1 = Middleware(HullStub, { hostSecret: "secret", shipCache: shipCache1 });
-    const instance2 = Middleware(HullStub, { hostSecret: "secret", shipCache: shipCache2 });
-    instance1(reqStub, {}, (err) => {
-      expect(reqStub.hull.ship.private_settings.value).to.equal("test");
-      expect(this.getStub.calledOnce).to.be.true;
-      instance2(reqStub, {}, () => {
-        expect(reqStub.hull.ship.private_settings.value).to.equal("test1");
-        expect(this.getStub.calledTwice).to.be.true;
-        const newShip = {
-          private_settings: {
-            value: "test2"
-          }
-        };
-        shipCache1.set("ship_id", newShip)
-          .then((arg) => {
-            instance1(reqStub, {}, () => {
-              expect(reqStub.hull.ship.private_settings.value).to.equal("test2");
-              expect(this.getStub.calledTwice).to.be.true;
-              instance2(reqStub, {}, () => {
-                expect(reqStub.hull.ship.private_settings.value).to.equal("test1");
-                expect(this.getStub.calledTwice).to.be.true;
                 done();
               });
             });

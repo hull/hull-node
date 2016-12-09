@@ -11,6 +11,12 @@ class HullStub {
       debug() {}
     }
   }
+  configuration() {
+    return {
+      secret: "secret",
+      organization: "local"
+    };
+  }
   get() {}
 }
 

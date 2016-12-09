@@ -26,7 +26,7 @@ function parseToken(token, secret) {
   }
 }
 
-function shipCacheFactory(cacheShip) {
+function shipCacheFactory(cacheShip, client) {
   // setup default CacheManager
   const cacheAdapter = CacheManager.caching({
     store: 'memory',
@@ -35,28 +35,22 @@ function shipCacheFactory(cacheShip) {
     ttl: 10/*seconds*/
   });
 
-  return new ShipCache(cacheAdapter);
+  return new ShipCache(cacheAdapter, client);
 }
 
 
 module.exports = function hullClientMiddlewareFactory(Client, { hostSecret, fetchShip = true, cacheShip = true, shipCache = null, requireCredentials = true }) {
-  if (shipCache === null) {
-    shipCache = shipCacheFactory(cacheShip);
-  }
 
   function getCurrentShip(id, client, bust) {
 
-    const { secret, organization } = client.configuration();
-    const cacheKey = jwt.encode({ sub: id, iss: organization }, secret);
-
     return (() => {
       if (bust) {
-        return shipCache.del(cacheKey);
+        return shipCache.del(id);
       }
       return Promise.resolve();
     })()
     .then(() => {
-      return shipCache.wrap(cacheKey, () => {
+      return shipCache.wrap(id, () => {
         return client.get(id);
       });
     });
@@ -76,6 +70,11 @@ module.exports = function hullClientMiddlewareFactory(Client, { hostSecret, fetc
       const { organization, ship: id, secret } = config;
       if (organization && id && secret) {
         const client = req.hull.client = new Client({ id, secret, organization });
+
+        if (shipCache === null) {
+          shipCache = shipCacheFactory(cacheShip, client);
+        }
+
         req.hull.token = jwt.encode(config, hostSecret);
         if (fetchShip) {
 
