@@ -57,7 +57,7 @@ describe("Client Middleware", () => {
 
   it("should take a ShipCache", function (done) {
     const cacheAdapter = cacheManager.caching({ store: "memory", max: 100, ttl: 1/*seconds*/ });
-    const shipCache = new ShipCache(cacheAdapter);
+    const shipCache = new ShipCache(cacheAdapter, "test");
     const instance = Middleware(HullStub, { hostSecret: "secret", shipCache });
     instance(reqStub, {}, (err) => {
       expect(reqStub.hull.ship.private_settings.value).to.equal("test");
@@ -79,7 +79,7 @@ describe("Client Middleware", () => {
 
   it("should allow for disabling caching", function (done) {
     const cacheAdapter = cacheManager.caching({ store: "memory", isCacheableValue: () => false });
-    const shipCache = new ShipCache(cacheAdapter);
+    const shipCache = new ShipCache(cacheAdapter, "test");
     const instance = Middleware(HullStub, { hostSecret: "secret", shipCache });
     instance(reqStub, {}, () => {
       expect(reqStub.hull.ship.private_settings.value).to.equal("test");
@@ -91,10 +91,10 @@ describe("Client Middleware", () => {
     });
   });
 
-  it("should share the cache using the same adapter", function (done) {
+  it("should share the cache using the same adapter and namespace", function (done) {
     const cacheAdapter = cacheManager.caching({ store: "memory", max: 100, ttl: 1/*seconds*/ });
-    const shipCache1 = new ShipCache(cacheAdapter);
-    const shipCache2 = new ShipCache(cacheAdapter);
+    const shipCache1 = new ShipCache(cacheAdapter, "test");
+    const shipCache2 = new ShipCache(cacheAdapter, "test");
     const instance1 = Middleware(HullStub, { hostSecret: "secret", shipCache: shipCache1 });
     const instance2 = Middleware(HullStub, { hostSecret: "secret", shipCache: shipCache2 });
     instance1(reqStub, {}, (err) => {

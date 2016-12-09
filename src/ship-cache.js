@@ -12,7 +12,10 @@ export default class ShipCache {
    * @param {Object} cache instance of cache-manager
    * @param {String} namespace name of the namespace
    */
-  constructor(cache, namespace = "global") {
+  constructor(cache, namespace) {
+    if (!namespace) {
+      throw new Error("Namespace is required");
+    }
     this.cache = cache;
     this.namespace = namespace;
   }

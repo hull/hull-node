@@ -35,7 +35,7 @@ function shipCacheFactory(cacheShip) {
     ttl: 10/*seconds*/
   });
 
-  return new ShipCache(cacheAdapter);
+  return new ShipCache(cacheAdapter, process.env.SHIP_CACHE_NAMESPACE);
 }
 
 

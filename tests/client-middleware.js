@@ -4,6 +4,7 @@ import sinon from "sinon";
 
 import Middleware from "../src/middleware/client";
 
+process.env.SHIP_CACHE_NAMESPACE = "test";
 class HullStub {
   constructor() {
     this.logger = {
