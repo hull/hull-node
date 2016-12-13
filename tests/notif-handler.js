@@ -11,15 +11,7 @@ import userUpdate from "./fixtures/sns-messages/user-report.json";
 import NotifHandler from "../src/notif-handler";
 import ShipCache from "../src/ship-cache";
 
-class HullStub {
-  constructor() {
-    this.logger = {
-      info() {},
-      debug() {}
-    }
-  }
-  get() {}
-}
+import HullStub from "./support/hull-stub";
 
 const reqStub = {
   url: "http://localhost/",
