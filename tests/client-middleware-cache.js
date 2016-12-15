@@ -53,8 +53,7 @@ describe("Client Middleware", () => {
         }
       };
 
-      const cacheKey = jwt.encode({ sub: "ship_id", iss: "local" }, "secret");
-      shipCache.set(cacheKey, newShip)
+      shipCache.set("ship_id", newShip)
         .then((arg) => {
           instance(reqStub, {}, () => {
             expect(reqStub.hull.ship.private_settings.value).to.equal("test2");
@@ -79,7 +78,7 @@ describe("Client Middleware", () => {
     });
   });
 
-  it("should share the cache using the same adapter", function (done) {
+  it("should share the cache using the same adapter and namespace", function (done) {
     const cacheAdapter = cacheManager.caching({ store: "memory", max: 100, ttl: 1/*seconds*/ });
     const shipCache1 = new ShipCache(cacheAdapter);
     const shipCache2 = new ShipCache(cacheAdapter);
@@ -104,39 +103,6 @@ describe("Client Middleware", () => {
               instance2(reqStub, {}, () => {
                 expect(reqStub.hull.ship.private_settings.value).to.equal("test2");
                 expect(this.getStub.calledOnce).to.be.true;
-                done();
-              });
-            });
-          });
-      });
-    });
-  });
-
-  it("should shupport different namespaces when using the same adapter", function (done) {
-    const cacheAdapter = cacheManager.caching({ store: "memory", max: 100, ttl: 1/*seconds*/ });
-    const shipCache1 = new ShipCache(cacheAdapter, "namespace1");
-    const shipCache2 = new ShipCache(cacheAdapter, "namespace2");
-    const instance1 = Middleware(HullStub, { hostSecret: "secret", shipCache: shipCache1 });
-    const instance2 = Middleware(HullStub, { hostSecret: "secret", shipCache: shipCache2 });
-    instance1(reqStub, {}, (err) => {
-      expect(reqStub.hull.ship.private_settings.value).to.equal("test");
-      expect(this.getStub.calledOnce).to.be.true;
-      instance2(reqStub, {}, () => {
-        expect(reqStub.hull.ship.private_settings.value).to.equal("test1");
-        expect(this.getStub.calledTwice).to.be.true;
-        const newShip = {
-          private_settings: {
-            value: "test2"
-          }
-        };
-        shipCache1.set("ship_id", newShip)
-          .then((arg) => {
-            instance1(reqStub, {}, () => {
-              expect(reqStub.hull.ship.private_settings.value).to.equal("test2");
-              expect(this.getStub.calledTwice).to.be.true;
-              instance2(reqStub, {}, () => {
-                expect(reqStub.hull.ship.private_settings.value).to.equal("test1");
-                expect(this.getStub.calledTwice).to.be.true;
                 done();
               });
             });

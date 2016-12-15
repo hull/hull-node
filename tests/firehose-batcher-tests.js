@@ -1,4 +1,5 @@
 /* global describe, it */
+import Promise from "bluebird";
 
 import Batcher from "../src/firehose-batcher";
 import Hull from "../src/client";
@@ -30,6 +31,7 @@ describe("Batch", () => {
           expect(batch[0].headers['Hull-Access-Token']).to.eq("456");
           done();
         }
+        return Promise.resolve();
       }
 
       const batch1 = Batcher.getInstance({ ...config, accessToken: "123" }, handler);
