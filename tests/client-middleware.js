@@ -3,23 +3,7 @@ import { expect, should } from "chai";
 import sinon from "sinon";
 
 import Middleware from "../src/middleware/client";
-
-process.env.SHIP_CACHE_NAMESPACE = "test";
-class HullStub {
-  constructor() {
-    this.logger = {
-      info() {},
-      debug() {}
-    }
-  }
-  configuration() {
-    return {
-      secret: "secret",
-      organization: "local"
-    };
-  }
-  get() {}
-}
+import HullStub from "./support/hull-stub";
 
 const reqStub = {
   query: {

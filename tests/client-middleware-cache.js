@@ -2,26 +2,12 @@
 import { expect, should } from "chai";
 import sinon from "sinon";
 import cacheManager from "cache-manager";
+import jwt from "jwt-simple";
 
 import ShipCache from "../src/ship-cache";
 import Middleware from "../src/middleware/client";
 
-class HullStub {
-  constructor() {
-    this.logger = {
-      info: console.log, //() {},
-      debug: console.log, //() {}
-    }
-  }
-  get() {}
-  put() {}
-  configuration() {
-    return {
-      secret: "secret",
-      organization: "local"
-    };
-  }
-}
+import HullStub from "./support/hull-stub";
 
 const reqStub = {
   query: {
@@ -66,6 +52,7 @@ describe("Client Middleware", () => {
           value: "test2"
         }
       };
+
       shipCache.set("ship_id", newShip)
         .then((arg) => {
           instance(reqStub, {}, () => {
