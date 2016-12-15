@@ -1,6 +1,10 @@
+# 0.10.5
+
+* Move signing cache key to ship-cache module
+
 # 0.10.4
 
-* All to bypass requireCredentials on Middleware
+* Allow to bypass requireCredentials on Middleware
 
 # 0.10.3
 
@@ -18,7 +22,7 @@
 
 * Hull.as uses lookup tokens by default
 
-# 0.9.7 
+# 0.9.7
 
 * Add support for `sync:true` option on `Hull.traits`
 
