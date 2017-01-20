@@ -98,9 +98,9 @@ describe("Client Middleware", () => {
     });
   });
 
-  it("should take an optional `additionalConfig` param", function (done) {
+  it("should take an optional `clientConfig` param", function (done) {
     const hullSpy = sinon.stub() ;
-    const instance = Middleware(hullSpy, { hostSecret: "secret", additionalConfig: { flushAt: 123 } })
+    const instance = Middleware(hullSpy, { hostSecret: "secret", clientConfig: { flushAt: 123 } })
     instance(this.reqStub, {}, () => {
       expect(hullSpy.calledWith({
         id: "ship_id",
