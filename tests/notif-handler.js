@@ -140,4 +140,26 @@ describe("NotifHandler", () => {
         });
     });
   });
+
+  it("should take an optional `clientConfig` param", function (done) {
+    const hullSpy = sinon.stub() ;
+    const notifHandler = NotifHandler(hullSpy, { hostSecret: "secret", clientConfig: { flushAt: 123 } })
+    const app = express();
+
+    app.post("/notify", notifHandler);
+    const server = app.listen(() => {
+      const port = server.address().port;
+
+      post({ port, body: userUpdate })
+      .then(() => {
+        expect(hullSpy.calledWith({
+          id: "ship_id",
+          secret: "secret",
+          organization: "local",
+          flushAt: 123
+        })).to.be.true;
+        done();
+      });
+    });
+  });
 });
