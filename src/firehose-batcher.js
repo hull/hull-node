@@ -45,7 +45,7 @@ class FirehoseBatcher {
   constructor(config, handler) {
     this.handler = handler || defaultHandler;
     this.flushAt = Math.max(config.flushAt, 1) || 50;
-    this.flushAfter = config.flushAfter || 10000;
+    this.flushAfter = config.flushAfter || 1000;
     this.config = new Configuration(_.omit(config, "userId", "accessToken", "sudo"));
     this.queue = [];
   }
