@@ -1,3 +1,4 @@
+import _ from "lodash";
 import jwt from "jwt-simple";
 import CacheManager from "cache-manager";
 import ShipCache from "../ship-cache";
@@ -39,7 +40,7 @@ function shipCacheFactory(cacheShip) {
 }
 
 
-module.exports = function hullClientMiddlewareFactory(Client, { hostSecret, fetchShip = true, cacheShip = true, shipCache = null, requireCredentials = true }) {
+module.exports = function hullClientMiddlewareFactory(Client, { hostSecret, fetchShip = true, cacheShip = true, shipCache = null, requireCredentials = true, clientConfig = {} }) {
   if (shipCache === null) {
     shipCache = shipCacheFactory(cacheShip);
   }
@@ -72,7 +73,7 @@ module.exports = function hullClientMiddlewareFactory(Client, { hostSecret, fetc
       const { message, config } = req.hull;
       const { organization, ship: id, secret } = config;
       if (organization && id && secret) {
-        const client = req.hull.client = new Client({ id, secret, organization });
+        const client = req.hull.client = new Client(_.merge({ id, secret, organization }, clientConfig));
         shipCache.setClient(client);
 
         req.hull.token = jwt.encode(config, hostSecret);
