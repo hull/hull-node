@@ -1,3 +1,8 @@
+# 0.10.6
+
+* Allow passing `clientConfig` to Middleware and NotifHandler
+* Keeps the logging context consist of organization and ship id
+
 # 0.10.5
 
 * Move signing cache key to ship-cache module
