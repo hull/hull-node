@@ -9,13 +9,15 @@ import Middleware from "../src/middleware/client";
 
 import HullStub from "./support/hull-stub";
 
-const reqStub = {
-  query: {
-    organization: "local",
-    secret: "secret",
-    ship: "ship_id"
-  }
-};
+function reqStub() {
+  return {
+    query: {
+      organization: "local",
+      secret: "secret",
+      ship: "ship_id"
+    }
+  };
+}
 
 describe("Client Middleware", () => {
   beforeEach(function beforeEachHandler() {
@@ -45,8 +47,9 @@ describe("Client Middleware", () => {
     const cacheAdapter = cacheManager.caching({ store: "memory", max: 100, ttl: 1/*seconds*/ });
     const shipCache = new ShipCache(cacheAdapter);
     const instance = Middleware(HullStub, { hostSecret: "secret", shipCache });
-    instance(reqStub, {}, (err) => {
-      expect(reqStub.hull.ship.private_settings.value).to.equal("test");
+    const req = reqStub();
+    instance(req, {}, (err) => {
+      expect(req.hull.ship.private_settings.value).to.equal("test");
       const newShip = {
         private_settings: {
           value: "test2"
@@ -55,9 +58,11 @@ describe("Client Middleware", () => {
 
       shipCache.set("ship_id", newShip)
         .then((arg) => {
-          instance(reqStub, {}, () => {
-            expect(reqStub.hull.ship.private_settings.value).to.equal("test2");
+          const req2 = reqStub();
+          instance(req2, {}, () => {
+            expect(req2.hull.ship.private_settings.value).to.equal("test2");
             expect(this.getStub.calledOnce).to.be.true;
+            expect(req2.hull.cache).to.be.equal(shipCache);
             done();
           });
         });
@@ -68,10 +73,12 @@ describe("Client Middleware", () => {
     const cacheAdapter = cacheManager.caching({ store: "memory", isCacheableValue: () => false });
     const shipCache = new ShipCache(cacheAdapter);
     const instance = Middleware(HullStub, { hostSecret: "secret", shipCache });
-    instance(reqStub, {}, () => {
-      expect(reqStub.hull.ship.private_settings.value).to.equal("test");
-      instance(reqStub, {}, () => {
-        expect(reqStub.hull.ship.private_settings.value).to.equal("test1");
+    const req = reqStub();
+    instance(req, {}, () => {
+      expect(req.hull.ship.private_settings.value).to.equal("test");
+      const req2 = reqStub()
+      instance(req2, {}, () => {
+        expect(req2.hull.ship.private_settings.value).to.equal("test1");
         expect(this.getStub.calledTwice).to.be.true;
         done();
       });
@@ -84,11 +91,13 @@ describe("Client Middleware", () => {
     const shipCache2 = new ShipCache(cacheAdapter);
     const instance1 = Middleware(HullStub, { hostSecret: "secret", shipCache: shipCache1 });
     const instance2 = Middleware(HullStub, { hostSecret: "secret", shipCache: shipCache2 });
-    instance1(reqStub, {}, (err) => {
-      expect(reqStub.hull.ship.private_settings.value).to.equal("test");
+    const req = reqStub();
+    instance1(req, {}, (err) => {
+      expect(req.hull.ship.private_settings.value).to.equal("test");
       expect(this.getStub.calledOnce).to.be.true;
-      instance2(reqStub, {}, () => {
-        expect(reqStub.hull.ship.private_settings.value).to.equal("test");
+      const req2 = reqStub();
+      instance2(req2, {}, () => {
+        expect(req2.hull.ship.private_settings.value).to.equal("test");
         expect(this.getStub.calledOnce).to.be.true;
         const newShip = {
           private_settings: {
@@ -97,11 +106,13 @@ describe("Client Middleware", () => {
         };
         shipCache1.set("ship_id", newShip)
           .then((arg) => {
-            instance1(reqStub, {}, () => {
-              expect(reqStub.hull.ship.private_settings.value).to.equal("test2");
+            const req3 = reqStub();
+            instance1(req3, {}, () => {
+              expect(req3.hull.ship.private_settings.value).to.equal("test2");
               expect(this.getStub.calledOnce).to.be.true;
-              instance2(reqStub, {}, () => {
-                expect(reqStub.hull.ship.private_settings.value).to.equal("test2");
+              const req4 = reqStub();
+              instance2(req4, {}, () => {
+                expect(req4.hull.ship.private_settings.value).to.equal("test2");
                 expect(this.getStub.calledOnce).to.be.true;
                 done();
               });
