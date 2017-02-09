@@ -33,6 +33,11 @@ export default function oauth(Client, {
   function getURL(req, url, qs = { token: req.hull.token }) {
     return `https://${req.hostname}${req.baseUrl}${url}?${querystring.stringify(qs)}`;
   }
+
+  function getUrlWithoutToken(req, url) {
+    return `https://${req.hostname}${req.baseUrl}${url}`;
+  }
+
   function getURLs(req) {
     return {
       login: getURL(req, LOGIN_URL),
@@ -54,8 +59,8 @@ export default function oauth(Client, {
     done(null, user);
   });
 
-  const strategy = new Strategy({ ...options, passReqToCallback: true }, function verifyAccount(req, accessToken, refreshToken, params, profile, done) {
-    done(undefined, { accessToken, refreshToken, params, profile });
+  const strategy = new Strategy({ ...options, passReqToCallback: true }, function verifyAccount(req, accessToken, refreshToken, profile, done) {
+    done(undefined, { accessToken, refreshToken, profile });
   });
 
   passport.use(strategy);
@@ -76,7 +81,7 @@ export default function oauth(Client, {
   function authorize(req, res, next) {
     passport.authorize(strategy.name, {
       ...req.authParams,
-      callbackURL: getURL(req, CALLBACK_URL)
+      callbackURL: getUrlWithoutToken(req, CALLBACK_URL)
     })(req, res, next);
   }
 
