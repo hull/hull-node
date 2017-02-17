@@ -48,8 +48,8 @@ Returns the global configuration
 hull.userToken({email:'xxx@example.com',name:'FooBar'}, claims)
 ```
 
-Used for [Bring your own users](http://hull.io/docs/users/byou).  
-Creates a signed string for the user passed in hash. `userHash` needs an `email` field.  
+Used for [Bring your own users](http://hull.io/docs/users/byou).
+Creates a signed string for the user passed in hash. `userHash` needs an `email` field.
 [You can then pass this client-side to Hull.js](http://www.hull.io/docs/users/byou) to authenticate users client-side and cross-domain
 
 ## hull.currentUserId()
@@ -68,7 +68,7 @@ const app = express();
 // a middleware with no mount path; gets executed for every request to the app
 app.use(hull.currentUserMiddleware);
 app.use(function(req,res,next){
-  console.log(req.hull.userId) // Should exist if there is a user logged in;  
+  console.log(req.hull.userId) // Should exist if there is a user logged in;
 })
 ```
 
@@ -101,7 +101,7 @@ hull.utils.groupTraits({
     'coconut_name': 'coconut',
     'coconut_size': 'large'
   },
-  cb: {  
+  cb: {
     'twitter_bio': 'parisian',
     'twitter_name': 'parisian'
   },
@@ -133,7 +133,7 @@ var user = hull.as({ external_id: 'dkjf565wd654e' });
 var user = hull.as('5718b59b7a85ebf20e000169', false);
 
 //user is an instance of Hull, scoped to a specific user.
-//Default is false: "get user rights". 
+//Default is false: "get user rights".
 user.get('/me').then(function(me){
   console.log(me)
 });
@@ -199,12 +199,12 @@ When you do this, you get a new client that has a different behaviour. It's now 
 
 ```js
 user.track('new support ticket', { messages: 3,
-  priority:'high'  
+  priority:'high'
 }, {
   source: 'zendesk',
   ip: null, //don't store ip - it's a server call
   referer: null, //don't store referer - it's a server call
-  created_at: '2013-02-08 09:30:26.123+07:00' //ISO 8601. moment.js does it very well 
+  created_at: '2013-02-08 09:30:26.123+07:00' //ISO 8601. moment.js does it very well
 });
 ```
 
@@ -214,8 +214,8 @@ Stores a new event, which you can namespace using the `source` property in the `
 
 ```js
 user.traits({
-  opened_tickets: 12 
-}, { source: 'zendesk' }); 
+  opened_tickets: 12
+}, { source: 'zendesk' });
 // 'source' is optional. Will store the traits grouped under the source name.
 // Alternatively, you can send properties for multiple groups with the flat syntax:
 // user.traits({ "zendesk/opened_tickets": 12, "clearbit/name": "toto"});
@@ -229,7 +229,7 @@ If you need to be sure the properties are set immediately on the user, you can u
 ```js
 user.traits({
   fetched_at: new Date().toISOString()
-}, { source: 'mailchimp', sync: true }); 
+}, { source: 'mailchimp', sync: true });
 ```
 
 
@@ -280,18 +280,18 @@ const handler = NotifHandler({
     groupTraits: true, //Receive a nested object or a flat object for user properties containing '/'
     'event': function() {
       console.log('Event Handler here', notif, context);
-      // notif: { 
-      //    message: { 
-      //      user: { id: '123', ... }, 
+      // notif: {
+      //    message: {
+      //      user: { id: '123', ... },
       //      segments: [ { } ],
       //      event: []
-      //    }, 
-      //    subject: 'event', 
+      //    },
+      //    subject: 'event',
       //    timestamp: "2016-02-03T17:01:57.393Z' }
       // },
-      // context: { 
-      //  hull: <Instance of Hull Client> 
-      //  ship: <Current ship instance if available>, 
+      // context: {
+      //  hull: <Instance of Hull Client>
+      //  ship: <Current ship instance if available>,
       //  req: < Original request, Useful to retreive additional data>
       // }
 
@@ -303,19 +303,19 @@ const handler = NotifHandler({
     'user:create': function(notif, context){},
     'user:update' : function(notif, context) {
       console.log('Event Handler here', notif, context);
-      // notif: { 
-      //    message: { 
-      //      user: { id: '123', ... }, 
+      // notif: {
+      //    message: {
+      //      user: { id: '123', ... },
       //      segments: [ { } ],
       //      changes: {},
       //      events: [ {}, {} ]
-      //    }, 
-      //    subject: 'user_report:update', 
+      //    },
+      //    subject: 'user_report:update',
       //    timestamp: "2016-02-03T17:01:57.393Z' }
       // },
-      // context: { 
-      //  hull: <Instance of Hull Client> 
-      //  ship: <Current ship instance if available>, 
+      // context: {
+      //  hull: <Instance of Hull Client>
+      //  ship: <Current ship instance if available>,
       //  req: < Original request, Useful to retreive additional data>
       // }
     }
@@ -326,9 +326,151 @@ const handler = NotifHandler({
 app.post('/notify', handler);
 ```
 
-Your app can subscribe to events from Hull and receive Events via http POST. 
+Your app can subscribe to events from Hull and receive Events via http POST.
 For this we provide a helper called NotifHandler that handles all the complexity of subscribing to events and routing them to specific methods. All you need to do is declare which methods handle what Events.
 
+
+### Example of `user:update` payload
+
+```javascript
+{
+
+  // Current user properties
+  "user": {
+    "id": "572f63eb8c35fc5d4300034e",
+    "anonymous_ids": [ "1462723549-f16cea7e-6a7d-4ba5-b506-c16bfd43ebbe" ],
+    "created_at": "2016-05-08T16:06:04Z",
+    "name": "Romain Dardour",
+    "first_name": "Romain",
+    "last_name": "Dardour",
+    "domain": "hull.io",
+    "email": "romain@hull.io",
+    "phone": "+33600000000",
+    "picture": "https://d1ts43dypk8bqh.cloudfront.net/v1/avatars/a63f299c-4fbb-4c2e-8d7e-8b4af888f890",
+    "accepts_marketing": false,
+
+    "address_city": "Paris",
+    "address_country": "France",
+    "address_state": "Île-de-France",
+
+    "last_seen_at": "2017-01-10T16:26:25Z",
+    "last_known_ip": "54.227.22.135",
+
+    // Session data
+    "first_seen_at": "2016-09-28T13:19:59Z",
+    "first_session_initial_referrer": "",
+    "first_session_initial_url": "https://hull-2.myshopify.com/",
+    "first_session_platform_id": "561fb665450f34b1cf00000f",
+    "first_session_started_at": "2016-09-28T13:19:59Z",
+
+    "latest_session_initial_referrer": "https://hull-2.myshopify.com/",
+    "latest_session_initial_url": "https://hull-2.myshopify.com/account/login",
+    "latest_session_platform_id": "561fb665450f34b1cf00000f",
+    "latest_session_started_at": "2016-10-25T10:15:34Z",
+
+    "signup_session_initial_referrer": "",
+    "signup_session_initial_url": "https://hull-2.myshopify.com/",
+    "signup_session_platform_id": "561fb665450f34b1cf00000f",
+    "signup_session_started_at": "2016-09-28T13:19:59Z",
+
+
+    // Custom traits
+    "traits": {
+      "usage_score" : 89.5
+    },
+
+    // Custom traits group `hubspot`
+    "hubspot": {
+      "associated_deals_count": "1",
+      "became_opportunity_at": "2016-09-09T07:04:36+00:00",
+      "created_at": "2016-09-09T07:01:01+00:00",
+      "email": "romain@hull.io",
+      "fetched_at": "2017-01-10T16:40:30Z",
+      "first_deal_created_at": "2016-09-28T13:24:35+00:00",
+      "first_name": "Romain",
+      "job_title": "COO",
+      "last_name": "Dardour",
+      "lifecycle_stage": "opportunity",
+      "recent_deal_amount": "",
+      "updated_at": "2017-01-10T16:37:55+00:00"
+    }
+  },
+
+  // List of segments the user belongs to
+  "segments": [
+    {
+      "id": "57adda830ffa84da28000083",
+      "name": "Dudes called Romain",
+      "type": "users_segment",
+      "created_at": "2016-08-12T14:17:39Z",
+      "updated_at": "2016-10-21T07:39:01Z"
+    },
+    {
+      "id": "572091bf13440a016c00002b",
+      "name": "Views Products Frequently",
+      "type": "users_segment",
+      "created_at": "2016-04-27T10:17:35Z",
+      "updated_at": "2016-12-01T10:51:24Z"
+    }
+  ],
+
+  // List of events captured since last Notification
+  "events": [
+    {
+      "context": {
+        "location": {
+          "latitude": 48.8628,
+          "longitude": 2.3292
+        },
+        "page": {
+          "url": "https://hull-2.myshopify.com/products/suspendisse-congue-sodales-massa-sit-amet-euismod-aliquet-sapien-non-dictum"
+        }
+      },
+      "created_at": "2017-01-11T17:52:11Z",
+      "event": "Viewed Product",
+      "event_source": "track",
+      "event_type": "track",
+      "properties": {
+        "category": "luctus",
+        "id": 2986706563,
+        "name": "Black Cat Classic Espresso",
+        "price": 25
+      }
+    }
+  ],
+
+  // Changes since last Notification
+  "changes": {
+    "user": {
+      "traits_hubspot/fetched_at": [ "2016-12-09T10:47:13Z", "2017-01-10T16:40:30Z" ],
+      "traits_hubspot/updated_at": [ "2016-12-09T10:46:03+00:00", "2017-01-10T16:37:55+00:00" ]
+    },
+    "segments": {
+      "entered": [
+        {
+          "id": "572091bf13440a016c00002b",
+          "name": "Views Products Frequently",
+          "type": "users_segment",
+          "created_at": "2016-04-27T10:17:35Z",
+          "updated_at": "2016-12-01T10:51:24Z"
+        }
+      ],
+      "left": [
+        {
+          "created_at": "2016-02-03T10:47:07Z",
+          "id": "56b1daab5580c06798000051",
+          "name": "Approved users",
+          "type": "users_segment",
+          "updated_at": "2016-12-01T10:57:30Z"
+        }
+      ]
+    },
+    "is_new": false
+  },
+  "event": "user:update",
+  "timestamp": "2017-01-10T16:41:00.831Z"
+}
+```
 
 ## BatchHandler()
 
@@ -340,7 +482,7 @@ BatchHandler is a packaged solution to receive Batches of Users. It's built to b
 }
 ```
 
-Here is how to use it: 
+Here is how to use it:
 
 ```js
 const app = express();
@@ -423,7 +565,7 @@ app.use("/auth", OAuthHandler({
   "admin" : "/auth/",
 }
 ```
-### Params: 
+### Params:
 
 ##### hostSecret
 The ship hosted secret (Not the one received from Hull. The one the hosted app itself defines. Will be used to encode tokens).
@@ -520,13 +662,13 @@ app.use(hullClient({ hostSecret:"supersecret", fetchShip: true, cacheShip: true 
 app.use(function(req, res){
   req.hull.config // {id, organization, secret}
   req.hull.client //instance of Hull client.
-  req.hull.ship   //ship object - use to retreive current configuration. 
+  req.hull.ship   //ship object - use to retreive current configuration.
 });
 
 ```
 
 
-# Routes 
+# Routes
 
 A simple set of route handlers to reduce boilerplate by a tiny bit.
 

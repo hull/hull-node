@@ -55,7 +55,7 @@ const Client = function Client(config = {}) {
     groupTraits: trait.group,
   };
 
-  const ctxe = _.omit((this.configuration() || {}), ["prefix", "secret", "accessToken", "protocol", "domain", "version"]);
+  const ctxe = _.pick((this.configuration() || {}), ["organization", "id"]);
   const logFactory = level => (message, data) => logger[level](message, { context: ctxe, data });
   const logs = {};
   ["silly", "debug", "verbose", "info", "warn", "error"].map(level => { logs[level] = logFactory(level); return level; });

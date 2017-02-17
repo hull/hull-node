@@ -3,27 +3,17 @@ import { expect, should } from "chai";
 import sinon from "sinon";
 
 import Middleware from "../src/middleware/client";
-
-class HullStub {
-  constructor() {
-    this.logger = {
-      info() {},
-      debug() {}
-    }
-  }
-  get() {}
-}
-
-const reqStub = {
-  query: {
-    organization: "local",
-    secret: "secret",
-    ship: "ship_id"
-  }
-};
+import HullStub from "./support/hull-stub";
 
 describe("Client Middleware", () => {
   beforeEach(function beforeEachHandler() {
+    this.reqStub = {
+      query: {
+        organization: "local",
+        secret: "secret",
+        ship: "ship_id"
+      }
+    };
     this.getStub = sinon.stub(HullStub.prototype, "get");
     this.getStub.onCall(0).returns(Promise.resolve({
         id: "ship_id",
@@ -62,8 +52,8 @@ describe("Client Middleware", () => {
 
   it("should fetch a ship", function (done) {
     const instance = Middleware(HullStub, { hostSecret: "secret", fetchShip: true });
-    instance(reqStub, {}, () => {
-      expect(reqStub.hull.ship.private_settings.value).to.equal("test");
+    instance(this.reqStub, {}, () => {
+      expect(this.reqStub.hull.ship.private_settings.value).to.equal("test");
       expect(this.getStub.calledOnce).to.be.true;
       done();
     });
@@ -71,10 +61,10 @@ describe("Client Middleware", () => {
 
   it("should fetch ship every time without caching", function (done) {
     const instance = Middleware(HullStub, { hostSecret: "secret", fetchShip: true, cacheShip: false });
-    instance(reqStub, {}, () => {
-      expect(reqStub.hull.ship.private_settings.value).to.equal("test");
-      instance(reqStub, {}, () => {
-        expect(reqStub.hull.ship.private_settings.value).to.equal("test1");
+    instance(this.reqStub, {}, () => {
+      expect(this.reqStub.hull.ship.private_settings.value).to.equal("test");
+      instance(this.reqStub, {}, () => {
+        expect(this.reqStub.hull.ship.private_settings.value).to.equal("test1");
         expect(this.getStub.calledTwice).to.be.true;
         done();
       });
@@ -83,10 +73,10 @@ describe("Client Middleware", () => {
 
   it("should store a ship in cache", function (done) {
     const instance = Middleware(HullStub, { hostSecret: "secret", fetchShip: true, cacheShip: true });
-    instance(reqStub, {}, () => {
-      expect(reqStub.hull.ship.private_settings.value).to.equal("test");
-      instance(reqStub, {}, () => {
-        expect(reqStub.hull.ship.private_settings.value).to.equal("test");
+    instance(this.reqStub, {}, () => {
+      expect(this.reqStub.hull.ship.private_settings.value).to.equal("test");
+      instance(this.reqStub, {}, () => {
+        expect(this.reqStub.hull.ship.private_settings.value).to.equal("test");
         expect(this.getStub.calledOnce).to.be.true;
         done();
       });
@@ -95,16 +85,30 @@ describe("Client Middleware", () => {
 
   it("should bust the cache for specific requests", function (done) {
     const instance = Middleware(HullStub, { hostSecret: "secret", fetchShip: true, cacheShip: true });
-    instance(reqStub, {}, () => {
-      expect(reqStub.hull.ship.private_settings.value).to.equal("test");
-      reqStub.hull.message = {
+    instance(this.reqStub, {}, () => {
+      expect(this.reqStub.hull.ship.private_settings.value).to.equal("test");
+      this.reqStub.hull.message = {
         Subject: "ship:update"
       };
-      instance(reqStub, {}, () => {
-        expect(reqStub.hull.ship.private_settings.value).to.equal("test1");
+      instance(this.reqStub, {}, () => {
+        expect(this.reqStub.hull.ship.private_settings.value).to.equal("test1");
         expect(this.getStub.calledTwice).to.be.true;
         done();
       });
+    });
+  });
+
+  it("should take an optional `clientConfig` param", function (done) {
+    const hullSpy = sinon.stub() ;
+    const instance = Middleware(hullSpy, { hostSecret: "secret", clientConfig: { flushAt: 123 } })
+    instance(this.reqStub, {}, () => {
+      expect(hullSpy.calledWith({
+        id: "ship_id",
+        secret: "secret",
+        organization: "local",
+        flushAt: 123
+      })).to.be.true;
+      done();
     });
   });
 });

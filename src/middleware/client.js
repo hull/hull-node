@@ -1,3 +1,4 @@
+import _ from "lodash";
 import jwt from "jwt-simple";
 import CacheManager from "cache-manager";
 import ShipCache from "../ship-cache";
@@ -39,24 +40,21 @@ function shipCacheFactory(cacheShip) {
 }
 
 
-module.exports = function hullClientMiddlewareFactory(Client, { hostSecret, fetchShip = true, cacheShip = true, shipCache = null, requireCredentials = true }) {
+module.exports = function hullClientMiddlewareFactory(Client, { hostSecret, fetchShip = true, cacheShip = true, shipCache = null, requireCredentials = true, clientConfig = {} }) {
   if (shipCache === null) {
     shipCache = shipCacheFactory(cacheShip);
   }
 
   function getCurrentShip(id, client, bust) {
 
-    const { secret, organization } = client.configuration();
-    const cacheKey = jwt.encode({ sub: id, iss: organization }, secret);
-
     return (() => {
       if (bust) {
-        return shipCache.del(cacheKey);
+        return shipCache.del(id);
       }
       return Promise.resolve();
     })()
     .then(() => {
-      return shipCache.wrap(cacheKey, () => {
+      return shipCache.wrap(id, () => {
         return client.get(id);
       });
     });
@@ -75,7 +73,9 @@ module.exports = function hullClientMiddlewareFactory(Client, { hostSecret, fetc
       const { message, config } = req.hull;
       const { organization, ship: id, secret } = config;
       if (organization && id && secret) {
-        const client = req.hull.client = new Client({ id, secret, organization });
+        const client = req.hull.client = new Client(_.merge({ id, secret, organization }, clientConfig));
+        shipCache.setClient(client);
+
         req.hull.token = jwt.encode(config, hostSecret);
         if (fetchShip) {
 

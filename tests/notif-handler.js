@@ -11,15 +11,7 @@ import userUpdate from "./fixtures/sns-messages/user-report.json";
 import NotifHandler from "../src/notif-handler";
 import ShipCache from "../src/ship-cache";
 
-class HullStub {
-  constructor() {
-    this.logger = {
-      info() {},
-      debug() {}
-    }
-  }
-  get() {}
-}
+import HullStub from "./support/hull-stub";
 
 const reqStub = {
   url: "http://localhost/",
@@ -146,6 +138,28 @@ describe("NotifHandler", () => {
           expect(handler.getCall(1).args[1].ship.private_settings.value).to.equal("test2");
           done();
         });
+    });
+  });
+
+  it("should take an optional `clientConfig` param", function (done) {
+    const hullSpy = sinon.stub() ;
+    const notifHandler = NotifHandler(hullSpy, { hostSecret: "secret", clientConfig: { flushAt: 123 } })
+    const app = express();
+
+    app.post("/notify", notifHandler);
+    const server = app.listen(() => {
+      const port = server.address().port;
+
+      post({ port, body: userUpdate })
+      .then(() => {
+        expect(hullSpy.calledWith({
+          id: "ship_id",
+          secret: "secret",
+          organization: "local",
+          flushAt: 123
+        })).to.be.true;
+        done();
+      });
     });
   });
 });
