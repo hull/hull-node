@@ -1,3 +1,8 @@
+# 0.10.7
+
+* Add optional `tokenInUrl` argument in `OAuthHandler` allowing to force static urls
+* Only support an object as second argument in `hull.logger.*` and `Hull.logger.*` - for better logging
+
 # 0.10.6
 
 * Allow passing `clientConfig` to Middleware and NotifHandler

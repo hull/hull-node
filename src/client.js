@@ -56,7 +56,7 @@ const Client = function Client(config = {}) {
   };
 
   const ctxe = _.pick((this.configuration() || {}), ["organization", "id"]);
-  const logFactory = level => (message, ...data) => logger[level](message, { context: ctxe, data });
+  const logFactory = level => (message, data) => logger[level](message, { context: ctxe, data });
   const logs = {};
   ["silly", "debug", "verbose", "info", "warn", "error"].map(level => { logs[level] = logFactory(level); return level; });
 
