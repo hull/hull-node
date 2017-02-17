@@ -21,6 +21,7 @@ function fetchToken(req, res, next) {
 
 export default function oauth(Client, {
   name,
+  tokenInUrl = true,
   isSetup = function setup() { return Promise.resolve(); },
   onAuthorize = function onAuth() { return Promise.resolve(); },
   onLogin = function onLog() { return Promise.resolve(); },
@@ -31,7 +32,9 @@ export default function oauth(Client, {
   shipCache = null
 }) {
   function getURL(req, url, qs = { token: req.hull.token }) {
-    return `https://${req.hostname}${req.baseUrl}${url}?${querystring.stringify(qs)}`;
+    const host = `https://${req.hostname}${req.baseUrl}${url}`;
+    if (qs === false) return host;
+    return `${host}?${querystring.stringify(qs)}`;
   }
   function getURLs(req) {
     return {
@@ -76,7 +79,7 @@ export default function oauth(Client, {
   function authorize(req, res, next) {
     passport.authorize(strategy.name, {
       ...req.authParams,
-      callbackURL: getURL(req, CALLBACK_URL)
+      callbackURL: getURL(req, CALLBACK_URL, tokenInUrl ? { token: req.hull.token } : false)
     })(req, res, next);
   }
 

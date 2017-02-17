@@ -525,6 +525,7 @@ const { OAuthHandler } = Hull;
 app.use("/auth", OAuthHandler({
   hostSecret,
   name: "Hubspot",
+  tokenInUrl: true,
   Strategy: HubspotStrategy,
   options: {
     clientID: "xxxxxxxxx",
@@ -572,6 +573,13 @@ The ship hosted secret (Not the one received from Hull. The one the hosted app i
 
 ##### name
 The name displayed to the User in the various screens.
+
+##### tokenInUrl
+
+Some services (like Stripe) require an exact URL match.
+Some others (like Hubspot) don't pass the state back on the other hand.
+
+Setting this flag to false (default: true) removes the `token` Querystring parameter in the URL to only rely on the `state` param. 
 
 ##### Strategy
 A Passport Strategy.
