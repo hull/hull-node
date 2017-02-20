@@ -1,5 +1,6 @@
+# Ideas for next Ships gen
 
-## Ideas for next Ships gen
+We have a set of utilities/modules working on two levels of the application:
 
 ### Process scope
 Being initiated at the process level:
@@ -12,7 +13,7 @@ Being initiated at the request level - Hull Client, Service Agent, Service Clien
 All takes context as a dependency injection container.
 
 
-## context goes first
+## Context management
 
 Every "pure" function which needs context to operate takes it as a first argument:
 
@@ -93,6 +94,9 @@ getData function(context) {
   const { client } = context;
   return client.get("/data");
 }
+
+// we can safely bind context to the method at any middleware level
+getData.bind(this, context);
 ```
 
 but it could be very tricky to handle situations where some dependency is missing.
