@@ -7,6 +7,13 @@ export default const HullContext = {
     put: () => {},
     delete: () => {},
 
+    as: () => {
+      return {
+        track: () => {},
+        traits: () => {},
+      };
+    },
+
     // loggin utility - similar to metrics, should we move it away from here?
     logger: {
       info: () => {},

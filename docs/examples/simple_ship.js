@@ -1,10 +1,11 @@
 import Hull from "hull";
 
 // pick what we need from the hull-node
-import { WebApp, Instrumentation, ActionRouter, BatchRouter, OAuthRouter } from "hull/utils";
+import { WebApp, Instrumentation } from "hull/ship";
+import { ActionRouter, BatchRouter, OAuthRouter } from "hull/ship/router";
 
 // pick the methods
-import { fetchAll, sendUsers } from "./lib/fetch-all";
+import { fetchAll, sendUsers } from "./lib";
 
 const port = process.env.PORT;
 const hostSecret = process.env.SECRET;
@@ -19,17 +20,17 @@ const instrumentation = new Instrumentation();
 
 /**
  * Express application with static routing view engine,
- * can be changed intro a decorator/command pattern:
+ * can be changed into a decorator/command pattern:
  * patchedExpressApp = WebApp(expressApp);
  * @type {WebApp}
  */
 const app = new WebApp({ instrumentation });
 
-app.use("/fetch-all", actionRouter((req) => {
+app.use("/fetch-all", ActionRouter(req => {
   return fetchAll(req.hull);
 }));
 
-app.use("/batch", batchRouter((users) => {
+app.use("/batch", BatchRouter(users => {
   return sendUsers(req.hull, users);
 }));
 
