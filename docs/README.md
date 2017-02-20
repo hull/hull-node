@@ -41,6 +41,7 @@ class ServiceAgent {
     this.client = context.client;
   }
 }
+```
 
 ## Problems and changes
 
