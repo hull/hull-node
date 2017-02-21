@@ -631,12 +631,12 @@ views: {
 
 # Middlewares
 
-## Hull.Middlewares.hullClient()
+## Hull.Middleware()
 
 ```js
 import Hull from "hull";
 
-const hullClient = Hull.Middlewares.hullClient;
+const hullClient = Hull.Middlewares;
 
 app.use(hullClient({ hostSecret:"supersecret", fetchShip: true, cacheShip: true }));
 
