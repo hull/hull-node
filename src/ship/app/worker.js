@@ -6,7 +6,7 @@ import _ from "lodash";
  * Background worker using QueueAdapter.
  */
 export default class WorkerApp {
-  constructor({ Hull, queue, instrumentation }) {
+  constructor({ Hull, queue, instrumentation, cache }) {
     if (!Hull || !queue) {
       throw new Error("WorkerApp initialized without all required dependencies: Hull, queue");
     }

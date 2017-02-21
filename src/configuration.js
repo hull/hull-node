@@ -1,16 +1,14 @@
-'use strict';
-
-import _ from 'lodash';
-import pkg from '../package.json';
-import crypto from './lib/crypto';
+import _ from "lodash";
+import pkg from "../package.json";
+import crypto from "./lib/crypto";
 
 const GLOBALS = {
-  prefix: '/api/v1',
-  domain: 'hullapp.io',
-  protocol: 'https'
+  prefix: "/api/v1",
+  domain: "hullapp.io",
+  protocol: "https"
 };
 
-const VALID_OBJECT_ID = new RegExp('^[0-9a-fA-F]{24}$');
+const VALID_OBJECT_ID = new RegExp("^[0-9a-fA-F]{24}$");
 const VALID = {
   boolean(val) {
     return (val === true || val === false);
@@ -48,7 +46,7 @@ class Configuration {
 
   constructor(config) {
     if (!_.isObject(config) || !_.size(config)) {
-      throw new Error('Configuration is invalid, it should be a non-empty object');
+      throw new Error("Configuration is invalid, it should be a non-empty object");
     }
 
     if (config.userId) {
@@ -56,18 +54,18 @@ class Configuration {
       config = { ...config, accessToken };
     }
 
-    this._state = {...GLOBALS};
+    this._state = { ...GLOBALS };
 
-    _.each(REQUIRED_PROPS, (test, prop)=>{
+    _.each(REQUIRED_PROPS, (test, prop) => {
       if (!config.hasOwnProperty(prop)) {
-        throw new Error('Configuration is missing required property: ' + prop);
+        throw new Error(`Configuration is missing required property: ${prop}`);
       }
       if (!test(config[prop])) {
-        throw new Error(prop + ' property in Configuration is invalid: ' + config[prop]);
+        throw new Error(`${prop} property in Configuration is invalid: ${config[prop]}`);
       }
     });
 
-    _.each(VALID_PROPS, (test, key)=>{
+    _.each(VALID_PROPS, (test, key) => {
       if (config[key]) {
         this._state[key] = config[key];
       }

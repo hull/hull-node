@@ -76,7 +76,9 @@ function verifySignature(options = {}) {
           return next(e);
         }
       }
+      return next();
     });
+    return next();
   };
 }
 
@@ -99,12 +101,13 @@ function processHandlers(handlers) {
       const processing = [];
 
       const context = {
-        req, ship,
+        req,
+        ship,
         hull: client
       };
 
       if (messageHandlers && messageHandlers.length > 0) {
-        messageHandlers.map(fn => {
+        messageHandlers.map((fn) => {
           return processing.push(fn(notification, context));
         });
       }
@@ -114,14 +117,14 @@ function processHandlers(handlers) {
       if (eventHandlers.length > 0 && eventName === "report:update" && notification.message) {
         const { user, events = [], segments = [] } = notification.message;
         if (events.length > 0) {
-          events.map(event => {
-            return eventHandlers.map(fn => {
+          events.map((event) => {
+            return eventHandlers.map((fn) => {
               const payload = {
                 message: { user, segments, event },
                 subject: "event",
                 timestamp: message.Timestamp
               };
-              processing.push(fn(payload, context));
+              return processing.push(fn(payload, context));
             });
           });
         }

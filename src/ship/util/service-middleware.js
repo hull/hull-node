@@ -1,12 +1,12 @@
 import _ from "lodash";
 
 function isClass(fn) {
-  return typeof fn === 'function'
+  return typeof fn === "function"
     && /^(?:class\s+|function\s+(?:_class|_default|[A-Z]))/.test(fn);
 }
 
 function bindObject(ctx, object) {
-  return _.mapValues(object, (element, key, object) => {
+  return _.mapValues(object, (element) => {
     if (isClass(element)) {
       return new element(ctx);
     }

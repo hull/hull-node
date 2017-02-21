@@ -24,7 +24,7 @@ const Client = function Client(config = {}) {
   };
 
   const batch = FirehoseBatcher.getInstance(clientConfig.get(), (params, batcher) => {
-    return restAPI(batcher.config, 'firehose', 'post', params);
+    return restAPI(batcher.config, "firehose", "post", params);
   });
 
   this.api = function api(url, method, options) {
@@ -46,7 +46,7 @@ const Client = function Client(config = {}) {
   const ctxe = _.pick((this.configuration() || {}), ["organization", "id"]);
   const logFactory = level => (message, data) => logger[level](message, { context: ctxe, data });
   const logs = {};
-  ["silly", "debug", "verbose", "info", "warn", "error"].map(level => { logs[level] = logFactory(level); return level; });
+  ["silly", "debug", "verbose", "info", "warn", "error"].map((level) => { logs[level] = logFactory(level); return level; });
 
 
   this.logger = {
@@ -74,7 +74,7 @@ const Client = function Client(config = {}) {
       }
 
       if (context.sync === true) {
-        return this.post('me/traits', body);
+        return this.post("me/traits", body);
       }
 
       return batch({ type: "traits", body });
