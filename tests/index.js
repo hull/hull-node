@@ -5,3 +5,4 @@ require("./client-middleware");
 require("./notif-handler");
 require("./traits-tests");
 require("./firehose-batcher-tests");
+require("./service-middleware.js");
