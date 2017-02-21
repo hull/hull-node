@@ -3,8 +3,7 @@ import connect from "connect";
 import https from "https";
 import _ from "lodash";
 import rawBody from "raw-body";
-import hullClient from "./middleware/client";
-import { group } from "./trait";
+import { group } from "../../trait";
 
 function parseRequest(req, res, next) {
   req.hull = req.hull || {};
@@ -144,7 +143,7 @@ function processHandlers(handlers) {
 }
 
 
-module.exports = function NotifHandler(Client, { handlers = [], hostSecret, groupTraits, onSubscribe, shipCache = null, clientConfig = {} }) {
+module.exports = function NotifHandler({ handlers = [], groupTraits, onSubscribe }) {
   const _handlers = {};
   const app = connect();
 
@@ -170,7 +169,6 @@ module.exports = function NotifHandler(Client, { handlers = [], hostSecret, grou
     enforceValidation: false,
     groupTraits: groupTraits !== false
   }));
-  app.use(hullClient(Client, { hostSecret, fetchShip: true, cacheShip: true, shipCache, clientConfig }));
   app.use(processHandlers(_handlers));
   app.use((req, res) => { res.end("ok"); });
 

@@ -1,24 +1,11 @@
-import jwt from "jwt-simple";
-
-/**
- * This is a wrapper over https://github.com/BryanDonovan/node-cache-manager
- * to manage ship cache storage.
- * It is responsible for handling cache key for every ship.
- */
 export default class ShipCache {
 
   /**
-   * @param {Object} cache instance of cache-manager
+   * @param {Object} options passed to node-cache-manager
    */
-  constructor(cache) {
+  constructor(ctx, cache) {
+    this.ctx = ctx;
     this.cache = cache;
-  }
-
-  /**
-   * @param {Object} client Hull Client
-   */
-  setClient(client) {
-    this.client = client;
   }
 
   /**
@@ -26,7 +13,7 @@ export default class ShipCache {
    * @return {String}
    */
   getShipKey(id) {
-    const { secret, organization } = this.client.configuration();
+    const { secret, organization } = this.ctx.client.configuration();
     return jwt.encode({ sub: id, iss: organization }, secret);
   }
 

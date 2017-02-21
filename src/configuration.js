@@ -40,6 +40,7 @@ const VALID_PROPS = {
   protocol: VALID.string,
   userId: VALID.string,
   accessToken: VALID.string,
+  hostSecret: VALID.string,
   flushAt: VALID.number,
   flushAfter: VALID.number
 };

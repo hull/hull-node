@@ -42,37 +42,47 @@ to send with the request. They all return Promises so you can use the `.then()` 
 
 Returns the global configuration
 
-## hull.userToken()
+## Hull.Middleware()
 
 ```js
-hull.userToken({email:'xxx@example.com',name:'FooBar'}, claims)
+import Hull from "hull";
+
+app.use(Hull.Middleware({ hostSecret: "supersecret" }));
+
+app.use((req, res) => { res.json({ message: "thanks" }); });
+
+app.use(function(err, res, req, next){
+  if(err) return res.status(err.status || 500).send({ message: err.message });
+});
 ```
 
-Used for [Bring your own users](http://hull.io/docs/users/byou).
-Creates a signed string for the user passed in hash. `userHash` needs an `email` field.
-[You can then pass this client-side to Hull.js](http://www.hull.io/docs/users/byou) to authenticate users client-side and cross-domain
+This middleware standardizes the instantiation of a Hull client from configuration passed as a Query string or as a token. It also optionally fetches the entire ship's configuration and caches it to save requests.
 
-## hull.currentUserId()
+Here is what happens when your express app receives a query.
+
+1. If a config object is found in `req.hull.config` it will be used to create an instance of the client.
+2. If a token is present in `req.hull.token`, the middleware will try to use the `hostSecret` to decode it, store it in `req.hull.client`. When using `req.hull.token`, the decoded token should be a valid configuration object: `{id, organization, secret}`
+3. If the query string contains `id`, `secret`, `organization`, they will be stored in `req.hull.config`
+4. After this, if a valid configuration is in `req.hull.config`, a Hull client instance will be created and stored in `req.hull.client`
+
+- When this is done, then the Ship will be fetched and stored in `req.hull.ship`
+- If there is a `req.hull.cache` registered in the request context object, it will be used to cache the ship object
+- If the configuration or the secret is invalid, an error will be thrown that you can catch using express error handlers.
 
 ```js
-hull.currentUserId(userId, userSig)
-```
-
-Checks the validity of the signature relatively to a user id
-
-## hull.currentUserMiddleware()
-
-```js
-const app = express();
-
-// a middleware with no mount path; gets executed for every request to the app
-app.use(hull.currentUserMiddleware);
-app.use(function(req,res,next){
-  console.log(req.hull.userId) // Should exist if there is a user logged in;
+app.use(function(req, res, next){
+   //... your token retreiving method
+   req.hull.token = myToken;
+   next();
 })
-```
+app.use(Hull.Middleware({ hostSecret: "supersecret" }));
+app.use(function(req, res){
+  req.hull.config // {id, organization, secret}
+  req.hull.client //instance of Hull client.
+  req.hull.ship   //ship object - use to retreive current configuration.
+});
 
-Reverse of Bring your own Users. When using Hull's Identity management, tells you who the current user is. Generates a middleware to add to your Connect/Express apps.
+```
 
 
 ## Utils
@@ -137,7 +147,6 @@ var user = hull.as('5718b59b7a85ebf20e000169', false);
 user.get('/me').then(function(me){
   console.log(me)
 });
-user.userToken();
 //It will act as if the user performed the action if the second parameter is falsy
 ```
 
@@ -627,52 +636,6 @@ views: {
   },
   ship: ship //The entire Ship instance's config
 }
-```
-
-# Middlewares
-
-## Hull.Middlewares.hullClient()
-
-```js
-import Hull from "hull";
-
-const hullClient = Hull.Middlewares.hullClient;
-
-app.use(hullClient({ hostSecret:"supersecret", fetchShip: true, cacheShip: true }));
-
-app.use((req, res) => { res.json({ message: "thanks" }); });
-
-app.use(function(err, res, req, next){
-  if(err) return res.status(err.status || 500).send({ message: err.message });
-});
-```
-
-This middleware standardizes the instanciation of a Hull client from configuration passed as a Query string or as a token. It also optionally fetches the entire ship's configuration and caches it to save requests.
-
-Here is what happens when your express app receives a query.
-
-1. If a config object is found in `req.hull.config` it will be used to create an instance of the client.
-2. If a token is present in `req.hull.token`, the middleware will try to use the `hostSecret` to decode it, store it in `req.hull.client`. When using `req.hull.token`, the decoded token should be a valid configuration object: `{id, organization, secret}`
-3. If the query string contains `id`, `secret`, `organization`, they will be stored in `req.hull.config`
-4. After this, if a valid configuration is in `req.hull.config`, a Hull client instance will be created and stored in `req.hull.client`
-
-- When this is done, if `fetchShip=true`(default) then the Ship will be fetched and stored in `req.hull.ship`
-- If `cacheShip=true` (default) the results will be cached.
-- If the configuration or the secret is invalid, an error will be thrown that you can catch using express error handlers.
-
-```js
-app.use(function(req, res, next){
-   //... your token retreiving method
-   req.hull.token = myToken;
-   next();
-})
-app.use(hullClient({ hostSecret:"supersecret", fetchShip: true, cacheShip: true }));
-app.use(function(req, res){
-  req.hull.config // {id, organization, secret}
-  req.hull.client //instance of Hull client.
-  req.hull.ship   //ship object - use to retreive current configuration.
-});
-
 ```
 
 

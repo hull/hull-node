@@ -1,7 +1,6 @@
 import _ from "lodash";
 import jwt from "jwt-simple";
-import CacheManager from "cache-manager";
-import ShipCache from "../ship-cache";
+import agent from "../agent";
 
 function parseQueryString(query) {
   return ["organization", "ship", "secret"].reduce((cfg, k) => {
@@ -27,36 +26,23 @@ function parseToken(token, secret) {
   }
 }
 
-function shipCacheFactory(cacheShip) {
-  // setup default CacheManager
-  const cacheAdapter = CacheManager.caching({
-    store: 'memory',
-    isCacheableValue: (val) => val !== undefined && cacheShip,
-    max: 100,
-    ttl: 10/*seconds*/
-  });
 
-  return new ShipCache(cacheAdapter);
-}
+module.exports = function hullClientMiddlewareFactory(Client, { hostSecret, clientConfig = {} }) {
 
-
-module.exports = function hullClientMiddlewareFactory(Client, { hostSecret, fetchShip = true, cacheShip = true, shipCache = null, requireCredentials = true, clientConfig = {} }) {
-  if (shipCache === null) {
-    shipCache = shipCacheFactory(cacheShip);
-  }
-
-  function getCurrentShip(id, client, bust) {
-
+  function getCurrentShip(id, client, cache, bust) {
     return (() => {
-      if (bust) {
-        return shipCache.del(id);
+      if (cache && bust) {
+        return cache.del(id);
       }
       return Promise.resolve();
     })()
     .then(() => {
-      return shipCache.wrap(id, () => {
-        return client.get(id);
-      });
+      if (cache) {
+        return cache.wrap(id, () => {
+          return client.get(id);
+        });
+      }
+      return client.get(id);
     });
   }
 
@@ -74,32 +60,25 @@ module.exports = function hullClientMiddlewareFactory(Client, { hostSecret, fetc
       const { organization, ship: id, secret } = config;
       if (organization && id && secret) {
         const client = req.hull.client = new Client(_.merge({ id, secret, organization }, clientConfig));
-        shipCache.setClient(client);
 
         req.hull.token = jwt.encode(config, hostSecret);
-        if (fetchShip) {
 
-          const bust = (message && message.Subject === "ship:update");
-          // Promise<ship>
-          return getCurrentShip(id, client, bust).then((ship = {}) => {
-            req.hull.ship = ship;
-            return next();
-          }, (err) => {
-            const e = new Error(err.message);
-            e.status = 401;
-            return next(e);
-          });
-        }
+        const bust = (message && message.Subject === "ship:update");
+        // Promise<ship>
+        return getCurrentShip(id, client, req.hull.cache, bust).then((ship = {}) => {
+          req.hull.ship = ship;
+          req.hull.agent = req.hull.agent || _.mapValues(agent, func => func.bind(null, req));
+          req.hull.hostname = req.hostname;
+          return next();
+        }, (err) => {
+          const e = new Error(err.message);
+          e.status = 401;
+          return next(e);
+        });
 
         return next();
       }
-      if (requireCredentials) {
-        const e = new Error("Missing Credentials");
-        e.status = 400;
-        return next(e);
-      } else {
-        return next();
-      }
+      return next();
     } catch (err) {
       try {
         err.status = 401;

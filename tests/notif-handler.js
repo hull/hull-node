@@ -4,12 +4,10 @@ import { expect, should } from "chai";
 import sinon from "sinon";
 import express from "express";
 import Promise from "bluebird";
-import CacheManager from "cache-manager";
 
 import shipUpdate from "./fixtures/sns-messages/ship-update.json";
 import userUpdate from "./fixtures/sns-messages/user-report.json";
-import NotifHandler from "../src/notif-handler";
-import ShipCache from "../src/ship-cache";
+import NotifHandler from "../src/ship/util/notif-handler";
 
 import HullStub from "./support/hull-stub";
 
@@ -29,6 +27,16 @@ function post({ port, body }) {
     client.end(JSON.stringify(body))
     client.on("response", () => callback());
   });
+}
+
+function mockHullMiddleware(req, res, next) {
+  req.hull = req.hull || {};
+  req.hull.client = new HullStub();
+  req.hull.client.get()
+    .then(ship => {
+      req.hull.ship = ship;
+      next();
+    });
 }
 
 describe("NotifHandler", () => {
@@ -55,12 +63,12 @@ describe("NotifHandler", () => {
   it("should bust the middleware at ship:update event", (done) => {
     const handler = sinon.spy();
     const app = express();
-    const notifHandler = NotifHandler(HullStub, {
+    const notifHandler = NotifHandler({
       handlers: {
         "ship:update": handler
-      },
-      hostSecret: "test"
+      }
     });
+    app.use(mockHullMiddleware);
     app.post("/notify", notifHandler);
     const server = app.listen(() => {
       const port = server.address().port;
@@ -75,91 +83,6 @@ describe("NotifHandler", () => {
           expect(handler.getCall(1).args[1].ship.private_settings.value).to.equal("test1");
           done();
         });
-    });
-  });
-
-  it("should not bust the middleware at different events", (done) => {
-    const handler = sinon.spy();
-    const app = express();
-    const notifHandler = NotifHandler(HullStub, {
-      handlers: {
-        "user:update": handler
-      },
-      hostSecret: "test"
-    });
-    app.post("/notify", notifHandler);
-    const server = app.listen(() => {
-      const port = server.address().port;
-
-      post({ port, body: userUpdate })
-        .then(() => {
-          return post({ port, body: userUpdate })
-        })
-        .then(() => {
-          expect(handler.calledTwice).to.be.ok;
-          expect(handler.getCall(0).args[1].ship.private_settings.value).to.equal("test");
-          expect(handler.getCall(1).args[1].ship.private_settings.value).to.equal("test");
-          done();
-        });
-    });
-  });
-
-  it("should allow for ShipCache sharing", (done) => {
-    const handler = sinon.spy();
-    const cacheAdapter = CacheManager.caching({ store: "memory", max: 100, ttl: 1/*seconds*/ });
-    const shipCache = new ShipCache(cacheAdapter);
-    const app = express();
-    const notifHandler = NotifHandler(HullStub, {
-      handlers: {
-        "user:update": handler
-      },
-      hostSecret: "test",
-      shipCache
-    });
-    app.post("/notify", notifHandler);
-    const server = app.listen(() => {
-      const port = server.address().port;
-
-      post({ port, body: userUpdate })
-        .then(() => {
-          const newShip = {
-            private_settings: {
-              value: "test2"
-            }
-          };
-          return shipCache.set("ship_id", newShip);
-        })
-        .then(() => {
-          return post({ port, body: userUpdate });
-        })
-        .then(() => {
-          expect(handler.calledTwice).to.be.ok;
-          expect(handler.getCall(0).args[1].ship.private_settings.value).to.equal("test");
-          expect(handler.getCall(1).args[1].ship.private_settings.value).to.equal("test2");
-          done();
-        });
-    });
-  });
-
-  it("should take an optional `clientConfig` param", function (done) {
-    const hullSpy = sinon.stub() ;
-    const notifHandler = NotifHandler(hullSpy, { hostSecret: "secret", clientConfig: { flushAt: 123 } })
-    const app = express();
-
-    app.post("/notify", notifHandler);
-    const server = app.listen(() => {
-      const port = server.address().port;
-
-      post({ port, body: userUpdate })
-      .then(() => {
-        expect(hullSpy.calledWith({
-          id: "ship_id",
-          secret: "secret",
-          organization: "local",
-          flushAt: 123
-        })).to.be.true;
-        done();
-      });
     });
   });
 });
