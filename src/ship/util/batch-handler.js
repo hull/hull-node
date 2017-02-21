@@ -1,20 +1,19 @@
 import { Router } from "express";
 import bodyParser from "body-parser";
 
-import { handleExtract, setUserSegments, filterUserSegments } from "../hull";
 import responseMiddleware from "./response-middleware";
-import hullClient from "./hull-middleware";
-import tokenMiddleware from "./token-middleware";
+import requireHullClient from "./require-hull-client";
 
 export default function batchRouter(callback, chunkSize = 100) {
   const router = Router();
   router.use(bodyParser.json());
+  router.use(requireHullClient);
   router.post("/", (req, res, next) => {
-    const ctx = req.hull
-    return handleExtract(ctx, req.body, chunkSize, (users) => {
+    const { agent } = req.hull;
+    return agent.handleExtract(req.body, chunkSize, (users) => {
       const segmentId = req.query.segment_id || null;
-      users = users.map(u => setUserSegments(req, { add_segment_ids: [segmentId] }, u));
-      users = users.filter(u => filterUserSegments(req, u));
+      users = users.map(u => agent.setUserSegments({ add_segment_ids: [segmentId] }, u));
+      users = users.filter(u => agent.filterUserSegments(u));
       return callback(req, users);
     }).then(next, next);
   });

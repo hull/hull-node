@@ -4,6 +4,7 @@ import https from "https";
 import _ from "lodash";
 import rawBody from "raw-body";
 import { group } from "../../trait";
+import requireHullClient from "./require-hull-client";
 
 function parseRequest(req, res, next) {
   req.hull = req.hull || {};
@@ -163,6 +164,7 @@ module.exports = function NotifHandler({ handlers = [], groupTraits, onSubscribe
     addEventHandlers(handlers);
   }
 
+  app.use(requireHullClient);
   app.use(parseRequest);
   app.use(verifySignature({
     onSubscribe,

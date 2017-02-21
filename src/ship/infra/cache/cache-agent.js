@@ -1,4 +1,3 @@
-import jwt from "jwt-simple";
 import CacheManager from "cache-manager";
 import ShipCache from "./ship-cache";
 

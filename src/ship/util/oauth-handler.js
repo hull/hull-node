@@ -2,7 +2,7 @@ import express from "express";
 import passport from "passport";
 import bodyParser from "body-parser";
 import querystring from "querystring";
-import hullClient from "./middleware/client";
+import requireHullClient from "./require-hull-client";
 
 const HOME_URL = "/";
 const LOGIN_URL = "/login";
@@ -45,6 +45,7 @@ export default function oauth({
 
   const router = express.Router();
 
+  router.use(requireHullClient);
   router.use(fetchToken);
   router.use(passport.initialize());
   router.use(bodyParser.json());
@@ -96,7 +97,7 @@ export default function oauth({
   router.get(CALLBACK_URL, authorize, (req, res) => {
     onAuthorize(req, { hull: req.hull.client, ship: req.hull.ship })
       .then(() => res.redirect(getURL(req, SUCCESS_URL)))
-      .catch((error) => res.redirect(getURL(req, FAILURE_URL, { token: req.hull.token, error })));
+      .catch(error => res.redirect(getURL(req, FAILURE_URL, { token: req.hull.token, error })));
   });
 
   return router;

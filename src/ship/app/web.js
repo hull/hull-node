@@ -10,7 +10,7 @@ import staticRouter from "../util/static-router";
  */
 export default function WebApp({ Hull, instrumentation }) {
   if (!Hull || !instrumentation) {
-    throw new Error("WebApp initialized without all dependencies: Hull, instrumentation.")
+    throw new Error("WebApp initialized without all dependencies: Hull, instrumentation.");
   }
 
   const app = express();

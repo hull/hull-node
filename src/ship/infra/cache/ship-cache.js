@@ -1,3 +1,5 @@
+import jwt from "jwt-simple";
+
 export default class ShipCache {
 
   /**

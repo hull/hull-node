@@ -8,7 +8,7 @@ import _ from "lodash";
 export default class WorkerApp {
   constructor({ Hull, queue, instrumentation }) {
     if (!Hull || !queue || !instrumentation) {
-      throw new Error("WorkerApp initialized without all dependencies: Hull, queue, instrumentation.")
+      throw new Error("WorkerApp initialized without all dependencies: Hull, queue, instrumentation.");
     }
     this.queueAdapter = queue.adapter;
     this.instrumentation = instrumentation;

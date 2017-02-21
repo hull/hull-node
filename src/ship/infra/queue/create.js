@@ -1,5 +1,3 @@
-import _ from "lodash";
-
 export default function queueCreate(queueAdapter, ctx, jobName, jobPayload, options = {}) {
   const context = {
     hostname: ctx.hostname,
