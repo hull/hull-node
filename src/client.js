@@ -94,13 +94,13 @@ const Client = function Client(config = {}) {
       });
     };
   } else {
-    this.as = (userId, sudo = false) => {
+    this.as = (userId) => {
       // Sudo allows to be a user yet have admin rights... Use with care.
       if (!userId) {
         throw new Error("User Id was not defined when calling hull.as()");
       }
       // const scopedClientConfig = _.omit(config, "secret");
-      return new Client({ ...config, userId, sudo });
+      return new Client({ ...config, userId });
     };
   }
 };

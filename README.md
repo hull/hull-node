@@ -156,12 +156,12 @@ user.traits({
 
 ## Utils
 
-### hull.utils.groupTraits(user_report)
+### traits.group(user_report)
 
 ```js
-const hull = new Hull({config});
+import { group: groupTraits } from "hull/trait";
 
-hull.utils.groupTraits({
+groupTraits({
   'email': 'romain@user',
   'name': 'name',
   'traits_coconut_name': 'coconut',
@@ -275,3 +275,4 @@ The Logger comes in two flavors, `Hull.logger.xxx` and `hull.logger.xxx` - The f
 # Additional docs:
 
 - [Ship](docs/SHIP.md)
+- [Agent](docs/AGENT.md)

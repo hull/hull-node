@@ -34,7 +34,6 @@ const REQUIRED_PROPS = {
 
 const VALID_PROPS = {
   ...REQUIRED_PROPS,
-  sudo: VALID.boolean,
   prefix: VALID.string,
   domain: VALID.string,
   protocol: VALID.string,
