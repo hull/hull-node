@@ -470,29 +470,40 @@ views: {
 ```
 
 
-### Routes
-
-A simple set of route handlers to reduce boilerplate by a tiny bit.
-
-#### Hull.Routes.Readme
+### serviceMiddleware
+This is a middleware which helps to inject the custom ship modules to the request object.
+Thanks to that, all the custom functions and classes are automatically bind to the context object:
 
 ```js
-import Hull from 'hull';
-const { Routes } = Hull;
-//Redirect to a properly formatted and designed version of the /README.MD file.
-//Convenience method
-app.get("/readme", Routes.Readme);
-app.get("/", Routes.Readme);
-//
+import { serviceMiddleware } from "hull/lib/ship/util";
+
+const app = express();
+
+app.use(Hull.Middleware({ hostSecret }));
+app.use(serviceMiddleware({
+  getSegmentIds: (ctx, customParams = {}) => {
+    ctx.client.get("/segments", customParams)
+      .then(segments => {
+        return segments.map(s => s.id);
+      });
+  },
+  customClass: class CustomClass {
+    constructor(ctx) {
+      this.ctx = ctx;
+    }
+  }
+}))
+
+app.post("/get-segments", (req, res) => {
+  const { service } = req.hull;
+
+  service.getSegmentIds({ limit: 500 })
+    .then((segments) => res.json(segments), () => res.end)
+})
 ```
 
+### exitHandler
+This is a module to simplify grace shutdown of the application. Two infrastrcture services needs to be notified about the exit event:
 
-#### Hull.Routes.Manifest
-
-```js
-import Hull from 'hull';
-const { Routes } = Hull;
-//Serves the manifest.json from it's root to the right url; Convenience method
-app.get("/manifest.json", Routes.Manifest(__dirname));
-```
-
+- `Queue` - to drain and stop the current queue processing
+- `Batcher` which needs to flush all pending data.
