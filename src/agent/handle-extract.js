@@ -15,7 +15,7 @@ import BatchStream from "batch-stream";
  *
  * return handleExtract(req, 100, (users) => Promise.resolve())
  */
-export default function handleExtract(ctx, body, chunkSize, callback) {
+export default function handleExtract(ctx, { body, chunkSize, handler }) {
   const { logger } = ctx.client;
   const { url, format } = body;
   if (!url) return Promise.reject(new Error("Missing URL"));
@@ -28,7 +28,7 @@ export default function handleExtract(ctx, body, chunkSize, callback) {
     .pipe(batch)
     .pipe(ps.map({ concurrent: 2 }, (...args) => {
       try {
-        return callback(...args);
+        return handler(...args);
       } catch (e) {
         logger.error("ExtractAgent.handleExtract.error", e.stack || e);
         return Promise.reject(e);
