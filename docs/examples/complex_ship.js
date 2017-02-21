@@ -34,11 +34,7 @@ const clientSecret = process.env.CLIENT_SECRET;
  * Express application with static router and view
  * @type {WebApp}
  */
-const app = new WebApp({ Hull, instrumentation });
-
-app.use(instrumentation.middleware);
-app.use(queue.middleware);
-app.use(cache.middleware);
+const app = new WebApp({ Hull, instrumentation, cache, queue });
 
 app.use(tokenMiddleware);
 app.use(Hull.Middleware({ hostSecret }));
@@ -76,12 +72,7 @@ app.listen();
 /*
   Worker App
  */
-const worker = new WorkerApp({ Hull, instrumentation, queue });
-
-app.use(instrumentation.middleware);
-app.use(queue.middleware);
-app.use(cache.middleware);
-
+const worker = new WorkerApp({ Hull, instrumentation, queue, cache });
 app.use(Hull.Middleware({ hostSecret }));
 
 app.use(ServiceMiddleware({

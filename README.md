@@ -44,6 +44,14 @@ Returns the global configuration
 
 ## Hull.Middleware()
 
+### Params
+
+##### hostSecret
+The ship hosted secret (Not the one received from Hull. The one the hosted app itself defines. Will be used to encode tokens).
+
+##### clientConfig
+Additional config which will be passed to the new instance of Hull Client
+
 ```js
 import Hull from "hull";
 
@@ -78,8 +86,9 @@ app.use(function(req, res, next){
 app.use(Hull.Middleware({ hostSecret: "supersecret" }));
 app.use(function(req, res){
   req.hull.config // {id, organization, secret}
-  req.hull.client //instance of Hull client.
-  req.hull.ship   //ship object - use to retreive current configuration.
+  req.hull.client // instance of Hull client.
+  req.hull.ship   // ship object - use to retreive current configuration.
+  req.hull.agent  // a superset of Hull API to perform typical actions
 });
 
 ```
@@ -331,7 +340,7 @@ const handler = NotifHandler({
   }
 })
 
-
+app.use(Hull.Middleware({ hostSecret }));
 app.post('/notify', handler);
 ```
 
@@ -495,7 +504,7 @@ Here is how to use it:
 
 ```js
 const app = express();
-import { NotifHandler } from 'hull';
+import { BatchHandler } from 'hull';
 
 const handler = BatchHandler({
   groupTraits: false,
@@ -505,6 +514,8 @@ const handler = BatchHandler({
     notifications.map(n => updateUser(n, context));
 }
 })
+
+app.use(Hull.Middleware({ hostSecret }));
 app.post('/batch', handler);
 ```
 
@@ -531,8 +542,8 @@ app.use(express.static(path.resolve(__dirname, "..", "assets")));
 
 const { OAuthHandler } = Hull;
 
+app.use(Hull.Middleware({ hostSecret }));
 app.use("/auth", OAuthHandler({
-  hostSecret,
   name: "Hubspot",
   tokenInUrl: true,
   Strategy: HubspotStrategy,
@@ -576,9 +587,6 @@ app.use("/auth", OAuthHandler({
 }
 ```
 ### Params:
-
-##### hostSecret
-The ship hosted secret (Not the one received from Hull. The one the hosted app itself defines. Will be used to encode tokens).
 
 ##### name
 The name displayed to the User in the various screens.

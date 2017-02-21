@@ -8,14 +8,21 @@ import staticRouter from "../util/static-router";
 /**
  * Base Express app for Ships front part
  */
-export default function WebApp({ Hull, instrumentation }) {
-  if (!Hull || !instrumentation) {
-    throw new Error("WebApp initialized without all dependencies: Hull, instrumentation.");
-  }
-
+export default function WebApp({ Hull, instrumentation, queue, cache }) {
   const app = express();
 
-  app.use(instrumentation.startMiddleware());
+  if (instrumentation) {
+    app.use(instrumentation.startMiddleware());
+    app.use(instrumentation.middleware);
+  }
+
+  if (queue) {
+    app.use(queue.middleware);
+  }
+
+  if (cache) {
+    app.use(cache.middleware);
+  }
 
   // the main responsibility of following timeout middleware
   // is to make the web app respond always in time
@@ -30,7 +37,9 @@ export default function WebApp({ Hull, instrumentation }) {
   const originalListen = app.listen;
   app.listen = function listenHull(...args) {
     app.listen = originalListen;
-    app.use(instrumentation.stopMiddleware());
+    if (instrumentation) {
+      app.use(instrumentation.stopMiddleware());
+    }
     Hull.logger.info("webApp.listen", args[0]);
     return app.listen(...args);
   };

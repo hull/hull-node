@@ -7,8 +7,8 @@ import _ from "lodash";
  */
 export default class WorkerApp {
   constructor({ Hull, queue, instrumentation }) {
-    if (!Hull || !queue || !instrumentation) {
-      throw new Error("WorkerApp initialized without all dependencies: Hull, queue, instrumentation.");
+    if (!Hull || !queue) {
+      throw new Error("WorkerApp initialized without all required dependencies: Hull, queue");
     }
     this.queueAdapter = queue.adapter;
     this.instrumentation = instrumentation;
@@ -16,8 +16,17 @@ export default class WorkerApp {
 
     this.supply = new Supply();
 
-    // instrument jobs between 1 and 5 minutes
-    setInterval(this.metricJobs.bind(this), _.random(60000, 300000));
+    this.use(queue.middleware);
+
+    if (cache) {
+      this.use(cache.middleware);
+    }
+
+    if (instrumentation) {
+      this.use(instrumentation.middleware);
+      // instrument jobs between 1 and 5 minutes
+      setInterval(this.metricJobs.bind(this), _.random(60000, 300000));
+    }
   }
 
   metricJobs() {

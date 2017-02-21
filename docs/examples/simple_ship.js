@@ -2,7 +2,6 @@ import Hull from "hull";
 
 // pick what we need from the hull-node
 import { WebApp } from "hull/ship/app";
-import { Instrumentation } from "hull/ship/infra";
 import { batchHandler, oAuthHandler } from "hull/ship/util";
 
 // pick the methods
@@ -14,21 +13,13 @@ const clientId = process.env.CLIENT_ID;
 const clientSecret = process.env.CLIENT_SECRET;
 
 /**
- * Instrumentation agent - enables `metric` object in req.hull context object
- * @type {Instrumentation}
- */
-const instrumentation = new Instrumentation();
-
-/**
  * Express application with static routing view engine,
  * can be changed into a decorator/command pattern:
  * patchedExpressApp = WebApp(expressApp);
  * @type {WebApp}
  */
-const app = new WebApp({ Hull, instrumentation });
+const app = new WebApp({ Hull });
 
-app.use(instrumentation.middleware);
-app.use(tokenMiddleware);
 app.use(Hull.Middleware({ hostSecret }));
 
 

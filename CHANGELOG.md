@@ -1,3 +1,9 @@
+# 0.11.0
+
+* Unnecessary and deprecated features removed
+
+
+
 # 0.10.7
 
 * Add optional `tokenInUrl` argument in `OAuthHandler` allowing to force static urls
