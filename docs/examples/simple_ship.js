@@ -1,8 +1,9 @@
 import Hull from "hull";
 
 // pick what we need from the hull-node
-import { WebApp, Instrumentation } from "hull/ship";
-import { ActionRouter, BatchRouter, OAuthRouter } from "hull/ship/router";
+import { WebApp } from "hull/ship/app";
+import { Instrumentation } from "hull/ship/infra";
+import { batchHandler, oAuthHandler } from "hull/ship/util";
 
 // pick the methods
 import { fetchAll, sendUsers } from "./lib";
@@ -24,24 +25,26 @@ const instrumentation = new Instrumentation();
  * patchedExpressApp = WebApp(expressApp);
  * @type {WebApp}
  */
-const app = new WebApp({ instrumentation });
+const app = new WebApp({ Hull, instrumentation });
 
-app.use("/fetch-all", ActionRouter(req => {
-  return fetchAll(req.hull);
+app.use(instrumentation.middleware);
+app.use(tokenMiddleware);
+app.use(Hull.Middleware({ hostSecret }));
+
+
+app.use("/fetch-all", (req, res) => {
+  return fetchAll(req.hull)
+    .then(() => res.end("ok"), () => res.end("err"));
 }));
 
-app.use("/batch", BatchRouter(users => {
+app.use("/batch", batchHandler(users => {
   return sendUsers(req.hull, users);
 }));
 
-app.use("/admin", OAuthRouter({
-  instrumentation,
-  hostSecret,
+app.use("/admin", oAuthHandler({
   clientId,
   clientSecret,
   onLogin: () => {}
 }));
 
-app.listen(port, () => {
-  Hull.logger.info("server.listen", port);
-});
+app.listen(port);

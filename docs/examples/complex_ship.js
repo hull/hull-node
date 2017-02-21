@@ -1,5 +1,8 @@
-import { Instrumentation, Cache, Queue, WebApp, ServiceMiddleware } from "hull/ship";
-import { ActionRouter, BatchRouter, NotifRouter } from "hull/ship/router";
+import Hull from "hull";
+
+import { Instrumentation, Cache, Queue } from "hull/ship/infra";
+import { WebApp } from "hull/ship/app";
+import { serviceMiddleware, actionRouter, batchHandler, notifHandler, tokenMiddleware } from "hull/ship/util";
 
 import * as serviceFunctions from "./lib";
 
@@ -7,19 +10,19 @@ import * as serviceFunctions from "./lib";
  * Instrumenting dependency - enables `metric` object in context
  * @type {Instrumentation}
  */
-const instrumentation = new Instrumentation();
+const instrumentation = new Instrumentation({ options });
 
 /**
  * Cache - enables `cache` object in context
  * @type {Cache}
  */
-const cache = new Cache();
+const cache = new Cache({ options });
 
 /**
  * Queue - enables `queue` function in context
  * @type {Queue}
  */
-const queue = new Queue();
+const queue = new Queue({ options });
 
 const port = process.env.PORT;
 const hostSecret = process.env.SECRET;
@@ -31,7 +34,16 @@ const clientSecret = process.env.CLIENT_SECRET;
  * Express application with static router and view
  * @type {WebApp}
  */
-const app = new WebApp({ instrumentation, queue, cache });
+const app = new WebApp({ Hull, instrumentation });
+
+app.use(instrumentation.middleware);
+app.use(queue.middleware);
+app.use(cache.middleware);
+
+app.use(tokenMiddleware);
+app.use(Hull.Middleware({ hostSecret }));
+
+
 
 /**
  * The middleware which adds additional utilities/modules
@@ -41,7 +53,7 @@ const app = new WebApp({ instrumentation, queue, cache });
  * Functions will be bound with the context as a first param:
  * `func: func.bind(null, context)`
  */
-app.use(ServiceMiddleware({
+app.use(serviceMiddleware({
   client: ServiceClient,
   agent: serviceFunctions
 }));
@@ -58,11 +70,19 @@ app.get("/fetch-all", actionRouter(req => {
 
 app.listen();
 
+
+
+
 /*
   Worker App
  */
+const worker = new WorkerApp({ Hull, instrumentation, queue });
 
-const worker = new WorkerApp({ instrumentation, queue, cache });
+app.use(instrumentation.middleware);
+app.use(queue.middleware);
+app.use(cache.middleware);
+
+app.use(Hull.Middleware({ hostSecret }));
 
 app.use(ServiceMiddleware({
   client: ServiceClient,
