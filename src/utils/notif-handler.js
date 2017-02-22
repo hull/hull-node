@@ -1,84 +1,26 @@
-import MessageValidator from "sns-validator";
 import express from "express";
 import https from "https";
 import _ from "lodash";
-import rawBody from "raw-body";
-import { group } from "../trait";
 import requireHullMiddleware from "./require-hull-middleware";
 
-function parseRequest(req, res, next) {
-  req.hull = req.hull || {};
-  rawBody(req, true, (err, body) => {
-    if (err) {
-      const e = new Error("Invalid Body");
-      e.status = 400;
-      return next(e);
-    }
-    try {
-      req.hull.message = JSON.parse(body);
-    } catch (parseError) {
-      const e = new Error("Invalid Body");
-      e.status = 400;
-      return next(e);
-    }
-    return next();
-  });
-}
+function subscribeFactory(options) {
+  return function subscribe(req, res, next) {
+    const { message } = req.hull;
 
-function verifySignature(options = {}) {
-  const validator = new MessageValidator(/sns\.us-east-1\.amazonaws\.com/, "utf8");
-
-  return function verify(req, res, next) {
-    if (!req.hull.message) {
-      const e = new Error("Empty Message");
-      e.status = 400;
-      return next(e);
-    }
-
-    validator.validate(req.hull.message, function validate(err) {
-      if (err) {
-        if (options.enforceValidation) {
-          err.status = 400;
-          return next(err);
-        }
-        console.warn("Invalid signature error", req.hull.message);
-      }
-
-      const { message } = req.hull;
-
-      if (message.Type === "SubscriptionConfirmation") {
-        https.get(message.SubscribeURL, () => {
-          if (typeof options.onSubscribe === "function") {
-            options.onSubscribe(req);
-          }
-          return res.end("subscribed");
-        }, () => {
-          const e = new Error("Failed to subscribe");
-          e.status = 400;
-          return next(e);
-        });
-      } else if (message.Type === "Notification") {
-        try {
-          const payload = JSON.parse(message.Message);
-          if (payload && payload.user && options.groupTraits) {
-            payload.user = group(payload.user);
-          }
-
-          req.hull.notification = {
-            subject: message.Subject,
-            message: payload,
-            timestamp: new Date(message.Timestamp)
-          };
-          return next();
-        } catch (error) {
-          const e = new Error("Invalid Message");
-          e.status = 400;
-          return next(e);
-        }
-      }
+    if (message.Type !== "SubscriptionConfirmation") {
       return next();
+    }
+
+    https.get(message.SubscribeURL, () => {
+      if (typeof options.onSubscribe === "function") {
+        options.onSubscribe(req);
+      }
+      return res.end("subscribed");
+    }, () => {
+      const e = new Error("Failed to subscribe");
+      e.status = 400;
+      return next(e);
     });
-    return next();
   };
 }
 
@@ -164,12 +106,7 @@ module.exports = function NotifHandler({ handlers = [], groupTraits, onSubscribe
   }
 
   app.use(requireHullMiddleware);
-  app.use(parseRequest);
-  app.use(verifySignature({
-    onSubscribe,
-    enforceValidation: false,
-    groupTraits: groupTraits !== false
-  }));
+  app.use(subscribeFactory({ onSubscribe }));
   app.use(processHandlers(_handlers));
   app.use((req, res) => { res.end("ok"); });
 

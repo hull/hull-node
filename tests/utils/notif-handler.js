@@ -7,9 +7,12 @@ import Promise from "bluebird";
 
 import shipUpdate from "../fixtures/sns-messages/ship-update.json";
 import userUpdate from "../fixtures/sns-messages/user-report.json";
-import NotifHandler from "../../src/utils/notif-handler";
-
 import HullStub from "../support/hull-stub";
+
+import NotifHandler from "../../src/utils/notif-handler";
+import notifMiddleware from "../../src/utils/notif-middleware";
+
+
 
 const reqStub = {
   url: "http://localhost/",
@@ -68,6 +71,7 @@ describe("NotifHandler", () => {
         "ship:update": handler
       }
     });
+    app.use(notifMiddleware());
     app.use(mockHullMiddleware);
     app.post("/notify", notifHandler);
     const server = app.listen(() => {

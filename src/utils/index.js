@@ -7,4 +7,5 @@ export staticRouter from "./static-router";
 export tokenMiddleware from "./token-middleware";
 export requireHullMiddleware from "./require-hull-middleware";
 export responseMiddleware from "./response-middleware";
-export serviceMiddleware from "./service-middleware"
+export serviceMiddleware from "./service-middleware";
+export notifMiddleware from "./notif-middleware";
