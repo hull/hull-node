@@ -1,8 +1,8 @@
 import Hull from "hull";
 
-import { Instrumentation, Cache, Queue } from "hull/ship/infra";
-import { WebApp } from "hull/ship/app";
-import { serviceMiddleware, actionRouter, batchHandler, notifHandler, tokenMiddleware } from "hull/ship/util";
+import { Instrumentation, Cache, Queue } from "hull/infra";
+import HullApp from "hull/app";
+import { serviceMiddleware, actionRouter, batchHandler, notifHandler } from "hull/util";
 
 import * as serviceFunctions from "./lib";
 
@@ -16,46 +16,34 @@ const instrumentation = new Instrumentation({ options });
  * Cache - enables `cache` object in context
  * @type {Cache}
  */
-const cache = new Cache({ options });
+const cache = new Cache({ options - REDIS/MEMORY });
 
 /**
  * Queue - enables `queue` function in context
  * @type {Queue}
  */
-const queue = new Queue({ options });
+const queue = new Queue();
 
 const port = process.env.PORT;
 const hostSecret = process.env.SECRET;
 const clientId = process.env.CLIENT_ID;
 const clientSecret = process.env.CLIENT_SECRET;
 
+const service = {
+  client: ServiceClient,
+  ...serviceFunctions
+};
+
+const app = new HullApp({ Hull, instrumentation, cache, queue, service });
 
 /**
  * Express application with static router and view
  * @type {WebApp}
  */
-const app = new WebApp({ Hull, instrumentation, cache, queue });
-
-app.use(tokenMiddleware);
-app.use(Hull.Middleware({ hostSecret }));
+const express = app.server();
 
 
-
-/**
- * The middleware which adds additional utilities/modules
- * into `service` namespace of the context object.
- * Class would be initiated with context as a param:
- * `client: new ServiceClient(context)`
- * Functions will be bound with the context as a first param:
- * `func: func.bind(null, context)`
- */
-app.use(serviceMiddleware({
-  client: ServiceClient,
-  agent: serviceFunctions
-}));
-
-
-app.get("/fetch-all", actionRouter(req => {
+express.get("/fetch-all", actionRouter(req => {
   const { agent, service, queue } = req.hull;
 
   return service.agent.getLastFetchTime()
@@ -64,29 +52,44 @@ app.get("/fetch-all", actionRouter(req => {
     });
 }));
 
-app.listen();
+express.use("/notify", notifHandler({
+  "user:update": [
+    (messages) => {
 
+    },
+    { batchSize: 100 }
+  ],
+  "ship:update": [
+    (messages) => {
 
+    }
+  ]
+}))
+express.use("/webhook", webhookHandler((messages) => {
 
+}, { batchSize: 100 }))
 
 /*
   Worker App
  */
-const worker = new WorkerApp({ Hull, instrumentation, queue, cache });
-app.use(Hull.Middleware({ hostSecret }));
+const worker = app.worker();
 
-app.use(ServiceMiddleware({
-  client: ServiceClient,
-  agent: serviceFunctions
-}));
 
-worker.process({
+
+worker.attach({
   fetchAll: req => {
     const { lastTime } = req.payload;
     const { service } = req.hull;
 
-    return service.agent.getRecentUsers(users => {
-      return service.agent.sendUsers(users);
+    return service.getRecentUsers(users => {
+      return service.sendUsers(users);
     });
   }
 });
+
+
+
+app.start({ worker: true, server: true }); // calls server.listen();
+
+
+

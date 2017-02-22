@@ -1,4 +1,5 @@
 /**
+ * TODO: goes to Hull.Middleware()
  * @param  {Object}   req
  * @param  {Object}   res
  * @param  {Function} next

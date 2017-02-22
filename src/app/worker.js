@@ -5,10 +5,10 @@ import _ from "lodash";
 /**
  * Background worker using QueueAdapter.
  */
-export default class WorkerApp {
+export default class Worker {
   constructor({ Hull, queue, instrumentation, cache }) {
     if (!Hull || !queue) {
-      throw new Error("WorkerApp initialized without all required dependencies: Hull, queue");
+      throw new Error("Worker initialized without all required dependencies: Hull, queue");
     }
     this.queueAdapter = queue.adapter;
     this.instrumentation = instrumentation;
@@ -44,8 +44,11 @@ export default class WorkerApp {
     return this;
   }
 
-  process(jobs) {
+  attach(jobs) {
     this.jobs = jobs;
+  }
+
+  process() {
     // FIXME: move queue name to dependencies
     this.queueAdapter.process("queueApp", (job) => {
       return this.dispatch(job);

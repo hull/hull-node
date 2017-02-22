@@ -11,7 +11,7 @@ function bindObject(ctx, object) {
       return new element(ctx);
     }
     if (_.isFunction(element)) {
-      return element.bind(null, ctx);
+      return element.bind(null, ctx); // req.hull
     }
     if (_.isObject(element)) {
       return bindObject(ctx, element);
@@ -19,6 +19,13 @@ function bindObject(ctx, object) {
     return element;
   });
 }
+
+{
+  functionA: (ctx, ) => { ctx.client.get("/some.stuff")},
+  functionB: (ctx, ) => {},
+  class: new Class { constructor(ctx) { } }
+}
+
 
 export default function serviceMiddlewareFactory(serviceDefinition) {
   return function serviceMiddleware(req, res, next) {

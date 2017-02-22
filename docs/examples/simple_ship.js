@@ -1,8 +1,8 @@
 import Hull from "hull";
 
 // pick what we need from the hull-node
-import { WebApp } from "hull/ship/app";
-import { batchHandler, oAuthHandler } from "hull/ship/util";
+import HullApp from "hull/lib/app";
+import { batchHandler, oAuthHandler } from "hull/lib/utils";
 
 // pick the methods
 import { fetchAll, sendUsers } from "./lib";
@@ -16,26 +16,26 @@ const clientSecret = process.env.CLIENT_SECRET;
  * Express application with static routing view engine,
  * can be changed into a decorator/command pattern:
  * patchedExpressApp = WebApp(expressApp);
- * @type {WebApp}
+ * @type {HullApp}
  */
-const app = new WebApp({ Hull });
+const app = new HullApp({ Hull });
 
-app.use(Hull.Middleware({ hostSecret }));
+const server = app.server();
 
-
-app.use("/fetch-all", (req, res) => {
+server.use("/fetch-all", (req, res) => {
   return fetchAll(req.hull)
     .then(() => res.end("ok"), () => res.end("err"));
 }));
 
-app.use("/batch", batchHandler(users => {
+server.use("/batch", batchHandler((users) => {
   return sendUsers(req.hull, users);
-}));
+}, { batchSize: 200 }));
 
-app.use("/admin", oAuthHandler({
+server.use("/admin", oAuthHandler({
   clientId,
   clientSecret,
   onLogin: () => {}
 }));
 
-app.listen(port);
+
+app.start();

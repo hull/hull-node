@@ -149,7 +149,7 @@ function processHandlers(handlers) {
 
 module.exports = function NotifHandler({ handlers = [], groupTraits, onSubscribe }) {
   const _handlers = {};
-  const app = connect();
+  const app = Router();
 
   function addEventHandler(evt, fn) {
     const eventName = getHandlerName(evt);
@@ -177,11 +177,11 @@ module.exports = function NotifHandler({ handlers = [], groupTraits, onSubscribe
   app.use(processHandlers(_handlers));
   app.use((req, res) => { res.end("ok"); });
 
-  function handler(req, res) {
-    return app.handle(req, res);
-  }
+  // function handler(req, res) {
+  //   return app.handle(req, res);
+  // }
 
-  handler.addEventHandler = addEventHandler;
-
-  return handler;
+  // handler.addEventHandler = addEventHandler;
+  return app;
+  // return handler;
 };

@@ -18,15 +18,14 @@ export default const HullContext = {
     logger: {
       info: () => {},
     },
-  },
 
-  // superset of Hull API - helpers/utils:
-  agent: {
     filterUserSegments: () => {},
     updateSettings: () => {},
-    requestExtract: () => {},
+    requestExtract: () => {
+      req.query = hull.client.configuration();
+    },
+    handleExtract: () => {},
     getAvailableProperties: () => {}
-    // ... more can come
   },
 
   // ship configuration object
@@ -35,16 +34,16 @@ export default const HullContext = {
   // hostname of the ship instance (include it in the ship object?)
   hostname: req.hostname,
 
-  // OPTIONAL - cache of the ship object
+  // cache of the ship object
   cache: {
     get: () => {},
     del: () => {},
   },
 
-  // OPTIONAL - method to queue jobs to internal queue
-  queue: () => {},
+  // method to queue jobs to internal queue
+  enqueue: (jobName, jobPayload = {}, options = { delay: 100 }) => {},
 
-  // OPTIONAL - set of methods to gather metrics
+  // set of methods to gather metrics
   metric: {
     value: () => {},
     increment: () => {},
@@ -61,11 +60,11 @@ export default const HullContext = {
       put: () => {},
       delete: () => {},
       refreshToken: () => {},
+      addDomain: () => {},
+      getDomainInfo: () => {},
     },
-    agent: {
-      fetchUsers: () => {},
-      tagUsers: () => {}
-      // other methods to peform tasks on the 3rd party api
-    }
+    fetchUsers: () => {},
+    tagUsers: () => {}
+    // other methods to peform tasks on the 3rd party api
   }
 };
