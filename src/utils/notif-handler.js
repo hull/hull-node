@@ -3,8 +3,8 @@ import express from "express";
 import https from "https";
 import _ from "lodash";
 import rawBody from "raw-body";
-import { group } from "../../trait";
-import requireHullClient from "./require-hull-client";
+import { group } from "../trait";
+import requireHullMiddleware from "./require-hull-middleware";
 
 function parseRequest(req, res, next) {
   req.hull = req.hull || {};
@@ -167,7 +167,7 @@ module.exports = function NotifHandler({ handlers = [], groupTraits, onSubscribe
     addEventHandlers(handlers);
   }
 
-  app.use(requireHullClient);
+  app.use(requireHullMiddleware);
   app.use(parseRequest);
   app.use(verifySignature({
     onSubscribe,

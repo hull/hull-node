@@ -17,16 +17,11 @@ export default class Worker {
     this.supply = new Supply();
 
     this.use(queue.middleware);
+    this.use(cache.middleware);
 
-    if (cache) {
-      this.use(cache.middleware);
-    }
-
-    if (instrumentation) {
-      this.use(instrumentation.middleware);
-      // instrument jobs between 1 and 5 minutes
-      setInterval(this.metricJobs.bind(this), _.random(60000, 300000));
-    }
+    this.use(instrumentation.middleware);
+    // instrument jobs between 1 and 5 minutes
+    setInterval(this.metricJobs.bind(this), _.random(60000, 300000));
   }
 
   metricJobs() {

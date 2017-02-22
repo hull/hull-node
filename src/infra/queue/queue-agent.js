@@ -1,10 +1,16 @@
 import queueCreate from "./create";
 import KueAdapter from "./adapter/kue";
+import MemoryAdapter from "./adapter/memory";
 
 export default class QueueAgent {
 
   constructor(adapterName, options) {
-    this.adapter = new KueAdapter(options);
+    if (!adapterName) {
+      this.adapter = new MemoryAdapter();
+    } else {
+      this.adapter = new KueAdapter(options);
+    }
+
     this.middleware = this.middleware.bind(this);
   }
 

@@ -20,13 +20,18 @@ function bindObject(ctx, object) {
   });
 }
 
-{
-  functionA: (ctx, ) => { ctx.client.get("/some.stuff")},
-  functionB: (ctx, ) => {},
-  class: new Class { constructor(ctx) { } }
-}
 
 
+/**
+ * @param  {Object} serviceDefinition
+ * @return {Function}
+ *
+ * {
+ *   functionA: (ctx, args) => { ctx.client.get("/some.stuff")},
+ *   functionB: (ctx, args) => {},
+ *   class: new Class { constructor(ctx) { } }
+ * }
+ */
 export default function serviceMiddlewareFactory(serviceDefinition) {
   return function serviceMiddleware(req, res, next) {
     req.hull = req.hull || {};

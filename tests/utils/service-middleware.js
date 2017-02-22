@@ -2,7 +2,7 @@
 import { expect, should } from "chai";
 import sinon from "sinon";
 
-import ServiceMiddleware from "../src/ship/util/service-middleware";
+import ServiceMiddleware from "../../src/utils/service-middleware";
 
 class ClientClass {
   constructor(ctx) {

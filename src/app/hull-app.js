@@ -1,44 +1,55 @@
+import Promise from "bluebird";
+
 import Server from "./server";
 import Worker from "./worker";
+import { Instrumentation, Cache, Queue, Batcher } from "../infra";
+import { exitHandler, serviceMiddleware } from "../utils";
 
-/**
- *
- */
-export default class HullApp {
-  constructor({ Hull, hostSecret, clientConfig, instrumentation, cache, queue, service }) {
-    this.Hull = Hull;
-    this.hostSecret = hostSecret;
-    this.clientConfig = clientConfig;
-    this.instrumentation = instrumentation;
-    this.cache = cache;
-    this.queue = queue;
-    this.service = service;
+
+export default function HullApp({
+  Hull, hostSecret, port, clientConfig = {}, instrumentation, cache, queue, service
+}) {
+  if (!instrumentation) {
+    instrumentation = new Instrumentation();
   }
 
-  server() {
-    const { Hull, hostSecret, service, instrumentation, cache, queue, clientConfig } = this;
-    this.server = Server({ Hull, instrumentation, cache, queue });
-    this.server.use(Hull.Middleware({ hostSecret, clientConfig }));
-    this.server.use(serviceMiddleware(service));
-    return this.server;
+  if (!cache) {
+    cache = new Cache();
   }
 
-  worker() {
-    const { Hull, hostSecret, service, instrumentation, cache, queue, clientConfig } = this;
-    this.worker = new Worker({ Hull, instrumentation, cache, queue });
-    this.worker.use(Hull.Middleware({ hostSecret, clientConfig }));
-    this.worker.use(serviceMiddleware(service));
-    return this.worker;
+  if (!queue) {
+    queue = new Queue();
   }
 
-  start({ server = true, worker = false }) {
-    if (server) {
-      this.server.use(this.instrumentation.stopMiddleware());
-      this.server.listen(process.env.PORT || 8080);
+  exitHandler(() => {
+    return Promise.all([
+      Batcher.exit(),
+      this.queue.exit()
+    ]);
+  });
+
+  return {
+    server: function getServer() {
+      this._server = Server({ Hull, instrumentation, cache, queue });
+      this._server.use(Hull.Middleware({ hostSecret, clientConfig }));
+      this._server.use(serviceMiddleware(service));
+      return this._server;
+    },
+    worker: function getWorker() {
+      this._worker = new Worker({ Hull, instrumentation, cache, queue });
+      this._worker.use(Hull.Middleware({ hostSecret, clientConfig }));
+      this._worker.use(serviceMiddleware(service));
+      return this._worker;
+    },
+    start: function startApp({ server = true, worker = false } = {}) {
+      if (this._server && server) {
+        this._server.use(instrumentation.stopMiddleware());
+        this._server.listen(port);
+      }
+
+      if (this._worker && worker) {
+        this._worker.process();
+      }
     }
-
-    if (worker) {
-      this.worker.process();
-    }
-  }
+  };
 }

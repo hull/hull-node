@@ -2,7 +2,7 @@ import express from "express";
 import passport from "passport";
 import bodyParser from "body-parser";
 import querystring from "querystring";
-import requireHullClient from "./require-hull-client";
+import requireHullMiddleware from "./require-hull-middleware";
 
 const HOME_URL = "/";
 const LOGIN_URL = "/login";
@@ -45,7 +45,7 @@ export default function oauth({
 
   const router = express.Router();
 
-  router.use(requireHullClient);
+  router.use(requireHullMiddleware);
   router.use(fetchToken);
   router.use(passport.initialize());
   router.use(bodyParser.json());

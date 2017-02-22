@@ -2,12 +2,12 @@ import { Router } from "express";
 import bodyParser from "body-parser";
 
 import responseMiddleware from "./response-middleware";
-import requireHullClient from "./require-hull-client";
+import requireHullMiddleware from "./require-hull-middleware";
 
 export default function batchHandler(handler, options = { chunkSize: 100 }) {
   const router = Router();
   router.use(bodyParser.json());
-  router.use(requireHullClient);
+  router.use(requireHullMiddleware);
   router.post("/", (req, res, next) => {
     const { agent } = req.hull;
     return agent.handleExtract(req.body, options.chunkSize, (users) => {

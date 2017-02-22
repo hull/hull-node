@@ -5,11 +5,11 @@ import sinon from "sinon";
 import express from "express";
 import Promise from "bluebird";
 
-import shipUpdate from "./fixtures/sns-messages/ship-update.json";
-import userUpdate from "./fixtures/sns-messages/user-report.json";
-import NotifHandler from "../src/ship/util/notif-handler";
+import shipUpdate from "../fixtures/sns-messages/ship-update.json";
+import userUpdate from "../fixtures/sns-messages/user-report.json";
+import NotifHandler from "../../src/utils/notif-handler";
 
-import HullStub from "./support/hull-stub";
+import HullStub from "../support/hull-stub";
 
 const reqStub = {
   url: "http://localhost/",
