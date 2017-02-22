@@ -42,7 +42,84 @@ to send with the request. They all return Promises so you can use the `.then()` 
 
 Returns the global configuration
 
-## hull.as()
+## hull.userToken()
+
+```js
+hull.userToken({email:'xxx@example.com',name:'FooBar'}, claims)
+```
+
+Used for [Bring your own users](http://hull.io/docs/users/byou).
+Creates a signed string for the user passed in hash. `userHash` needs an `email` field.
+[You can then pass this client-side to Hull.js](http://www.hull.io/docs/users/byou) to authenticate users client-side and cross-domain
+
+## hull.currentUserId()
+
+```js
+hull.currentUserId(userId, userSig)
+```
+
+Checks the validity of the signature relatively to a user id
+
+## hull.currentUserMiddleware()
+
+```js
+const app = express();
+
+// a middleware with no mount path; gets executed for every request to the app
+app.use(hull.currentUserMiddleware);
+app.use(function(req,res,next){
+  console.log(req.hull.userId) // Should exist if there is a user logged in;
+})
+```
+
+Reverse of Bring your own Users. When using Hull's Identity management, tells you who the current user is. Generates a middleware to add to your Connect/Express apps.
+
+
+## Utils
+
+### hull.utils.groupTraits(user_report)
+
+```js
+const hull = new Hull({config});
+
+hull.utils.groupTraits({
+  'email': 'romain@user',
+  'name': 'name',
+  'traits_coconut_name': 'coconut',
+  'traits_coconut_size': 'large',
+  'traits_cb/twitter_bio': 'parisian',
+  'traits_cb/twitter_name': 'parisian',
+  'traits_group/name': 'groupname',
+  'traits_zendesk/open_tickets': 18
+});
+// returns
+{
+  'id' : '31628736813n1283',
+  'email': 'romain@user',
+  'name': 'name',
+  'traits': {
+    'coconut_name': 'coconut',
+    'coconut_size': 'large'
+  },
+  cb: {
+    'twitter_bio': 'parisian',
+    'twitter_name': 'parisian'
+  },
+  group: {
+    'name': 'groupname',
+  },
+  zendesk: {
+    'open_tickets': 18
+  }
+};
+```
+
+The Hull API returns traits in a "flat" format, with '/' delimiters in the key.
+The Events handler  Returns a grouped version of the traits in the flat user report we return from the API.
+> The NotifHandler already does this by default.
+
+
+# Impersonating a User
 
 ```js
 //If you only have an anonymous ID, use the `anonymous_id` field
@@ -60,6 +137,7 @@ var user = hull.as('5718b59b7a85ebf20e000169', false);
 user.get('/me').then(function(me){
   console.log(me)
 });
+user.userToken();
 //It will act as if the user performed the action if the second parameter is falsy
 ```
 

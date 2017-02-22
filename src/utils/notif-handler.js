@@ -1,5 +1,5 @@
 import MessageValidator from "sns-validator";
-import connect from "connect";
+import express from "express";
 import https from "https";
 import _ from "lodash";
 import rawBody from "raw-body";
@@ -149,7 +149,7 @@ function processHandlers(handlers) {
 
 module.exports = function NotifHandler({ handlers = [], groupTraits, onSubscribe }) {
   const _handlers = {};
-  const app = Router();
+  const app = express.Router();
 
   function addEventHandler(evt, fn) {
     const eventName = getHandlerName(evt);
@@ -177,11 +177,6 @@ module.exports = function NotifHandler({ handlers = [], groupTraits, onSubscribe
   app.use(processHandlers(_handlers));
   app.use((req, res) => { res.end("ok"); });
 
-  // function handler(req, res) {
-  //   return app.handle(req, res);
-  // }
-
-  // handler.addEventHandler = addEventHandler;
+  app.addEventHandler = addEventHandler;
   return app;
-  // return handler;
 };

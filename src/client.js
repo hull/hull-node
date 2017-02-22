@@ -2,6 +2,8 @@ import _ from "lodash";
 import winston from "winston";
 import Configuration from "./configuration";
 import restAPI from "./rest-api";
+import crypto from "./lib/crypto";
+import currentUserMiddleware from "./middleware/current-user";
 import trait from "./trait";
 import FirehoseBatcher from "./firehose-batcher";
 
@@ -38,6 +40,16 @@ const Client = function Client(config = {}) {
       return restAPI(clientConfig, url, method, options);
     };
   });
+
+  this.userToken = function userToken(data = clientConfig.get("userId"), claims) {
+    return crypto.userToken(clientConfig.get(), data, claims);
+  };
+
+  this.lookupToken = function userToken(data = clientConfig.get("userId"), claims) {
+    return crypto.lookupToken(clientConfig.get(), data, claims);
+  };
+
+  this.currentUserMiddleware = currentUserMiddleware.bind(this, clientConfig.get());
 
   this.utils = {
     groupTraits: trait.group,
