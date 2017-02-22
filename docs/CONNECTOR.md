@@ -1,4 +1,4 @@
-# Ship toolkit
+# Connector toolkit
 This library includes a base toolkit to create a ship - connector to integrate Hull platform with a 3rd party API Service.
 
 ## Application

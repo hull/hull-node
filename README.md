@@ -352,5 +352,5 @@ The Logger comes in two flavors, `Hull.logger.xxx` and `hull.logger.xxx` - The f
 
 # Additional docs:
 
-- [Ship](docs/SHIP.md)
-- [Agent](docs/AGENT.md)
+- [Connector](docs/CONNECTOR.md)
+- [Helpers](docs/HELPERS.md)
