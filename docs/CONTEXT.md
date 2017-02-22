@@ -13,7 +13,9 @@ The result is `req.hull` object which is the Context Object - a toolkit to work 
   cache: {},
   enqueue: () => {},
   metric: {},
-  service: {}
+  service: {},
+  message: {},
+  notification: {}
 }
 ```
 
@@ -45,4 +47,11 @@ What it injects into the context object is a mapped javscript object with the sa
 
 - function is bind with the context object as a first argument - `fn.bind(null, ctx)`
 - class is initiated with the context object as a first and only argument to the constructor - `new class(ctx)`
+
+#### message
+optional - set if there is a sns message incoming
+
+
+#### notification
+What is the relation to the `req.hull.message`?
 

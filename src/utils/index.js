@@ -9,3 +9,4 @@ export requireHullMiddleware from "./require-hull-middleware";
 export responseMiddleware from "./response-middleware";
 export serviceMiddleware from "./service-middleware";
 export notifMiddleware from "./notif-middleware";
+export segmentsMiddleware from "./segments-middleware";

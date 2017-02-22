@@ -105,6 +105,14 @@ module.exports = function NotifHandler({ handlers = [], groupTraits, onSubscribe
     addEventHandlers(handlers);
   }
 
+  app.use((req, res, next) => {
+    if (!req.hull.message) {
+      const e = new Error("Empty Message");
+      e.status = 400;
+      return next(e);
+    }
+    return next();
+  });
   app.use(requireHullMiddleware);
   app.use(subscribeFactory({ onSubscribe }));
   app.use(processHandlers(_handlers));

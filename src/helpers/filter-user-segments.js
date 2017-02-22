@@ -1,5 +1,7 @@
 import _ from "lodash";
 
+const fieldPath = "ship.private_settings.synchronized_segments";
+
 /**
  * Returns information if the users should be sent in outgoing sync.
  * This version should filter out all users if the `synchronized_segments`
@@ -9,6 +11,9 @@ import _ from "lodash";
  * @return {Boolean}
  */
 export default function filterUserSegments(ctx, user) {
-  const filterSegmentIds = _.get(ctx, "ship.private_settings.synchronized_segments", []);
+  if (!_.has(ctx, fieldPath)) {
+    return true;
+  }
+  const filterSegmentIds = _.get(ctx, fieldPath, []);
   return _.intersection(filterSegmentIds, user.segment_ids).length > 0;
 }

@@ -26,14 +26,17 @@ export default class MemoryAdapter {
       return Promise.resolve();
     }
 
-    return enqueue(jobName, jobPayload);
+    return this.enqueue(jobName, jobPayload);
   }
 
   enqueue(jobName, jobPayload) {
     this.queue[jobName] = this.queue[jobName] || [];
     this.queue[jobName].push({
-      jobName,
-      jobPayload
+      id: this.queue[jobName].length,
+      data: {
+        name: jobName,
+        ...jobPayload
+      }
     });
     return this.processQueues();
   }
@@ -51,17 +54,17 @@ export default class MemoryAdapter {
 
   processQueues() {
     return Promise.all(_.map(this.processors, (jobCallback, jobName) => {
-      if (this.queue[jobName].length === 0) {
+      if (_.get(this.queue, jobName, []).length === 0) {
         return;
       }
       const job = this.queue[jobName].pop();
       return jobCallback(job);
     }))
-    .then(() => {
-      this.processQueues();
-    }, () => {
-      this.processQueues();
-    });
+    // .then(() => {
+    //   this.processQueues();
+    // }, () => {
+    //   this.processQueues();
+    // });
   }
 
   exit() {

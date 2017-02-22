@@ -24,7 +24,12 @@ export default function notifMiddlewareFactory() {
         return next(e);
       }
       try {
-        req.hull.message = JSON.parse(body);
+        const parsedBody = JSON.parse(body);
+        if (parsedBody.Message, parsedBody.Subject, parsedBody.Timestamp) {
+          req.hull.message = parsedBody;
+        } else {
+          req.body = parsedBody;
+        }
       } catch (parseError) {
         const e = new Error("Invalid Body");
         e.status = 400;
@@ -37,9 +42,7 @@ export default function notifMiddlewareFactory() {
 
   function verify(req, res, next) {
     if (!req.hull.message) {
-      const e = new Error("Empty Message");
-      e.status = 400;
-      return next(e);
+      return next();
     }
 
     validator.validate(req.hull.message, function validate(err) {

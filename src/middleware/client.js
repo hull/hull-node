@@ -1,6 +1,6 @@
 import _ from "lodash";
 import jwt from "jwt-simple";
-import helpers from "../helpers";
+import * as helpers from "../helpers";
 
 function parseQueryString(query) {
   return ["organization", "ship", "secret"].reduce((cfg, k) => {

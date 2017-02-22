@@ -56,7 +56,6 @@ export default class Worker {
     const jobName = job.data.name;
     const req = job.data.context;
     const jobData = job.data.payload;
-    req.payload = jobData || {};
     const res = {};
 
     const startTime = process.hrtime();
@@ -71,13 +70,13 @@ export default class Worker {
               return Promise.reject(err);
             }
             req.hull.client.logger.info("dispatch", { id: job.id, name: jobName });
-            req.hull.metric.inc(`ship.job.${jobName}.start`);
-            return this.jobs[jobName].call(job, req, res);
+            req.hull.metric.increment(`ship.job.${jobName}.start`);
+            return this.jobs[jobName].call(job, req.hull, jobData);
           })
           .then((jobRes) => {
             callback(null, jobRes);
           }, (err) => {
-            req.hull.metric.inc(`ship.job.${jobName}.error`);
+            req.hull.metric.increment(`ship.job.${jobName}.error`);
             this.instrumentation.catchError(err, {
               job_id: job.id
             }, {
@@ -91,7 +90,7 @@ export default class Worker {
             this.instrumentation.endTransaction();
             const duration = process.hrtime(startTime);
             const ms = (duration[0] * 1000) + (duration[1] / 1000000);
-            req.hull.metric.val(`ship.job.${jobName}.duration`, ms);
+            req.hull.metric.value(`ship.job.${jobName}.duration`, ms);
           });
       });
     });

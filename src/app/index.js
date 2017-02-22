@@ -1,2 +1,1 @@
-export WebApp from "./web";
-export WorkerApp from "./worker";
+export default from "./hull-app";

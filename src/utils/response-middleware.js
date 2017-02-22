@@ -5,7 +5,7 @@ import _ from "lodash";
  * @param  {Object}   res
  * @param  {Function} next
  */
-export default function responseMiddleware(result, req, res, next) {
+export default function segmentsMiddleware(result, req, res, next) {
   if (_.isError(result)) {
     try {
       req.hull.client.logger.error("action.error", result.stack || result);
