@@ -6,7 +6,7 @@ const HANDLERS = {};
 export default class Batcher {
 
   static exit() {
-    console.log("groupHandler.exit");
+    console.log("batcher.exit");
     if (!Batcher.exiting) {
       const exiting = Promise.all(_.map(HANDLERS, h => h.flush()));
       Batcher.exiting = exiting;
@@ -16,13 +16,13 @@ export default class Batcher {
   }
 
   static getHandler(ns, args) {
-    const name = ns + args.req.hull.ship.id;
+    const name = ns + args.ctx.ship.id;
     return HANDLERS[name] = HANDLERS[name] || new Batcher(ns, args); // eslint-disable-line no-return-assign
   }
 
-  constructor(ns, { req, options = {} }) {
+  constructor(ns, { ctx, options = {} }) {
     this.ns = ns;
-    this.logger = req.hull.client.logger;
+    this.logger = ctx.client.logger;
     this.messages = [];
     this.options = options;
 
@@ -37,7 +37,7 @@ export default class Batcher {
 
   addMessage(message) {
     this.messages.push(message);
-    this.logger.info("groupHandler.added", this.messages.length);
+    this.logger.info("batcher.added", this.messages.length);
     const { maxSize } = this.options;
     if (this.messages.length >= maxSize) {
       this.flush();
@@ -49,14 +49,14 @@ export default class Batcher {
 
   flush() {
     const messages = this.messages;
-    this.logger.info("groupHandler.flush", messages.length);
+    this.logger.info("batcher.flush", messages.length);
     this.messages = [];
     return this.callback(messages)
       .then(() => {
-        this.logger.info("groupHandler.flush.sucess");
+        this.logger.info("batcher.flush.sucess");
       }, (err) => {
         console.error(err);
-        this.logger.error("groupHandler.flush.error", err);
+        this.logger.error("batcher.flush.error", err);
       });
   }
 }

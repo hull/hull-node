@@ -20,7 +20,7 @@ const reqStub = {
 describe("Batcher", () => {
   it("should group incoming messages", (done) => {
     Batcher
-    .getHandler("test", { req: reqStub })
+    .getHandler("test", { ctx: reqStub.hull })
     .setCallback((messages) => {
       expect(messages).to.be.eql(["test"]);
       done();
