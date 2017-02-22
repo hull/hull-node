@@ -17,7 +17,7 @@
     "test": "npm run test:lint && npm run test:units",
     "test:lint": "eslint src",
     "test:modules": "npm outdated --depth=0",
-    "test:units": "NODE_ENV=test mocha -R spec ./tests/index",
+    "test:units": "NODE_ENV=test mocha --require babel-register -R spec ./tests/**/*",
     "update": "./node_modules/.bin/updtr",
     "clean": "./node_modules/.bin/rimraf lib",
     "coverage": "gulp coverage",

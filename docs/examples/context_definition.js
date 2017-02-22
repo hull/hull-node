@@ -34,6 +34,9 @@ export default const HullContext = {
   // hostname of the ship instance (include it in the ship object?)
   hostname: req.hostname,
 
+  // OPTIONAL - an array of organization segments
+  segments: []
+
   // cache of the ship object
   cache: {
     get: () => {},
