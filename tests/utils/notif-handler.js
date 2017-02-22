@@ -79,8 +79,8 @@ describe("NotifHandler", () => {
         })
         .then(() => {
           expect(handler.calledTwice).to.be.ok;
-          expect(handler.getCall(0).args[1].ship.private_settings.value).to.equal("test");
-          expect(handler.getCall(1).args[1].ship.private_settings.value).to.equal("test1");
+          expect(handler.getCall(0).args[0].ship.private_settings.value).to.equal("test");
+          expect(handler.getCall(1).args[0].ship.private_settings.value).to.equal("test1");
           done();
         });
     });

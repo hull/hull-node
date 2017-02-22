@@ -14,7 +14,7 @@ export default function batchHandler(handler, options = { chunkSize: 100 }) {
       const segmentId = req.query.segment_id || null;
       users = users.map(u => agent.setUserSegments({ add_segment_ids: [segmentId] }, u));
       users = users.filter(u => agent.filterUserSegments(u));
-      return handler(req, users);
+      return handler(req.hull, users);
     }).then(next, next);
   });
   router.use(responseMiddleware);

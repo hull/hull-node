@@ -100,15 +100,11 @@ function processHandlers(handlers) {
       const messageHandlers = handlers[eventName];
       const processing = [];
 
-      const context = {
-        req,
-        ship,
-        hull: client
-      };
+      const context = req.hull;
 
       if (messageHandlers && messageHandlers.length > 0) {
         messageHandlers.map((fn) => {
-          return processing.push(fn(notification, context));
+          return processing.push(fn(context, notification));
         });
       }
 
@@ -124,7 +120,7 @@ function processHandlers(handlers) {
                 subject: "event",
                 timestamp: message.Timestamp
               };
-              return processing.push(fn(payload, context));
+              return processing.push(fn(context, payload));
             });
           });
         }

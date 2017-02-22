@@ -80,7 +80,7 @@ export default function oauth({
   }
 
   router.all(LOGIN_URL, (req, res, next) => {
-    onLogin(req, { hull: req.hull.client, ship: req.hull.ship })
+    onLogin(req)
       .then(() => next())
       .catch(() => next());
   }, (req, res, next) => {
@@ -95,7 +95,7 @@ export default function oauth({
   router.get(SUCCESS_URL, function login(req, res) { return res.render(views.success, { name, urls: getURLs(req) }); });
 
   router.get(CALLBACK_URL, authorize, (req, res) => {
-    onAuthorize(req, { hull: req.hull.client, ship: req.hull.ship })
+    onAuthorize(req)
       .then(() => res.redirect(getURL(req, SUCCESS_URL)))
       .catch(error => res.redirect(getURL(req, FAILURE_URL, { token: req.hull.token, error })));
   });

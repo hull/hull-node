@@ -22,13 +22,13 @@ export default function Server({ app, clientId, clientSecret }) {
 
   express.use("/notify", notifHandler({
     "user:update": [
-      (messages) => {
+      (ctx, messages) => {
 
       },
       { batchSize: 100 }
     ],
     "ship:update": [
-      (messages) => {
+      (ctx, messages) => {
 
       }
     ]
@@ -40,7 +40,7 @@ export default function Server({ app, clientId, clientSecret }) {
     onLogin: () => {}
   }));
 
-  express.use("/webhook", webhookHandler((messages) => {
+  express.use("/webhook", webhookHandler((ctx, messages) => {
   }, { batchSize: 100 }))
 
 

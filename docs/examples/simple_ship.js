@@ -27,7 +27,7 @@ server.use("/fetch-all", (req, res) => {
     .then(() => res.end("ok"), () => res.end("err"));
 }));
 
-server.use("/batch", batchHandler((users) => {
+server.use("/batch", batchHandler((ctx, users) => {
   return sendUsers(req.hull, users);
 }, { batchSize: 200 }));
 

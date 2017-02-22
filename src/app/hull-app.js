@@ -3,7 +3,7 @@ import Promise from "bluebird";
 import Server from "./server";
 import Worker from "./worker";
 import { Instrumentation, Cache, Queue, Batcher } from "../infra";
-import { exitHandler, serviceMiddleware } from "../utils";
+import { exitHandler, serviceMiddleware, tokenMiddleware } from "../utils";
 
 
 export default function HullApp({
@@ -31,6 +31,7 @@ export default function HullApp({
   return {
     server: function getServer() {
       this._server = Server({ Hull, instrumentation, cache, queue });
+      this._server.use(tokenMiddleware);
       this._server.use(Hull.Middleware({ hostSecret, clientConfig }));
       this._server.use(serviceMiddleware(service));
       return this._server;
