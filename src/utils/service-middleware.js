@@ -20,8 +20,6 @@ function bindObject(ctx, object) {
   });
 }
 
-
-
 /**
  * @param  {Object} serviceDefinition
  * @return {Function}

@@ -51,9 +51,9 @@ export default class Batcher {
     const messages = this.messages;
     this.logger.info("batcher.flush", messages.length);
     this.messages = [];
-    return this.callback(messages)
+    return Promise.resolve(this.callback(messages))
       .then(() => {
-        this.logger.info("batcher.flush.sucess");
+        this.logger.info("batcher.flush.sucess", true);
       }, (err) => {
         console.error(err);
         this.logger.error("batcher.flush.error", err);
