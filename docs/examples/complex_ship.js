@@ -1,8 +1,8 @@
 import Hull from "hull";
 
-import { Instrumentation, Cache, Queue } from "hull/infra";
-import HullApp from "hull/app";
-import { serviceMiddleware, actionRouter, batchHandler, notifHandler } from "hull/util";
+import { Instrumentation, Cache, Queue } from "hull/lib/infra";
+import HullApp from "hull/lib/app";
+import { serviceMiddleware, actionRouter, batchHandler, notifHandler } from "hull/lib/utils";
 
 import * as serviceFunctions from "./lib";
 
@@ -74,8 +74,6 @@ express.use("/webhook", webhookHandler((messages) => {
  */
 const worker = app.worker();
 
-
-
 worker.attach({
   fetchAll: req => {
     const { lastTime } = req.payload;
@@ -87,9 +85,4 @@ worker.attach({
   }
 });
 
-
-
 app.start({ worker: true, server: true }); // calls server.listen();
-
-
-

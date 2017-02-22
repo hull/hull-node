@@ -22,9 +22,11 @@ describe("ServiceMiddleware", () => {
       agent: {
         getData: (ctx, test) => { return `getData.${ctx.service.client.name}`; }
       },
+      getOtherData: (ctx, test) => { return `getOtherData.${ctx.service.client.name}`; },
       client: ClientClass
     })(req, {}, () => {});
     expect(req.hull.service.client.get()).to.be.eql("get.test");
     expect(req.hull.service.agent.getData()).to.be.eql("getData.test");
+    expect(req.hull.service.getOtherData()).to.be.eql("getOtherData.test");
   });
 });
