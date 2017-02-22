@@ -8,7 +8,7 @@ export default class MetricAgent {
     this.ctx = ctx;
   }
 
-  val(metric, value = 1) {
+  value(metric, value = 1) {
     if (!this.metrics) {
       return null;
     }
@@ -20,7 +20,7 @@ export default class MetricAgent {
     return null;
   }
 
-  inc(metric, value = 1) {
+  increment(metric, value = 1) {
     if (!this.metrics) {
       return null;
     }

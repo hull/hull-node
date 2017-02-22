@@ -1,4 +1,4 @@
-import queueCreate from "./create";
+import enqueue from "./enqueue";
 import KueAdapter from "./adapter/kue";
 import MemoryAdapter from "./adapter/memory";
 
@@ -16,7 +16,7 @@ export default class QueueAgent {
 
   middleware(req, res, next) {
     req.hull = req.hull || {};
-    req.hull.queue = req.hull.queue || queueCreate.bind(null, this.adapter, req.hull);
+    req.hull.enqueue = req.hull.enqueue || enqueue.bind(null, this.adapter, req.hull);
     return next();
   }
 
