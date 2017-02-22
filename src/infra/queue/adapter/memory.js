@@ -7,7 +7,8 @@ export default class MemoryAdapter {
    * @param {Object} queue Kue instance
    */
   constructor() {
-    this.queue = [];
+    this.queue = {};
+    this.processors = {};
     ["inactiveCount", "activeCount", "completeCount", "failedCount", "delayedCount"].forEach((name) => {
       this[name] = () => Promise.resolve(0);
     });
@@ -19,10 +20,21 @@ export default class MemoryAdapter {
    * @return {Promise}
    */
   create(jobName, jobPayload = {}, { ttl = 0, delay = null, priority = null } = {}) {
-    this.queue.push({
+    if (delay) {
+      setTimeout(this.enqueue.bind(this, jobName, jobPayload), delay);
+      return Promise.resolve();
+    }
+
+    return enqueue(jobName, jobPayload);
+  }
+
+  enqueue(jobName, jobPayload) {
+    this.queue[jobName] = this.queue[jobName] || [];
+    this.queue[jobName].push({
       jobName,
       jobPayload
     });
+    return this.processQueues();
   }
 
   /**
@@ -31,7 +43,24 @@ export default class MemoryAdapter {
    * @return {Object} this
    */
   process(jobName, jobCallback) {
+    this.processors[jobName] = jobCallback;
+    this.processQueues();
     return this;
+  }
+
+  processQueues() {
+    return Promise.all(_.map(this.processors, (jobCallback, jobName) => {
+      if (this.queue[jobName].length === 0) {
+        return;
+      }
+      const job = this.queue[jobName].pop();
+      return jobCallback(job);
+    }))
+    .then(() => {
+      this.processQueues();
+    }, () => {
+      this.processQueues();
+    });
   }
 
   exit() {

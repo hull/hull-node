@@ -1,3 +1,13 @@
+/**
+ * This is main file which loads all dependencies
+ * and decide how to load server and/or worker applications.
+ * It could be run in following configurations:
+ *
+ * `$ COMBINED=true node index.js # will start server and worker in one process`
+ * `$ SERVER=true node index.js # will start only server`
+ * `$ WORKER=true node index.js # will start only worker`
+ */
+
 import Hull from "hull";
 
 import { Instrumentation, Cache, Queue } from "hull/lib/infra";
@@ -30,29 +40,28 @@ const hostSecret = process.env.SECRET;
 const clientId = process.env.CLIENT_ID;
 const clientSecret = process.env.CLIENT_SECRET;
 
+/**
+ * Custom logic injected into request context object
+ * @type {Object}
+ */
 const service = {
   client: ServiceClient,
   ...serviceFunctions
 };
 
-const app = new HullApp({ Hull, instrumentation, cache, queue, service });
+const app = new HullApp({ Hull, hostSecret, port, instrumentation, cache, queue, service });
 
-
-// this file can be run in following configurations:
-// COMBINED=true node index.js # will start server and worker in one process
-// SERVER=true node index.js # will start only server
-// WORKER=true node index.js # will start only worker
-const start = {
+const startConfig = {
   server: process.env.COMBINED || process.env.WORKER || false,
   worker: process.env.COMBINED || process.env.SERVER || false
 };
 
-if (start.server) {
-  server(app);
+if (startConfig.server) {
+  server({ app, clientId, clientSecret });
 }
 
-if (start.worker) {
-  worker(app);
+if (startConfig.worker) {
+  worker({ app });
 }
 
-app.start(start);
+app.start(startConfig);

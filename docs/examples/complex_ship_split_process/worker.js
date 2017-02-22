@@ -1,5 +1,7 @@
-
-export default function Worker(app) {
+/**
+ * File configuring the worker application of the HullApp
+ */
+export default function Worker({ app }) {
   const worker = app.worker();
   worker.attach({
     fetchAll: req => {

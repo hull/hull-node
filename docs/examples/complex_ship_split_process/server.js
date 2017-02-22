@@ -1,6 +1,9 @@
-import { actionRouter, batchHandler, notifHandler, webhookHandler } from "hull/utils";
+/**
+ * File configuring the server application of the HullApp
+ */
+import { actionRouter, batchHandler, notifHandler, oAuthHandler, webhookHandler } from "hull/utils";
 
-export default function Server(app) {
+export default function Server({ app, clientId, clientSecret }) {
   /**
    * Express application with static router and view
    * @type {WebApp}
@@ -30,9 +33,17 @@ export default function Server(app) {
       }
     ]
   }))
-  express.use("/webhook", webhookHandler((messages) => {
 
+  server.use("/admin", oAuthHandler({
+    clientId,
+    clientSecret,
+    onLogin: () => {}
+  }));
+
+  express.use("/webhook", webhookHandler((messages) => {
   }, { batchSize: 100 }))
+
+
 
   return express;
 }
