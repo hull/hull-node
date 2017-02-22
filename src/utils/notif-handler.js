@@ -2,6 +2,7 @@ import express from "express";
 import https from "https";
 import _ from "lodash";
 import requireHullMiddleware from "./require-hull-middleware";
+import Batcher from "../infra/batcher";
 
 function subscribeFactory(options) {
   return function subscribe(req, res, next) {
@@ -45,9 +46,19 @@ function processHandlers(handlers) {
       const context = req.hull;
 
       if (messageHandlers && messageHandlers.length > 0) {
-        messageHandlers.map((fn) => {
-          return processing.push(fn(context, notification));
-        });
+        processing.push(Batcher.getHandler(eventName, {
+          ctx: context,
+          options: {
+            maxSize: /*maxSize || */1000,
+            throttle: /*throttle || */10000
+          }
+        })
+        .setCallback((notifications) => {
+          return Promise.all(messageHandlers.map((fn) => {
+            return fn(context, notifications);
+          }));
+        })
+        .addMessage(notification))
       }
 
       const eventHandlers = handlers.event || [];
