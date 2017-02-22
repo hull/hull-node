@@ -1,3 +1,4 @@
+import _ from "lodash";
 import CacheManager from "cache-manager";
 import ShipCache from "./ship-cache";
 
@@ -11,7 +12,7 @@ export default class Cache {
   /**
    * @param {Object} options passed to node-cache-manager
    */
-  constructor(options) {
+  constructor(options = {}) {
     this.cache = CacheManager.caching(options);
     this.middleware = this.middleware.bind(this);
   }
