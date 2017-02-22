@@ -26,17 +26,17 @@ Ship object with manifest information and `private_settings`
 Hostname of the current request.
 
 ### cache
-[Caching object](src/infra/cache/ship-cache.js)
+[Caching object](../src/infra/cache/ship-cache.js)
 
 ### enqueue
-A [function](src/infra/queue/enqueue.js) to perform tasks in async manner.
+A [function](../src/infra/queue/enqueue.js) to perform tasks in async manner.
 
 ### metric
-An [object](src/infra/instrumentation/metric-agent.js) to send data to metrics service.
+An [object](../src/infra/instrumentation/metric-agent.js) to send data to metrics service.
 
 ### service
 A namespace reserved for connector developer to inject a custom logic, which needs to work in the context.
-It is applied to the context object by [this middleware](src/utils/service-middleware.js), it takes a plain javascript object with the definition of API, that is a list of functions and classes.
+It is applied to the context object by [this middleware](../src/utils/service-middleware.js), it takes a plain javascript object with the definition of API, that is a list of functions and classes.
 What it injects into the context object is a mapped javscript object with the same keys, bound functions and objects of initiated classes. The binding and initialization does the following:
 
 - function is bind with the context object as a first argument - `fn.bind(null, ctx)`
