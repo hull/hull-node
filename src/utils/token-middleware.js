@@ -5,9 +5,9 @@
  * @param  {Function} next
  */
 export default function tokenMiddleware(req, res, next) {
-  if (req.query && req.query.hullToken) {
+  if (req.query && (req.query.hullToken || req.query.token)) {
     req.hull = req.hull || {};
-    req.hull.token = req.query.hullToken;
+    req.hull.token = req.query.hullToken || req.query.token;
   }
   next();
 }

@@ -26,7 +26,14 @@ const reqStub = {
 
 function post({ port, body }) {
   return Promise.fromCallback(function(callback) {
-    const client = http.request({ path: "/notify?organization=local&secret=secret&ship=ship_id", method: 'POST', port })
+    const client = http.request({
+      path: "/notify?organization=local&secret=secret&ship=ship_id",
+      method: 'POST',
+      port,
+      headers: {
+        "x-amz-sns-message-type": "test"
+      }
+    })
     client.end(JSON.stringify(body))
     client.on("response", () => callback());
   });

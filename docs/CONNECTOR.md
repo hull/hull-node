@@ -65,61 +65,29 @@ NotifHandler is a packaged solution to receive User and Segment Notifications fr
 Here's how to use it.
 
 ```js
-const app = express();
-import { NotifHandler } from 'hull';
+const app = new Hull.App({}).server();
+import { notifHandler } from "hull/lib/utils";
 
 const handler = NotifHandler({
-  hostSecret: hostSecret //Ship's Host secret
   onSubscribe() {} // called when a new subscription is installed
-  onError() {} // called when an error is raised
   handlers: {
-    groupTraits: true, //Receive a nested object or a flat object for user properties containing '/'
-    'event': function() {
-      console.log('Event Handler here', notif, context);
-      // notif: {
-      //    message: {
-      //      user: { id: '123', ... },
-      //      segments: [ { } ],
-      //      event: []
-      //    },
-      //    subject: 'event',
-      //    timestamp: "2016-02-03T17:01:57.393Z' }
-      // },
-      // context: {
-      //  hull: <Instance of Hull Client>
-      //  ship: <Current ship instance if available>,
-      //  req: < Original request, Useful to retreive additional data>
-      // }
-
-    },
-    'ship:update': function(notif, context){},
-    'segment:update': function(notif, context){},
-    'segment:delete': function(notif, context){},
-    'user:delete': function(notif, context){},
-    'user:create': function(notif, context){},
-    'user:update' : function(notif, context) {
-      console.log('Event Handler here', notif, context);
-      // notif: {
-      //    message: {
-      //      user: { id: '123', ... },
-      //      segments: [ { } ],
-      //      changes: {},
-      //      events: [ {}, {} ]
-      //    },
-      //    subject: 'user_report:update',
-      //    timestamp: "2016-02-03T17:01:57.393Z' }
-      // },
-      // context: {
-      //  hull: <Instance of Hull Client>
-      //  ship: <Current ship instance if available>,
-      //  req: < Original request, Useful to retreive additional data>
+    "ship:update": function(context, messages) {},
+    "segment:update": function(context, messages) {},
+    "segment:delete": function(context, messages) {},
+    "user:update" : function(context, messages) {
+      console.log('Event Handler here', context, messages);
+      // context: Context Object, see docs above
+      // message: {
+      //   user: { id: '123', ... },
+      //   segments: [ { } ],
+      //   changes: {},
+      //   events: [ {}, {} ]
       // }
     }
   }
 })
 
-app.use(Hull.Middleware({ hostSecret }));
-app.post('/notify', handler);
+app.use('/notify', handler);
 ```
 
 Your app can subscribe to events from Hull and receive Events via http POST.
@@ -281,23 +249,22 @@ BatchHandler is a packaged solution to receive Batches of Users. It's built to b
 Here is how to use it:
 
 ```js
-const app = express();
-import { BatchHandler } from 'hull';
+const app = new Hull.App({}).server();
+import { batchHandler } from "hull/lib/utils";
 
-const handler = BatchHandler({
+const handler = BatchHandler(function(context = {}, users = []) {
+  // Context is the main Context object
+  // user object (see notifHandler docs)
+  users.map(u => updateUser(context, u));
+}, {
   groupTraits: false,
-  handler: function(notifications=[], context) {
-    //notifications itms are the same format as individual notifications from NotifHandler, but only contain a `message` object containing the user.
-    //Context is the same as in NotifHandler
-    notifications.map(n => updateUser(n, context));
-}
-})
+  batchSize: 100 // the maximum size of users array
+});
 
-app.use(Hull.Middleware({ hostSecret }));
-app.post('/batch', handler);
+app.use('/batch', handler);
 ```
 
-### OAuthHandler()
+### oAuthHandler()
 
 OAuth Handler is a packaged authentication handler using [Passport](http://passportjs.org/). You give it the right parameters, it handles the entire auth scenario for you.
 

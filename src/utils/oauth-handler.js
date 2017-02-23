@@ -48,7 +48,6 @@ export default function oauth({
   router.use(requireHullMiddleware);
   router.use(fetchToken);
   router.use(passport.initialize());
-  router.use(bodyParser.json());
   router.use(bodyParser.urlencoded({ extended: true }));
 
   passport.serializeUser((req, user, done) => {
@@ -63,9 +62,9 @@ export default function oauth({
   passport.use(strategy);
 
   router.get(HOME_URL, (req, res) => {
-    const { client, ship = {}, } = req.hull;
+    const { ship = {}, } = req.hull;
     const data = { name, urls: getURLs(req), ship };
-    isSetup(req, { hull: client, ship })
+    isSetup(req)
       .then(
         (setup = {}) => { res.render(views.home, { ...data, ...setup }); },
         (setup = {}) => { res.render(views.login, { ...data, ...setup }); }

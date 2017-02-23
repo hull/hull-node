@@ -1,4 +1,4 @@
-import rawBody from "raw-body";
+import bodyParser from "body-parser";
 import MessageValidator from "sns-validator";
 
 /**
@@ -8,31 +8,6 @@ import MessageValidator from "sns-validator";
  */
 export default function notifMiddlewareFactory() {
   const validator = new MessageValidator(/sns\.us-east-1\.amazonaws\.com/, "utf8");
-
-  function parseRequest(req, res, next) {
-    req.hull = req.hull || {};
-    rawBody(req, true, (err, body) => {
-      if (err) {
-        const e = new Error("Invalid Body");
-        e.status = 400;
-        return next(e);
-      }
-      try {
-        const parsedBody = JSON.parse(body);
-        if (parsedBody.Message && parsedBody.Subject && parsedBody.Type) {
-          req.hull.message = parsedBody;
-        } else {
-          req.body = parsedBody;
-        }
-      } catch (parseError) {
-        const e = new Error("Invalid Body");
-        e.status = 400;
-        return next(e);
-      }
-      return next();
-    });
-  }
-
 
   function verify(req, res, next) {
     if (!req.hull.message) {
@@ -68,7 +43,14 @@ export default function notifMiddlewareFactory() {
   }
 
   return function notifMiddleware(req, res, next) {
-    parseRequest(req, res, () => {
+    req.hull = req.hull || {};
+    if (req.headers["x-amz-sns-message-type"]) {
+      req.headers["content-type"] = "application/json;charset=UTF-8";
+    }
+    bodyParser.json()(req, res, () => {
+      if (req.body && req.body.Message && req.body.Subject && req.body.Type) {
+        req.hull.message = req.body;
+      }
       verify(req, res, next);
     });
   };

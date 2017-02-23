@@ -1,6 +1,6 @@
 export default function requireHullClient(req, res, next) {
   if (!req.hull.client) {
-    return res.status(403).send("missing credentials");
+    return res.status(403).send("Missing credentials. Set one of token or hullToken or set of id, organization, secret");
   }
   return next();
 }
