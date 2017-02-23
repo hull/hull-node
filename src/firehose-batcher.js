@@ -2,44 +2,29 @@ import _ from "lodash";
 import restAPI from "./rest-api";
 import Configuration from "./configuration";
 
-const noop = function() {};
 const BATCHERS = {};
 
 
 global.setImmediate = global.setImmediate || process.nextTick.bind(process);
 
-/**
- * Get an error from a `res`.
- *
- * @param {Object} res
- * @return {String}
- */
-
-function error(res){
-  if (!res.error) return;
-  var body = res.body;
-  var msg = body.error && body.error.message
-    || res.status + ' ' + res.text;
-  return new Error(msg);
-}
-
 function defaultHandler(params, batcher) {
-  return restAPI(batcher.config, 'firehose', 'post', params);
+  return restAPI(batcher.config, "firehose", "post", params);
 }
 
 class FirehoseBatcher {
 
   static getInstance(config, handler) {
     const { id, secret, organization, accessToken } = config;
-    const key = [organization, id, secret].join("/")
-    const batcher = BATCHERS[key] = BATCHERS[key] || new FirehoseBatcher(config, handler);
+    const key = [organization, id, secret].join("/");
+    BATCHERS[key] = BATCHERS[key] || new FirehoseBatcher(config, handler);
+    const batcher = BATCHERS[key];
     return (message, fn) => {
       message.headers = message.headers || {};
       if (accessToken) {
-        message.headers['Hull-Access-Token'] = accessToken;
+        message.headers["Hull-Access-Token"] = accessToken;
       }
       return batcher.push(message, fn);
-    }
+    };
   }
 
   constructor(config, handler) {
@@ -55,7 +40,7 @@ class FirehoseBatcher {
       const message = { ...payload, timestamp: new Date() };
       const callback = (err, res) => {
         return err ? reject(err) : resolve(res);
-      }
+      };
 
       this.queue.push({ message, callback });
 
@@ -64,16 +49,17 @@ class FirehoseBatcher {
       if (this.queue.length >= this.flushAt) this.flush();
       if (this.timer) clearTimeout(this.timer);
       if (this.flushAfter) this.timer = setTimeout(this.flush.bind(this), this.flushAfter);
+      return true;
     });
   }
 
-  flush(fn){
-    fn = fn || noop;
+  flush(fn) {
+    fn = fn || (() => {});
     if (!this.queue.length) return setImmediate(fn);
 
     const items = this.queue.splice(0, this.flushAt);
-    const fns = items.map((i) => i.callback);
-    const batch = items.map((i) => i.message);
+    const fns = items.map(i => i.callback);
+    const batch = items.map(i => i.message);
 
     const params = {
       batch,
@@ -82,22 +68,18 @@ class FirehoseBatcher {
     };
 
     return this.handler(params, this).then(
-      ok => fns.forEach((fn) => fn(null, ok)),
-      err => fns.forEach((fn) => fn(err, null))
+      ok => fns.forEach(func => func(null, ok)),
+      err => fns.forEach(func => func(err, null))
     );
-
   }
-
 }
-
-
 
 function handleBeforeExit() {
   FirehoseBatcher.exiting = true;
   _.map(BATCHERS, b => b.flush());
 }
 
-process.on('beforeExit', handleBeforeExit);
+process.on("beforeExit", handleBeforeExit);
 
 
 module.exports = FirehoseBatcher;

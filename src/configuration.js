@@ -57,7 +57,7 @@ class Configuration {
     this._state = { ...GLOBALS };
 
     _.each(REQUIRED_PROPS, (test, prop) => {
-      if (!config.hasOwnProperty(prop)) {
+      if (!Object.prototype.hasOwnProperty.call(config, prop)) {
         throw new Error(`Configuration is missing required property: ${prop}`);
       }
       if (!test(config[prop])) {

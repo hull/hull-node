@@ -12,7 +12,7 @@ function subscribeFactory(options) {
       return next();
     }
 
-    https.get(message.SubscribeURL, () => {
+    return https.get(message.SubscribeURL, () => {
       if (typeof options.onSubscribe === "function") {
         options.onSubscribe(req);
       }
@@ -38,7 +38,7 @@ function getHandlerName(eventName) {
 function processHandlers(handlers) {
   return function process(req, res, next) {
     try {
-      const { message, notification, client, ship } = req.hull;
+      const { message, notification } = req.hull;
       const eventName = getHandlerName(message.Subject);
       const messageHandlers = handlers[eventName];
       const processing = [];
@@ -46,19 +46,19 @@ function processHandlers(handlers) {
       const context = req.hull;
 
       if (messageHandlers && messageHandlers.length > 0) {
-        processing.push(Batcher.getHandler(eventName, {
-          ctx: context,
-          options: {
-            maxSize: /*maxSize || */1000,
-            throttle: /*throttle || */10000
-          }
-        })
-        .setCallback((notifications) => {
-          return Promise.all(messageHandlers.map((fn) => {
-            return fn(context, notifications);
-          }));
-        })
-        .addMessage(notification))
+        processing.push(Promise.all(messageHandlers.map((def, i) => {
+          Batcher.getHandler(`${eventName}-${i}`, {
+            ctx: context,
+            options: {
+              maxSize: _.get(def, "[1].maxSize", 1000),
+              throttle: _.get(def, "[1].throttle", 10000)
+            }
+          })
+          .setCallback((notifications) => {
+            return def[0](context, notifications);
+          })
+          .addMessage(notification);
+        })));
       }
 
       const eventHandlers = handlers.event || [];
@@ -96,7 +96,7 @@ function processHandlers(handlers) {
 }
 
 
-module.exports = function NotifHandler({ handlers = [], groupTraits, onSubscribe }) {
+module.exports = function NotifHandler({ handlers = [], onSubscribe }) {
   const _handlers = {};
   const app = express.Router();
 

@@ -9,12 +9,6 @@ import MessageValidator from "sns-validator";
 export default function notifMiddlewareFactory() {
   const validator = new MessageValidator(/sns\.us-east-1\.amazonaws\.com/, "utf8");
 
-  return function notifMiddleware(req, res, next) {
-    parseRequest(req, res, () => {
-      verify(req, res, next);
-    });
-  }
-
   function parseRequest(req, res, next) {
     req.hull = req.hull || {};
     rawBody(req, true, (err, body) => {
@@ -25,7 +19,7 @@ export default function notifMiddlewareFactory() {
       }
       try {
         const parsedBody = JSON.parse(body);
-        if (parsedBody.Message, parsedBody.Subject, parsedBody.Timestamp) {
+        if (parsedBody.Message && parsedBody.Subject && parsedBody.Type) {
           req.hull.message = parsedBody;
         } else {
           req.body = parsedBody;
@@ -45,7 +39,7 @@ export default function notifMiddlewareFactory() {
       return next();
     }
 
-    validator.validate(req.hull.message, function validate(err) {
+    return validator.validate(req.hull.message, function validate(err) {
       if (err) {
         console.warn("Invalid signature error", req.hull.message);
       }
@@ -53,7 +47,7 @@ export default function notifMiddlewareFactory() {
       const { message } = req.hull;
 
       if (message.Type === "SubscriptionConfirmation") {
-        return next()
+        return next();
       } else if (message.Type === "Notification") {
         try {
           const payload = JSON.parse(message.Message);
@@ -72,4 +66,10 @@ export default function notifMiddlewareFactory() {
       return next();
     });
   }
+
+  return function notifMiddleware(req, res, next) {
+    parseRequest(req, res, () => {
+      verify(req, res, next);
+    });
+  };
 }

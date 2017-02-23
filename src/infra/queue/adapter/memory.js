@@ -20,7 +20,7 @@ export default class MemoryAdapter {
    * @param {Object} jobPayload
    * @return {Promise}
    */
-  create(jobName, jobPayload = {}, { ttl = 0, delay = null, priority = null } = {}) {
+  create(jobName, jobPayload = {}, { delay = null } = {}) {
     if (delay) {
       setTimeout(this.enqueue.bind(this, jobName, jobPayload), delay);
       return Promise.resolve();
@@ -55,11 +55,11 @@ export default class MemoryAdapter {
   processQueues() {
     return Promise.all(_.map(this.processors, (jobCallback, jobName) => {
       if (_.get(this.queue, jobName, []).length === 0) {
-        return;
+        return Promise.resolve();
       }
       const job = this.queue[jobName].pop();
       return jobCallback(job);
-    }))
+    }));
     // .then(() => {
     //   this.processQueues();
     // }, () => {
@@ -68,6 +68,6 @@ export default class MemoryAdapter {
   }
 
   exit() {
-    return Promise.resolve();
+    return Promise.resolve(this);
   }
 }

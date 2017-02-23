@@ -42,7 +42,7 @@ export default function HullApp({
       this._worker = new Worker({ Hull, instrumentation, cache, queue });
       this._worker.use(Hull.Middleware({ hostSecret, clientConfig }));
       this._worker.use(requireHullMiddleware);
-      this._server.use(segmentsMiddleware);
+      this._worker.use(segmentsMiddleware);
       this._worker.use(serviceMiddleware(service));
       return this._worker;
     },
