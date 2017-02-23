@@ -4,6 +4,7 @@ import https from "https";
 import _ from "lodash";
 import requireHullMiddleware from "./require-hull-middleware";
 import Batcher from "../infra/batcher";
+import { group } from "../trait";
 
 function subscribeFactory(options) {
   return function subscribe(req, res, next) {
@@ -49,6 +50,9 @@ function processHandlersFactory(handlers, userHandlerOptions) {
 
       if (messageHandlers && messageHandlers.length > 0) {
         if (message.Subject === "user_report:update") {
+          if (notification.message && notification.message.user && userHandlerOptions.groupTraits) {
+            notification.message.user = group(notification.message.user);
+          }
           processing.push(Promise.all(messageHandlers.map((handler, i) => {
             return Batcher.getHandler(`${ns}-${eventName}-${i}`, {
               ctx: context,

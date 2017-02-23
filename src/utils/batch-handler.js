@@ -1,9 +1,10 @@
 import { Router } from "express";
 
+import { group } from "../trait";
 import responseMiddleware from "./response-middleware";
 import requireHullMiddleware from "./require-hull-middleware";
 
-export default function batchHandler(handler, options = { batchSize: 100 }) {
+export default function batchHandler(handler, { batchSize = 100, groupTraits = false } = {}) {
   const router = Router();
   router.use(requireHullMiddleware);
   router.post("/", (req, res, next) => {
@@ -11,11 +12,14 @@ export default function batchHandler(handler, options = { batchSize: 100 }) {
 
     return client.handleExtract({
       body: req.body,
-      batchSize: options.batchSize,
+      batchSize,
       handler: (users) => {
         const segmentId = req.query.segment_id || null;
         users = users.map(u => client.setUserSegments({ add_segment_ids: [segmentId] }, u));
         users = users.filter(u => client.filterUserSegments(u));
+        if (groupTraits) {
+          users = users.map(u => group(u));
+        }
         return handler(req.hull, users);
       }
     }).then(next, next);
