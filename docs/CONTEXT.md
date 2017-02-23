@@ -1,6 +1,6 @@
 # Context object
 `HullApp` applies multiple middleware to the request handler.
-The result is `req.hull` object which is the Context Object - a toolkit to work in the context of current organization and connector instance.
+The result is `req.hull` object which is the Context Object - a set of modules to work in the context of current organization and connector instance.
 
 ```javascript
 {
@@ -20,13 +20,13 @@ The result is `req.hull` object which is the Context Object - a toolkit to work 
 ```
 
 #### client
-Hull API client initialized to work with current organization
+[Hull API client](../README.md) initialized to work with current organization
 
 #### ship
 Ship object with manifest information and `private_settings`
 
 #### segments
-An array of segments information which is fetched
+An array of segments information
 
 #### hostname
 Hostname of the current request.
@@ -54,4 +54,39 @@ optional - set if there is a sns message incoming
 
 #### notification
 What is the relation to the `req.hull.message`?
+
+## Context management convention
+The context object is treated by the `Hull.App` as a [dependency injection](https://en.wikipedia.org/wiki/Dependency_injection) container which carries on all required dependencies to be used in actions, jobs or custom methods.
+
+This library sticks to a the following convention of managing the context object:
+
+### Functions
+Every "pure" function which needs context to operate takes it as a first argument:
+
+```javascript
+function getProperties(context, prop) {
+  cons { client } = context;
+  return client.get("/properties", { prop });
+}
+```
+
+This allow binding functions to the context and using bound version:
+
+```javascript
+const getProp = getProperties.bind(null, context);
+
+getProp("test") === getProperties(context, "test")
+```
+
+### Classes
+In case of class the context is the one and only argument:
+
+```javascript
+
+class ServiceAgent {
+  constructor(context) {
+    this.client = context.client;
+  }
+}
+```
 

@@ -46,10 +46,10 @@ In all `server` actions and `worker` there is a context object available as a fi
 Here are the details about the api: [Context](./CONTEXT.md)
 
 ## Utils
-In addition to the Applications and Infrastcture the toolkit provides a variety of the utilities to perform most common actions of the ship.
+In addition to the Applications the toolkit provides a variety of the utilities to perform most common actions of the ship. Following list of handlers includes a prebuild Express routers which performs most common operations of connectors. 
 
 ### actionHandler() `incoming`
-This is the simplest requests handler to expose custom logic through custom API POST endpoint. The possible usage is triggering a custom operation (like fetching historical data) or a webhook. Both handles data `incoming` into Hull platform. However in case of busy webhook it's better to use `batcherHandler` which automatically group the incoming requests into batches.
+This is the simplest requests handler to expose custom logic through custom API POST endpoint. The possible usage is triggering a custom operation (like fetching historical data) or a webhook. Both cases handle data `incoming` into Hull platform. However in case of busy webhook it's better to use `batcherHandler` which automatically group the incoming requests into batches.
 
 ```js
 const app = new Hull.App({}).server();
@@ -112,18 +112,18 @@ const handler = NotifHandler({
   },
   onSubscribe() {} // called when a new subscription is installed
   handlers: {
-    "ship:update": function(context, messages) {},
-    "segment:update": function(context, messages) {},
-    "segment:delete": function(context, messages) {},
-    "user:update" : function(context, messages) {
-      console.log('Event Handler here', context, messages);
-      // context: Context Object, see docs above
-      // message: {
+    "ship:update": function(ctx, messages = []) {},
+    "segment:update": function(ctx, messages = []) {},
+    "segment:delete": function(ctx, messages = []) {},
+    "user:update" : function(ctx, messages = []) {
+      console.log('Event Handler here', ctx, messages);
+      // ctx: Context Object, see docs above
+      // messages: [{
       //   user: { id: '123', ... },
       //   segments: [{}],
       //   changes: {},
       //   events: [{}, {}]
-      // }
+      // }]
     }
   }
 })
@@ -305,7 +305,7 @@ app.use('/batch', handler);
 
 ### oAuthHandler()
 
-OAuth Handler is a packaged authentication handler using [Passport](http://passportjs.org/). You give it the right parameters, it handles the entire auth scenario for you.
+OAuthHandler is a packaged authentication handler using [Passport](http://passportjs.org/). You give it the right parameters, it handles the entire auth scenario for you.
 
 It exposes hooks to check if the ship is Set up correctly, inject additional parameters during login, and save the returned settings during callback.
 
@@ -422,40 +422,27 @@ views: {
 ```
 
 
-
 ## Process level modules - infrastrcture
 
-To run properly the applications needs some infrascture modules which needs to be initiated at the process level and then passed to the applications as dependencies.
-
-### Instrumentation
-A instrumentation service which is an optional dependency to `WebApp` and `WorkerApp`.
-It automatically sends data to DataDog, Sentry and Newrelic if appropriate ENV VARS are set.
-It also adds `req.hull.metric` agent to add custom metrics to the ship.
-
-```js
-import { Instrumentation } from "hull/lib/ship/infra";
-
-const instrumentation = new Instrumentation();
-
-const app = new Hull.App({ instrumentation });
-```
+To run properly the applications needs some infrascture modules which needs to be initiated at the process level and then passed to the applications as dependencies. This is an optional step and it's needed in case of more detailed control of the configuration.
 
 ### Queue
-This is a required dependency to the `WorkerApp` and optional to `WebApp`.
-It adds `req.hull.queue` function which takes name of the job, the payload as arguments.
+It adds `req.hull.queue` function which takes name of the job, the payload as arguments. By default it's initiated inside `Hull.App` as a very simplistic in-memory queue, but in case of production grade needs, it comes with a [Kue](https://github.com/Automattic/kue) adapter which can be created like that.
+When you pass your custom `queue` instance, the `Hull.App` will use it instead of the default one.
 
 ```js
 import { Queue } from "hull/lib/ship/infra";
 
-const queue = new Queue({ options });
+const queue = new Queue("kue", { options });
 
 const app = new Hull.App({ queue });
 ```
 
 ### Cache
-Optional caching mechanism which adds `req.hull.cache` to store the ship information in the cache not to
-fetch it for every request.
-The `req.hull.cache` is automatically picked and used by the `Hull.Middleware`.
+It adds `req.hull.cache` to store the ship and segments information in the cache not to
+fetch it for every request. The `req.hull.cache` is automatically picked and used by the `Hull.Middleware`
+and `segmentsMiddleware`. The default comes with the basic in-memory store, but in case of distributed connectors being run in multiple processes for reliable operation a shared cache solution should be used.
+The Cache module internally uses [node-cache-manager](https://github.com/BryanDonovan/node-cache-manager), so any of it's compatibile store like `redis` or `memcache` could be used:
 
 ```js
 import { Cache } from "hull/lib/ship/infra";
@@ -465,10 +452,25 @@ const cache = new Cache({ options });
 const app = new Hull.App({ cache });
 ```
 
+### Instrumentation
+It automatically sends data to DataDog, Sentry and Newrelic if appropriate ENV VARS are set.
+It also adds `req.hull.metric` agent to add custom metrics to the ship. Right now it doesn't take any custom options, but it's showed here for the sake of completeness.
+
+```js
+import { Instrumentation } from "hull/lib/ship/infra";
+
+const instrumentation = new Instrumentation();
+
+const app = new Hull.App({ instrumentation });
+```
+
 ### Batcher
 
 
-## Internal utils
+## Internal libraries
+This is a set of internal utilities being used by the `Hull.App` and `Handlers`.
+They should be used in case of special requirements or a need of greater customization.
+
 
 ### serviceMiddleware
 This is a middleware which helps to inject the custom ship modules to the request object.
