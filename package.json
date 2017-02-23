@@ -23,7 +23,8 @@
     "coverage": "gulp coverage",
     "build": "gulp build",
     "watch": "gulp watch",
-    "prepublish": "npm run build"
+    "prepublish": "npm run build",
+    "postinstall": "npm run build"
   },
   "dependencies": {
     "JSONStream": "^1.1.2",
