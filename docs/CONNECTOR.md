@@ -1,7 +1,7 @@
 # Connector toolkit
 This library includes a base toolkit to create a ship - connector to integrate Hull platform with a selected 3rd party API Service.
 
-## HullApp
+## new Hull.App()
 ```js
 import Hull from "hull";
 
