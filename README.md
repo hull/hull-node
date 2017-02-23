@@ -2,7 +2,10 @@
 
 This library makes it easy to interact with the Hull API, send tracking and properties and handle Server-side Events we send to installed Ships.
 
-## Usage
+## Connector usage
+[Connector documentation](docs/CONNECTOR.md)
+
+## Standalone Client
 
 ```js
 import Hull from 'hull';
@@ -295,9 +298,3 @@ Returns information about all attributes available in the current organization
 Returns `true/false` based on if the user belongs to any of the segments selected in the settings segment filter. If there are no segments defined it will return `false` for all users.
 
 ### setUserSegments({ add_segment_ids = [], remove_segment_ids = [] }, user)
-
-
-# Additional docs:
-
-- [Connector](docs/CONNECTOR.md)
-- [Context](docs/CONTEXT.md)

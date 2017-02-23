@@ -46,5 +46,7 @@ Here are the details about its structure: [Context](./CONTEXT.md)
 ## More Information
 
 - [Handlers to build your connector](./HANDLERS.md)
+- [Example connectors](./examples)
 - [Infrastructure modules](./INFRA.md)
+- [Internal Middleware](./MIDDLEWARES.md)
 
