@@ -74,51 +74,6 @@ app.use(function(req,res,next){
 
 Reverse of Bring your own Users. When using Hull's Identity management, tells you who the current user is. Generates a middleware to add to your Connect/Express apps.
 
-
-## Utils
-
-### hull.utils.groupTraits(user_report)
-
-```js
-const hull = new Hull({config});
-
-hull.utils.groupTraits({
-  'email': 'romain@user',
-  'name': 'name',
-  'traits_coconut_name': 'coconut',
-  'traits_coconut_size': 'large',
-  'traits_cb/twitter_bio': 'parisian',
-  'traits_cb/twitter_name': 'parisian',
-  'traits_group/name': 'groupname',
-  'traits_zendesk/open_tickets': 18
-});
-// returns
-{
-  'id' : '31628736813n1283',
-  'email': 'romain@user',
-  'name': 'name',
-  'traits': {
-    'coconut_name': 'coconut',
-    'coconut_size': 'large'
-  },
-  cb: {
-    'twitter_bio': 'parisian',
-    'twitter_name': 'parisian'
-  },
-  group: {
-    'name': 'groupname',
-  },
-  zendesk: {
-    'open_tickets': 18
-  }
-};
-```
-
-The Hull API returns traits in a "flat" format, with '/' delimiters in the key.
-The Events handler  Returns a grouped version of the traits in the flat user report we return from the API.
-> The NotifHandler already does this by default.
-
-
 # Impersonating a User
 
 ```js
@@ -234,6 +189,10 @@ user.traits({
 
 ## Utils
 
+The Hull API returns traits in a "flat" format, with '/' delimiters in the key.
+The Events handler  Returns a grouped version of the traits in the flat user report we return from the API.
+> The NotifHandler already does this by default.
+
 ### traits.group(user_report)
 
 ```js
@@ -271,61 +230,14 @@ groupTraits({
 };
 ```
 
-The Hull API returns traits in a "flat" format, with '/' delimiters in the key.
-The Events handler  Returns a grouped version of the traits in the flat user report we return from the API.
-> The NotifHandler already does this by default.
+This utility can be also used in following way:
 
-
-# Class Methods
-
-## Hull.Middleware()
-This middleware standardizes the instantiation of a Hull client from configuration passed as a Query string or as a token. It also optionally fetches the entire ship's configuration and caches it to save requests.
-
-### Params
-
-##### hostSecret
-The ship hosted secret (Not the one received from Hull. The one the hosted app itself defines. Will be used to encode tokens).
-
-##### clientConfig
-Additional config which will be passed to the new instance of Hull Client
+### hull.utils.groupTraits(user_report)
 
 ```js
-import Hull from "hull";
-
-app.use(Hull.Middleware({ hostSecret: "supersecret" }));
-
-app.use((req, res) => { res.json({ message: "thanks" }); });
-
-app.use(function(err, res, req, next){
-  if(err) return res.status(err.status || 500).send({ message: err.message });
-});
+const hull = new Hull({ config });
 ```
 
-Here is what happens when your express app receives a query.
-
-1. If a config object is found in `req.hull.config` it will be used to create an instance of the client.
-2. If a token is present in `req.hull.token`, the middleware will try to use the `hostSecret` to decode it, store it in `req.hull.client`. When using `req.hull.token`, the decoded token should be a valid configuration object: `{id, organization, secret}`
-3. If the query string contains `id`, `secret`, `organization`, they will be stored in `req.hull.config`
-4. After this, if a valid configuration is in `req.hull.config`, a Hull client instance will be created and stored in `req.hull.client`
-
-- When this is done, then the Ship will be fetched and stored in `req.hull.ship`
-- If there is a `req.hull.cache` registered in the request context object, it will be used to cache the ship object
-- If the configuration or the secret is invalid, an error will be thrown that you can catch using express error handlers.
-
-```js
-app.use(function(req, res, next){
-   //... your token retreiving method
-   req.hull.token = myToken;
-   next();
-})
-app.use(Hull.Middleware({ hostSecret: "supersecret" }));
-app.use(function(req, res){
-  req.hull.config // {id, organization, secret}
-  req.hull.client // instance of Hull client.
-  req.hull.ship   // ship object - use to retreive current configuration.
-});
-
-```
 
 ### Logging Methods: Hull.logger.debug(), Hull.logger.info() ...
 
@@ -348,7 +260,9 @@ Uses [Winston](https://github.com/winstonjs/winston)
 
 The Logger comes in two flavors, `Hull.logger.xxx` and `hull.logger.xxx` - The first one is a generic logger, the second one injects the current instance of `Hull` so you can retreive ship name, id and organization for more precision.
 
+
 ## Helpers
+
 Helpers is a set of functions being attached by `Hull.Middleware` to the `req.hull.client`
 with the current context being applied as a first argument.
 The functions could be also used one by one.
@@ -382,7 +296,6 @@ Returns information about all attributes available in the current organization
 Returns `true/false` based on if the user belongs to any of the segments selected in the settings segment filter. If there are no segments defined it will return `false` for all users.
 
 ### setUserSegments({ add_segment_ids = [], remove_segment_ids = [] }, user)
-
 
 
 # Additional docs:
