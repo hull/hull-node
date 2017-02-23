@@ -47,7 +47,7 @@ function processHandlers(handlers) {
 
       if (messageHandlers && messageHandlers.length > 0) {
         processing.push(Promise.all(messageHandlers.map((def, i) => {
-          Batcher.getHandler(`${eventName}-${i}`, {
+          return Batcher.getHandler(`${eventName}-${i}`, {
             ctx: context,
             options: {
               maxSize: _.get(def, "[1].maxSize", 1000),
