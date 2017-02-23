@@ -13,7 +13,7 @@ app.start();
 
 ```
 
-#### server
+### server()
 ```js
 const app = new Hull.App({ port, hostSecret, service });
 
@@ -25,7 +25,7 @@ server.use("/customRoute", customRouter);
 This is a base public facing web application which exposes a http rest api to communicate with hull platform.
 The `app.server()` method returns an instance of [express](http://expressjs.com/) application with basic static router which serves [manifest.json](https://www.hull.io/docs/apps/ships/#file-structure) file and README.md.
 
-#### worker
+### worker()
 ```js
 const app = new Hull.App({ port, hostSecret, service });
 
@@ -40,11 +40,11 @@ worker.attach({
 More complex ships needs to handle its operation using a background queue. This toolkit provides a base worker application which consume the jobs queued from both `server` and `worker`.
 
 ## Context Object
-In all `server` actions and `worker` there is a context object available as a first argument of the callbacks.
-Here are the details about the api: [Context](./CONTEXT.md)
+In all `server` actions and `worker` job there is a context object available as a first argument of the callbacks.
+Here are the details about its structure: [Context](./CONTEXT.md)
 
 ## More Information
 
-- [Handlers to build your connector]("./HANDLERS.md")
-- [Infrastructure modules]("./INFRA.md")
+- [Handlers to build your connector](./HANDLERS.md)
+- [Infrastructure modules](./INFRA.md)
 
