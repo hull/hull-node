@@ -15,7 +15,8 @@ export default function segmentsMiddleware(req, res, next) {
   }
 
   const { cache, message } = req.hull;
-  const bust = (message && (message.Subject === "segment:update" || message.Subject === "segment:delete"));
+  const bust = (message
+    && (message.Subject === "users_segment:update" || message.Subject === "users_segment:delete"));
 
   return (() => {
     if (bust) {

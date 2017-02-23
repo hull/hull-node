@@ -68,10 +68,7 @@ describe("NotifHandler", () => {
     const app = express();
     const notifHandler = NotifHandler({
       handlers: {
-        "ship:update": [
-          handler,
-          { maxSize: 1 }
-        ]
+        "ship:update": handler
       }
     });
     app.use(notifMiddleware());

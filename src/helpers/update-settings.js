@@ -8,7 +8,7 @@
  */
 export default function updateSettings(ctx, newSettings) {
   const { client, cache } = ctx;
-  return client.get(this.ship.id)
+  return client.get(ctx.ship.id)
     .then((ship) => {
       const private_settings = { ...ship.private_settings, ...newSettings };
       ship.private_settings = private_settings;

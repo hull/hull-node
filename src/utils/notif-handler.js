@@ -1,3 +1,4 @@
+import crypto from "crypto";
 import express from "express";
 import https from "https";
 import _ from "lodash";
@@ -35,7 +36,8 @@ function getHandlerName(eventName) {
   return `${model}:${action}`;
 }
 
-function processHandlers(handlers) {
+function processHandlersFactory(handlers, userHandlerOptions) {
+  const ns = crypto.randomBytes(64).toString("hex");
   return function process(req, res, next) {
     try {
       const { message, notification } = req.hull;
@@ -46,36 +48,24 @@ function processHandlers(handlers) {
       const context = req.hull;
 
       if (messageHandlers && messageHandlers.length > 0) {
-        processing.push(Promise.all(messageHandlers.map((def, i) => {
-          return Batcher.getHandler(`${eventName}-${i}`, {
-            ctx: context,
-            options: {
-              maxSize: _.get(def, "[1].maxSize", 1000),
-              throttle: _.get(def, "[1].throttle", 10000)
-            }
-          })
-          .setCallback((notifications) => {
-            return def[0](context, notifications);
-          })
-          .addMessage(notification);
-        })));
-      }
-
-      const eventHandlers = handlers.event || [];
-
-      if (eventHandlers.length > 0 && eventName === "report:update" && notification.message) {
-        const { user, events = [], segments = [] } = notification.message;
-        if (events.length > 0) {
-          events.map((event) => {
-            return eventHandlers.map((fn) => {
-              const payload = {
-                message: { user, segments, event },
-                subject: "event",
-                timestamp: message.Timestamp
-              };
-              return processing.push(fn(context, payload));
-            });
-          });
+        if (message.Subject === "user_report:update") {
+          processing.push(Promise.all(messageHandlers.map((handler, i) => {
+            return Batcher.getHandler(`${ns}-${eventName}-${i}`, {
+              ctx: context,
+              options: {
+                maxSize: userHandlerOptions.maxSize || 1000,
+                maxTime: userHandlerOptions.maxTime || 10000
+              }
+            })
+            .setCallback((messages) => {
+              return handler(context, messages);
+            })
+            .addMessage(notification.message);
+          })));
+        } else {
+          processing.push(Promise.all(messageHandlers.map((handler) => {
+            return handler(context, notification.message);
+          })));
         }
       }
 
@@ -96,7 +86,7 @@ function processHandlers(handlers) {
 }
 
 
-module.exports = function NotifHandler({ handlers = [], onSubscribe }) {
+module.exports = function NotifHandler({ handlers = [], onSubscribe, userHandlerOptions = {} }) {
   const _handlers = {};
   const app = express.Router();
 
@@ -126,7 +116,7 @@ module.exports = function NotifHandler({ handlers = [], onSubscribe }) {
   });
   app.use(requireHullMiddleware);
   app.use(subscribeFactory({ onSubscribe }));
-  app.use(processHandlers(_handlers));
+  app.use(processHandlersFactory(_handlers, userHandlerOptions));
   app.use((req, res) => { res.end("ok"); });
 
   app.addEventHandler = addEventHandler;

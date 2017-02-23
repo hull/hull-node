@@ -1,103 +1,58 @@
 # Connector toolkit
-This library includes a base toolkit to create a ship - connector to integrate Hull platform with a 3rd party API Service.
+This library includes a base toolkit to create a ship - connector to integrate Hull platform with a selected 3rd party API Service.
 
 ## Application
 
-### WebApp
+### HullApp
 ```js
-import { WebApp } from "hull/lib/ship/app";
+import Hull from "hull";
 
-const app = new WebApp();
+const app = new Hull.App({ port, hostSecret, service });
+
+// ... application confiuguration
+
+app.start();
+
+```
+
+#### server
+```js
+const app = new Hull.App({ port, hostSecret, service });
+
+const server = app.server();
+
+server.use("/customRoute", customRouter);
 ```
 
 This is a base public facing web application which exposes a http rest api to communicate with hull platform.
-The `WebApp` function returns an instance of [express](http://expressjs.com/) application with basic static router which serves [manifest.json](https://www.hull.io/docs/apps/ships/#file-structure) file and README.md.
+The `app.server()` method returns an instance of [express](http://expressjs.com/) application with basic static router which serves [manifest.json](https://www.hull.io/docs/apps/ships/#file-structure) file and README.md.
 
-### WorkerApp
+#### worker
 ```js
-import { WorkerApp } from "hull/lib/ship/app";
+const app = new Hull.App({ port, hostSecret, service });
 
 // Worker needs Queue instance - details below
-const worker = new WorkerApp({ queue });
+const worker = app.worker();
 
-worker.process({
+worker.attach({
   customJob: (req) => { process }
 });
 ```
 
-More complex ships needs to handle its operation using a background queue. This toolkit provides a base worker application which consume the jobs queued from both `WebApp` and `WorkerApp`.
+More complex ships needs to handle its operation using a background queue. This toolkit provides a base worker application which consume the jobs queued from both `server` and `worker`.
 
-### Integration with Hull Client
-Both application support middlewares so it's easy to integrate it with the Hull Client middleware:
-```js
-import { Hull } from "hull";
-import { WorkerApp, WebApp } from "hull/lub/ship/app";
-
-const webApp = new WebApp();
-const workerApp = new WebApp({ queue });
-
-webApp.use(Hull.Middleware({ hostSecret }));
-workerApp.use(Hull.Middleware({ hostSecret }));
-
-// now both web actions and worker jobs can access:
-// req.hull.client, req.hull.ship and req.hull.agent
-```
-
-## Process level modules - infrastrcture
-
-To run properly the applications needs some infrascture modules which needs to be initiated at the process level and then passed to the applications as dependencies.
-
-### Instrumentation
-A instrumentation service which is an optional dependency to `WebApp` and `WorkerApp`.
-It automatically sends data to DataDog, Sentry and Newrelic if appropriate ENV VARS are set.
-It also adds `req.hull.metric` agent to add custom metrics to the ship.
-
-```js
-import { Instrumentation } from "hull/lib/ship/infra";
-
-const instrumentation = new Instrumentation();
-
-const app = new WebApp({ instrumentation });
-const worker = new WorkerApp({ instrumentation, queue });
-```
-
-### Queue
-This is a required dependency to the `WorkerApp` and optional to `WebApp`.
-It adds `req.hull.queue` function which takes name of the job, the payload as arguments.
-
-```js
-import { Queue } from "hull/lib/ship/infra";
-
-const queue = new Queue({ options });
-
-const app = new WebApp({ queue });
-
-const worker = new WorkerApp({ queue });
-```
-
-### Cache
-Optional caching mechanism which adds `req.hull.cache` to store the ship information in the cache not to
-fetch it for every request.
-The `req.hull.cache` is automatically picked and used by the `Hull.Middleware`.
-
-```js
-import { Cache } from "hull/lib/ship/infra";
-
-const cache = new Cache({ options });
-
-const app = new WebApp({ cache });
-
-const worker = new WorkerApp({ cache, queue });
-```
-
-### Batcher
-
+## Context Object
+In all `server` actions and `worker` there is a context object available as a first argument of the callbacks.
+Here are the details about the api: [Context](./CONTEXT.md)
 
 ## Utils
 In addition to the Applications and Infrastcture the toolkit provides a variety of the utilities to perform most common actions of the ship.
 
+### actionHandler()
+This is the base 
 
-### NotifHandler()
+
+### notifHandler()
 
 NotifHandler is a packaged solution to receive User and Segment Notifications from Hull. It's built to be used as an express route. Hull will receive notifications if your ship's `manifest.json` exposes a `subscriptions` key:
 
@@ -469,6 +424,57 @@ views: {
 }
 ```
 
+## Process level modules - infrastrcture
+
+To run properly the applications needs some infrascture modules which needs to be initiated at the process level and then passed to the applications as dependencies.
+
+### Instrumentation
+A instrumentation service which is an optional dependency to `WebApp` and `WorkerApp`.
+It automatically sends data to DataDog, Sentry and Newrelic if appropriate ENV VARS are set.
+It also adds `req.hull.metric` agent to add custom metrics to the ship.
+
+```js
+import { Instrumentation } from "hull/lib/ship/infra";
+
+const instrumentation = new Instrumentation();
+
+const app = new WebApp({ instrumentation });
+const worker = new WorkerApp({ instrumentation, queue });
+```
+
+### Queue
+This is a required dependency to the `WorkerApp` and optional to `WebApp`.
+It adds `req.hull.queue` function which takes name of the job, the payload as arguments.
+
+```js
+import { Queue } from "hull/lib/ship/infra";
+
+const queue = new Queue({ options });
+
+const app = new WebApp({ queue });
+
+const worker = new WorkerApp({ queue });
+```
+
+### Cache
+Optional caching mechanism which adds `req.hull.cache` to store the ship information in the cache not to
+fetch it for every request.
+The `req.hull.cache` is automatically picked and used by the `Hull.Middleware`.
+
+```js
+import { Cache } from "hull/lib/ship/infra";
+
+const cache = new Cache({ options });
+
+const app = new WebApp({ cache });
+
+const worker = new WorkerApp({ cache, queue });
+```
+
+### Batcher
+
+
+## Internal utils
 
 ### serviceMiddleware
 This is a middleware which helps to inject the custom ship modules to the request object.

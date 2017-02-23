@@ -93,6 +93,6 @@ export default class InstrumentationAgent {
   }
 
   metricVal(metric, value = 1) {
-    return (new MetricAgent({}, this)).val(metric, value);
+    return (new MetricAgent({}, this)).value(metric, value);
   }
 }

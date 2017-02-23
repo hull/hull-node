@@ -26,7 +26,7 @@ export default class Batcher {
     this.messages = [];
     this.options = options;
 
-    this.flushLater = _.throttle(this.flush.bind(this), this.options.throttle);
+    this.flushLater = _.throttle(this.flush.bind(this), this.options.maxTime);
     return this;
   }
 

@@ -6,9 +6,9 @@ import { Instrumentation, Cache, Queue, Batcher } from "../infra";
 import { exitHandler, serviceMiddleware, tokenMiddleware, notifMiddleware, segmentsMiddleware, requireHullMiddleware } from "../utils";
 
 
-export default function HullApp({
-  Hull, hostSecret, port, clientConfig = {}, instrumentation, cache, queue, service
-}) {
+export default function HullApp(Hull, {
+  hostSecret, port, clientConfig = {}, instrumentation, cache, queue, service
+} = {}) {
   if (!instrumentation) {
     instrumentation = new Instrumentation();
   }

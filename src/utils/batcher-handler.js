@@ -5,7 +5,7 @@ import responseMiddleware from "./response-middleware";
 import requireHullMiddleware from "./require-hull-middleware";
 import Batcher from "../infra/batcher";
 
-export default function batcherHandler(handler, { maxSize = 100, throttle = 10000 } = {}) {
+export default function batcherHandler(handler, { maxSize = 100, maxTime = 10000 } = {}) {
   const ns = crypto.randomBytes(64).toString("hex");
   const router = Router();
   router.use(requireHullMiddleware);
@@ -14,7 +14,7 @@ export default function batcherHandler(handler, { maxSize = 100, throttle = 1000
       ctx: req.hull,
       options: {
         maxSize,
-        throttle
+        maxTime
       }
     })
     .setCallback((messages) => {
