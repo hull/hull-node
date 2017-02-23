@@ -48,7 +48,7 @@ export default function notifMiddlewareFactory() {
       req.headers["content-type"] = "application/json;charset=UTF-8";
     }
     bodyParser.json()(req, res, () => {
-      if (req.body && req.body.Message && req.body.Subject && req.body.Type) {
+      if (req.body && req.body.Message && req.body.Type) {
         req.hull.message = req.body;
       }
       verify(req, res, next);
