@@ -20,7 +20,7 @@ export default function batcherHandler(handler, { maxSize = 100, maxTime = 10000
     .setCallback((messages) => {
       return handler(req.hull, messages);
     })
-    .addMessage(req.body)
+    .addMessage({ body: req.body, query: req.query })
     .then(next, next);
   });
   router.use(responseMiddleware);

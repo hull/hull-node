@@ -9,7 +9,7 @@ import Hull from "hull";
 
 const app = new Hull.App({ port, hostSecret, service });
 
-// ... application confiuguration
+// ... application configuration
 
 app.start();
 
@@ -48,11 +48,47 @@ Here are the details about the api: [Context](./CONTEXT.md)
 ## Utils
 In addition to the Applications and Infrastcture the toolkit provides a variety of the utilities to perform most common actions of the ship.
 
-### actionHandler()
-This is the base 
+### actionHandler() `incoming`
+This is the simplest requests handler to expose custom logic through custom API POST endpoint. The possible usage is triggering a custom operation (like fetching historical data) or a webhook. Both handles data `incoming` into Hull platform. However in case of busy webhook it's better to use `batcherHandler` which automatically group the incoming requests into batches.
 
+```js
+const app = new Hull.App({}).server();
+import { actionHandler } from "hull/lib/utils";
 
-### notifHandler()
+app.use("/fetch-all", actionHandler((ctx, { query, body }) => {
+  const { hull, ship } = ctx;
+
+  const { api_token } = ship.private_settings;
+  const serviceClient = new ServiceClient(api_token);
+  return serviceClient.getHistoricalData()
+    .then(users => {
+      users.map(u => {
+        hull.as({ email: u.email }).traits({
+          new_trait: u.custom_value
+        });
+      });
+    });
+}));
+```
+
+### batcherHandler() `incoming`
+The second `incoming` handler which works in a simillar way as `actionHandler` but it also groups incoming requests into batches of selected size:
+
+```js
+const app = new Hull.App({}).server();
+import { batcherHandler } from "hull/lib/utils";
+
+app.use("/fetch-all", batcherHandler((ctx, requests) => {
+  requests.map(request => {
+    console.log(request); // { query, body }
+  })
+}, {
+  maxSize: 100, // maximum size of the batch
+  maxTime: 1000 // time time in milliseconds to flush batch after the first item came in
+}));
+```
+
+### notifHandler() `outgoing`
 
 NotifHandler is a packaged solution to receive User and Segment Notifications from Hull. It's built to be used as an express route. Hull will receive notifications if your ship's `manifest.json` exposes a `subscriptions` key:
 
@@ -69,6 +105,11 @@ const app = new Hull.App({}).server();
 import { notifHandler } from "hull/lib/utils";
 
 const handler = NotifHandler({
+  userHandlerOptions: {
+    groupTraits: true, // groups traits as in below examples
+    maxSize: 6,
+    maxTime: 10000
+  },
   onSubscribe() {} // called when a new subscription is installed
   handlers: {
     "ship:update": function(context, messages) {},
@@ -79,9 +120,9 @@ const handler = NotifHandler({
       // context: Context Object, see docs above
       // message: {
       //   user: { id: '123', ... },
-      //   segments: [ { } ],
+      //   segments: [{}],
       //   changes: {},
-      //   events: [ {}, {} ]
+      //   events: [{}, {}]
       // }
     }
   }
@@ -98,7 +139,6 @@ For this we provide a helper called NotifHandler that handles all the complexity
 
 ```javascript
 {
-
   // Current user properties
   "user": {
     "id": "572f63eb8c35fc5d4300034e",
@@ -136,7 +176,6 @@ For this we provide a helper called NotifHandler that handles all the complexity
     "signup_session_initial_url": "https://hull-2.myshopify.com/",
     "signup_session_platform_id": "561fb665450f34b1cf00000f",
     "signup_session_started_at": "2016-09-28T13:19:59Z",
-
 
     // Custom traits
     "traits": {
@@ -236,7 +275,7 @@ For this we provide a helper called NotifHandler that handles all the complexity
 }
 ```
 
-### BatchHandler()
+### batchHandler() `outgoing`
 
 BatchHandler is a packaged solution to receive Batches of Users. It's built to be used as an express route. Hull will receive notifications if your ship's `manifest.json` exposes a `batch` tag in `tags`:
 
@@ -381,6 +420,8 @@ views: {
   ship: ship //The entire Ship instance's config
 }
 ```
+
+
 
 ## Process level modules - infrastrcture
 
