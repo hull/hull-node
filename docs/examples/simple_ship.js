@@ -1,16 +1,13 @@
 import Hull from "hull";
 
 // pick what we need from the hull-node
-import HullApp from "hull/lib/app";
-import { batchHandler, oAuthHandler } from "hull/lib/utils";
+import { batchHandler, oAuthHandler, actionRouter } from "hull/lib/utils";
 
 // pick the methods
 import { fetchAll, sendUsers } from "./lib";
 
 const port = process.env.PORT;
 const hostSecret = process.env.SECRET;
-const clientId = process.env.CLIENT_ID;
-const clientSecret = process.env.CLIENT_SECRET;
 
 /**
  * Express application with static routing view engine,
@@ -18,24 +15,16 @@ const clientSecret = process.env.CLIENT_SECRET;
  * patchedExpressApp = WebApp(expressApp);
  * @type {HullApp}
  */
-const app = new HullApp({ Hull });
+const app = new Hull.App({ port, hostSecret });
 
 const server = app.server();
 
-server.use("/fetch-all", (req, res) => {
-  return fetchAll(req.hull)
-    .then(() => res.end("ok"), () => res.end("err"));
+server.use("/fetch-all", actionRouter((ctx, { query, body }) => {
+  ctx.hull.logger.info("fetch-all", { query, body });
 }));
 
 server.use("/batch", batchHandler((ctx, users) => {
-  return sendUsers(req.hull, users);
+  ctx.hull.logger.info("batch", { users });
 }, { batchSize: 200 }));
-
-server.use("/admin", oAuthHandler({
-  clientId,
-  clientSecret,
-  onLogin: () => {}
-}));
-
 
 app.start();

@@ -1,7 +1,7 @@
 /**
  * File configuring the server application of the HullApp
  */
-import { actionRouter, batchHandler, notifHandler, oAuthHandler, webhookHandler } from "hull/utils";
+import { actionRouter, batchHandler, notifHandler, oAuthHandler, batcherHandler } from "hull/utils";
 
 export default function Server({ app, clientId, clientSecret }) {
   /**
@@ -11,27 +11,15 @@ export default function Server({ app, clientId, clientSecret }) {
   const express = app.server();
 
 
-  express.get("/fetch-all", actionRouter(req => {
-    const { agent, service, queue } = req.hull;
+  express.get("/fetch-all", actionRouter((req, { query, body }) => {
 
-    return service.agent.getLastFetchTime()
-      .then(lastTime => {
-        return queue("fetchAll", { lastTime });
-      });
   }));
 
   express.use("/notify", notifHandler({
-    "user:update": [
-      (ctx, messages) => {
-
-      },
-      { batchSize: 100 }
-    ],
-    "ship:update": [
-      (ctx, messages) => {
-
-      }
-    ]
+    "user:update": (ctx, messages) => {
+    }
+    "ship:update": (ctx, messages) => {
+    }
   }))
 
   server.use("/admin", oAuthHandler({
@@ -40,10 +28,9 @@ export default function Server({ app, clientId, clientSecret }) {
     onLogin: () => {}
   }));
 
-  express.use("/webhook", webhookHandler((ctx, messages) => {
+  express.use("/webhook", batcherHandler((ctx, messages) => {
+
   }, { batchSize: 100 }))
-
-
 
   return express;
 }

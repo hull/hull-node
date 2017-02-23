@@ -1,88 +1,109 @@
-import Hull from "hull";
+import Hull from "hull/src";
+import Promise from "bluebird";
 
-import { Instrumentation, Cache, Queue } from "hull/lib/infra";
-import HullApp from "hull/lib/app";
-import { serviceMiddleware, actionRouter, batchHandler, notifHandler } from "hull/lib/utils";
+// pick what we need from the hull-node
+import { batchHandler, notifHandler, actionHandler, batcherHandler, oAuthHandler } from "hull/src/utils";
 
-import * as serviceFunctions from "./lib";
+import { Strategy as HubspotStrategy } from "passport-hubspot";
 
-/**
- * Instrumenting dependency - enables `metric` object in context
- * @type {Instrumentation}
- */
-const instrumentation = new Instrumentation({ options });
+const port = process.env.PORT || 8082;
+const hostSecret = process.env.SECRET || "1234";
 
 /**
- * Cache - enables `cache` object in context
- * @type {Cache}
+ * A set of custom logic, should be loaded from external directory
+ * @type {Object}
  */
-const cache = new Cache({ options - REDIS/MEMORY });
-
-/**
- * Queue - enables `queue` function in context
- * @type {Queue}
- */
-const queue = new Queue();
-
-const port = process.env.PORT;
-const hostSecret = process.env.SECRET;
-const clientId = process.env.CLIENT_ID;
-const clientSecret = process.env.CLIENT_SECRET;
-
 const service = {
-  client: ServiceClient,
-  ...serviceFunctions
-};
-
-const app = new HullApp({ Hull, instrumentation, cache, queue, service });
-
-/**
- * Express application with static router and view
- * @type {WebApp}
- */
-const express = app.server();
-
-
-express.get("/fetch-all", actionRouter(req => {
-  const { agent, service, queue } = req.hull;
-
-  return service.agent.getLastFetchTime()
-    .then(lastTime => {
-      return queue("fetchAll", { lastTime });
+  sendUsers: (ctx, users) => {
+    users.map(u => {
+      ctx.service.transformUsers(u);
     });
+    return ctx.enqueue("exampleJob", { users });
+  }
+}
+
+const app = new Hull.App({ port, hostSecret, service });
+
+const server = app.server();
+
+server.use("/fetch-all", actionHandler((ctx, { query, body }) => {
+  ctx.hull.logger.info("fetch-all", ctx.segments.map(s => s.name), { query, body });
+  return ctx.enqueue("fetchAll", { body });
 }));
 
-express.use("/notify", notifHandler({
-  "user:update": [
-    (messages) => {
+server.use("/webhook", batcherHandler((ctx, messages) => {
+  ctx.hull.logger.info("Batcher.messages", messages);
+}));
 
+server.use("/batch", batchHandler((ctx, users) => {
+  const { service } = ctx;
+  return service.sendUsers(users);
+}, { batchSize: 100, groupTraits: true }));
+
+server.use("/notify", notifHandler({
+  userHandlerOptions: {
+    groupTraits: true,
+    maxSize: 6,
+    maxTime: 10000
+  },
+  handlers: {
+    "ship:update": (ctx, messages) => {
+      ctx.hull.logger.info("ship was updated");
     },
-    { batchSize: 100 }
-  ],
-  "ship:update": [
-    (messages) => {
-
+    "user:update": (ctx, messages) => {
+      const { client } = ctx;
+      ctx.hull.logger.info("users was updated", messages[0]);
+      client.logger.info("user was updated", messages.map(m => m.user.email));
     }
-  ]
-}))
-express.use("/webhook", webhookHandler((messages) => {
-
-}, { batchSize: 100 }))
-
-/*
-  Worker App
- */
-const worker = app.worker();
-
-worker.attach({
-  fetchAll: req => {
-    const { lastTime } = req.payload;
-    const { service } = req.hull;
-
-    return service.getRecentUsers(users => {
-      return service.sendUsers(users);
-    });
   }
-});
+}));
 
-app.start({ worker: true, server: true }); // calls server.listen();
+server.use("/auth", oAuthHandler({
+  name: "Hubspot",
+  Strategy: HubspotStrategy,
+  options: {
+    clientID: process.env.CLIENT_ID,
+    clientSecret: process.env.CLIENT_SECRET,
+    scope: ["offline", "contacts-rw", "events-rw"],
+    skipUserProfile: true
+  },
+  isSetup(req) {
+    if (req.query.reset) return Promise.reject();
+    if (req.hull.ship.private_settings.token) {
+      return Promise.resolve({ settings: req.hull.ship.private_settings });
+    }
+    return Promise.reject();
+  },
+  onLogin: (req) => {
+    req.authParams = { ...req.body, ...req.query };
+    return req.hull.client.updateSettings({
+      portal_id: req.authParams.portalId
+    });
+  },
+  onAuthorize: (req) => {
+    const { refreshToken, accessToken, expiresIn } = (req.account || {});
+    return req.hull.client.updateSettings({
+      refresh_token: refreshToken,
+      token: accessToken,
+      expires_in: expiresIn
+    });
+  },
+  views: {
+    login: "login.html",
+    home: "home.html",
+    failure: "failure.html",
+    success: "success.html"
+  }
+}));
+
+app.worker().attach({
+  exampleJob: (ctx, { users }) => {
+    console.log("exampleJob", users.length);
+  },
+  fetchAll: (ctx, { body }) => {
+    console.log("fetchAllJob", ctx.segments.map(s => s.name), body);
+  }
+})
+
+
+app.start({ worker: true, server: true });

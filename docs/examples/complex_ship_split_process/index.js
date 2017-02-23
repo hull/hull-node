@@ -11,7 +11,6 @@
 import Hull from "hull";
 
 import { Instrumentation, Cache, Queue } from "hull/lib/infra";
-import HullApp from "hull/lib/app";
 
 import * as serviceFunctions from "./lib";
 import server from "./server";
@@ -49,7 +48,7 @@ const service = {
   ...serviceFunctions
 };
 
-const app = new HullApp({ Hull, hostSecret, port, instrumentation, cache, queue, service });
+const app = new Hull.App({ hostSecret, port, instrumentation, cache, queue, service });
 
 const startConfig = {
   server: process.env.COMBINED || process.env.WORKER || false,
