@@ -26,20 +26,34 @@ const app = new Hull.App({ port, hostSecret, service });
 
 const server = app.server();
 
+/**
+ * Custom endpoint to trigger a custom action
+ */
 server.use("/fetch-all", actionHandler((ctx, { query, body }) => {
   ctx.hull.logger.info("fetch-all", ctx.segments.map(s => s.name), { query, body });
   return ctx.enqueue("fetchAll", { body });
 }));
 
+/**
+ * Custom endpoint to fetch incoming data
+ */
 server.use("/webhook", batcherHandler((ctx, messages) => {
   ctx.hull.logger.info("Batcher.messages", messages);
 }));
 
+
+/**
+ * Handle a outgoing batch of users coming from Hull
+ */
 server.use("/batch", batchHandler((ctx, users) => {
   const { service } = ctx;
   return service.sendUsers(users);
 }, { batchSize: 100, groupTraits: true }));
 
+
+/**
+ * Handle selected events happening on Hull platform
+ */
 server.use("/notify", notifHandler({
   userHandlerOptions: {
     groupTraits: true,
@@ -58,6 +72,10 @@ server.use("/notify", notifHandler({
   }
 }));
 
+
+/**
+ * A handler to ease the oAuth flow
+ */
 server.use("/auth", oAuthHandler({
   name: "Hubspot",
   Strategy: HubspotStrategy,
