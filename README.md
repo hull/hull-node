@@ -232,10 +232,9 @@ groupTraits({
 
 This utility can be also used in following way:
 
-### hull.utils.groupTraits(user_report)
-
 ```js
 const hull = new Hull({ config });
+const userGroupedTraits = hull.utils.groupTraits(user_report);
 ```
 
 
