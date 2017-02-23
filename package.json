@@ -24,7 +24,7 @@
     "build": "gulp build",
     "watch": "gulp watch",
     "prepublish": "npm run build",
-    "postinstall": "npm run clean && babel src -d lib"
+    "postinstall": "npm run clean && babel ./src -d ./lib"
   },
   "dependencies": {
     "JSONStream": "^1.1.2",
