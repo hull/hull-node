@@ -274,20 +274,11 @@ Here is how to use it:
 
 ```js
 import Hull from "hull";
+import { oAuthHandler } from "hull/src/utils";
 import { Strategy as HubspotStrategy } from "passport-hubspot";
-import { renderFile } from "ejs";
-import express from "express";
 
+const app = new Hull.App({}).server();
 
-app.set("views", `${__dirname}/../views`);
-app.set("view engine", "ejs");
-app.engine("html", renderFile);
-app.use(express.static(path.resolve(__dirname, "..", "dist")));
-app.use(express.static(path.resolve(__dirname, "..", "assets")));
-
-const { OAuthHandler } = Hull;
-
-app.use(Hull.Middleware({ hostSecret }));
 app.use("/auth", OAuthHandler({
   name: "Hubspot",
   tokenInUrl: true,
@@ -297,20 +288,20 @@ app.use("/auth", OAuthHandler({
     clientSecret: "xxxxxxxxx", //Client Secret
     scope: ["offline", "contacts-rw", "events-rw"] //App Scope
   },
-  isSetup(req, { /* hull,*/ ship }) {
+  isSetup(req) {
     if (!!req.query.reset) return Promise.reject();
-    const { token } = ship.private_settings || {};
+    const { token } = req.hull.ship.private_settings || {};
     return (!!token) ? Promise.resolve({ valid: true, total: 2}) : Promise.reject({ valid: false, total: 0});
   },
-  onLogin: (req, { hull, ship }) => {
+  onLogin: (req) => {
     req.authParams = { ...req.body, ...req.query };
-    return save(hull, ship, {
+    return req.hull.client.updateSettings({
       portalId: req.authParams.portalId
     });
   },
-  onAuthorize: (req, { hull, ship }) => {
+  onAuthorize: (req) => {
     const { refreshToken, accessToken } = (req.account || {});
-    return save(hull, ship, {
+    return req.hull.client.updateSettings({
       refresh_token: refreshToken,
       token: accessToken
     });
@@ -405,8 +396,7 @@ import { Instrumentation } from "hull/lib/ship/infra";
 
 const instrumentation = new Instrumentation();
 
-const app = new WebApp({ instrumentation });
-const worker = new WorkerApp({ instrumentation, queue });
+const app = new Hull.App({ instrumentation });
 ```
 
 ### Queue
@@ -418,9 +408,7 @@ import { Queue } from "hull/lib/ship/infra";
 
 const queue = new Queue({ options });
 
-const app = new WebApp({ queue });
-
-const worker = new WorkerApp({ queue });
+const app = new Hull.App({ queue });
 ```
 
 ### Cache
@@ -433,9 +421,7 @@ import { Cache } from "hull/lib/ship/infra";
 
 const cache = new Cache({ options });
 
-const app = new WebApp({ cache });
-
-const worker = new WorkerApp({ cache, queue });
+const app = new Hull.App({ cache });
 ```
 
 ### Batcher
