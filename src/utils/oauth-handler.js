@@ -60,7 +60,7 @@ export default function oauth({
   const strategy = new Strategy({ ...options, passReqToCallback: true }, function verifyAccount(req, accessToken, refreshToken, params, profile, done) {
     if (_.isUndefined(done) && _.isFunction(profile)) {
       done = profile;
-      profile = {};
+      profile = params;
     }
     done(undefined, { accessToken, refreshToken, params, profile });
   });
