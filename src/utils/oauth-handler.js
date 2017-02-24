@@ -1,7 +1,9 @@
+import _ from "lodash";
 import express from "express";
 import passport from "passport";
 import bodyParser from "body-parser";
 import querystring from "querystring";
+
 import requireHullMiddleware from "./require-hull-middleware";
 
 const HOME_URL = "/";
@@ -56,6 +58,10 @@ export default function oauth({
   });
 
   const strategy = new Strategy({ ...options, passReqToCallback: true }, function verifyAccount(req, accessToken, refreshToken, params, profile, done) {
+    if (!_.isUndefined(done) && _.isFunction(profile)) {
+      done = profile;
+      profile = params;
+    }
     done(undefined, { accessToken, refreshToken, params, profile });
   });
 
