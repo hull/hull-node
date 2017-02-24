@@ -30,7 +30,7 @@ const server = app.server();
  * Custom endpoint to trigger a custom action
  */
 server.use("/fetch-all", actionHandler((ctx, { query, body }) => {
-  ctx.hull.logger.info("fetch-all", ctx.segments.map(s => s.name), { query, body });
+  ctx.client.logger.info("fetch-all", ctx.segments.map(s => s.name), { query, body });
   return ctx.enqueue("fetchAll", { body });
 }));
 
@@ -38,7 +38,7 @@ server.use("/fetch-all", actionHandler((ctx, { query, body }) => {
  * Custom endpoint to fetch incoming data
  */
 server.use("/webhook", batcherHandler((ctx, messages) => {
-  ctx.hull.logger.info("Batcher.messages", messages);
+  ctx.client.logger.info("Batcher.messages", messages);
 }));
 
 
@@ -62,11 +62,11 @@ server.use("/notify", notifHandler({
   },
   handlers: {
     "ship:update": (ctx, messages) => {
-      ctx.hull.logger.info("ship was updated");
+      ctx.client.logger.info("ship was updated");
     },
     "user:update": (ctx, messages) => {
       const { client } = ctx;
-      ctx.hull.logger.info("users was updated", messages[0]);
+      ctx.client.logger.info("users was updated", messages[0]);
       client.logger.info("user was updated", messages.map(m => m.user.email));
     }
   }
