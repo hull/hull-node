@@ -31,10 +31,28 @@ describe("HullApp", () => {
     expect(worker.process).to.be.function;
   });
 
+  it("should return a middleware method whcih returns Hull.Middleware instance", () => {
+    const app = HullApp(HullStub);
+    expect(app.middleware).to.be.function;
+    const middleware = app.middleware();
+    expect(middleware).to.be.function;
+  });
+
   it("should return a start method", () => {
     const app = HullApp(HullStub);
-    const server = app.server();
-    const worker = app.worker();
-    app.start();
+    expect(app.start).to.be.function;
   });
+
+  it("should take an optional existing express application", () => {
+    const expressMock = {
+      use: () => { return this; },
+      engine: () => { return this; },
+      set: () => { return this; }
+    };
+    const app = HullApp(HullStub, { server: expressMock });
+
+    const server = app.server();
+
+    expect(server).to.be.equal(expressMock);
+  })
 });

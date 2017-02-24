@@ -8,8 +8,8 @@ import staticRouter from "../utils/static-router";
 /**
  * Base Express app for Ships front part
  */
-export default function Server({ Hull, instrumentation, queue, cache }) {
-  const app = express();
+export default function Server({ Hull, instrumentation, queue, cache, existingExpress }) {
+  const app = existingExpress || express();
 
   app.use(instrumentation.startMiddleware());
   app.use(instrumentation.middleware);

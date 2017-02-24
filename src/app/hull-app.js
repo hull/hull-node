@@ -7,7 +7,7 @@ import { exitHandler, serviceMiddleware, tokenMiddleware, notifMiddleware, segme
 
 
 export default function HullApp(Hull, {
-  hostSecret, port, clientConfig = {}, instrumentation, cache, queue, service
+  hostSecret, port, clientConfig = {}, instrumentation, cache, queue, service, server: existingExpress
 } = {}) {
   if (!instrumentation) {
     instrumentation = new Instrumentation();
@@ -29,18 +29,22 @@ export default function HullApp(Hull, {
   });
 
   return {
+    middleware: function getMiddleware() {
+      this._middleware = this._middleware || Hull.Middleware({ hostSecret, clientConfig });
+      return this._middleware;
+    },
     server: function getServer() {
-      this._server = Server({ Hull, instrumentation, cache, queue });
+      this._server = Server({ Hull, instrumentation, cache, queue, existingExpress });
       this._server.use(tokenMiddleware);
       this._server.use(notifMiddleware());
-      this._server.use(Hull.Middleware({ hostSecret, clientConfig }));
+      this._server.use(this.middleware());
       this._server.use(segmentsMiddleware);
       this._server.use(serviceMiddleware(service));
       return this._server;
     },
     worker: function getWorker() {
       this._worker = new Worker({ Hull, instrumentation, cache, queue });
-      this._worker.use(Hull.Middleware({ hostSecret, clientConfig }));
+      this._worker.use(this.middleware());
       this._worker.use(requireHullMiddleware);
       this._worker.use(segmentsMiddleware);
       this._worker.use(serviceMiddleware(service));
