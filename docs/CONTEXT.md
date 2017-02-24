@@ -8,6 +8,7 @@ The result is `req.hull` object which is the Context Object - a set of modules t
     logger: {},
   },
   ship: {},
+  token: "",
   segments: [],
   hostname: req.hostname,
   cache: {},
@@ -24,6 +25,9 @@ The result is `req.hull` object which is the Context Object - a set of modules t
 
 #### ship
 Ship object with manifest information and `private_settings`
+
+#### token
+A string with encoded credentials
 
 #### segments
 An array of segments information
