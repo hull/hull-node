@@ -1,3 +1,7 @@
+# 0.10.8
+
+* Properly handle Passport strategies that don't accept a 6-argument method.
+
 # 0.10.7
 
 * Add optional `tokenInUrl` argument in `OAuthHandler` allowing to force static urls

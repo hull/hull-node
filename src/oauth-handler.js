@@ -58,6 +58,11 @@ export default function oauth(Client, {
   });
 
   const strategy = new Strategy({ ...options, passReqToCallback: true }, function verifyAccount(req, accessToken, refreshToken, params, profile, done) {
+    if (done === undefined) {
+      done = profile;
+      profile = params;
+      params = undefined;
+    }
     done(undefined, { accessToken, refreshToken, params, profile });
   });
 
