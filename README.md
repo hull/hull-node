@@ -197,18 +197,31 @@ When you do this, you get a new client that has a different behaviour. It's now 
 
 ## user.track(event, props, context)
 
+
 ```js
 user.track('new support ticket', { messages: 3,
   priority:'high'
 }, {
   source: 'zendesk',
+  type: 'ticket',
+  event_id: 'uuid1234' //Pass a unique ID to ensure event de-duplication
   ip: null, //don't store ip - it's a server call
   referer: null, //don't store referer - it's a server call
   created_at: '2013-02-08 09:30:26.123+07:00' //ISO 8601. moment.js does it very well
 });
 ```
 
-Stores a new event, which you can namespace using the `source` property in the `context` parameter
+Stores a new event.
+
+The `context` object lets you define event meta-data. Everything is optional
+
+- `source`: Defines a namespace, such as `zendesk`, `mailchimp`, `stripe`
+- `type`: Define a event type, such as `mail`, `ticket`, `payment`
+- `created_at`: Define an event date. defaults to `now()`
+- `event_id`: Define a way to de-duplicate events. If you pass events with the same unique `event_id`, they will overwrite the previous one.
+- `ip`: Define the Event's IP. Set to `null` if you're storing a server call, otherwise, geoIP will locate this event.
+- `referer`: Define the Referer. `null` for server calls.
+
 
 ## user.traits(properties, context)
 
@@ -229,7 +242,10 @@ If you need to be sure the properties are set immediately on the user, you can u
 ```js
 user.traits({
   fetched_at: new Date().toISOString()
-}, { source: 'mailchimp', sync: true });
+}, {
+  source: 'mailchimp',
+  sync: true
+});
 ```
 
 
