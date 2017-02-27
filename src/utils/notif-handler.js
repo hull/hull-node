@@ -118,7 +118,7 @@ module.exports = function NotifHandler({ handlers = [], onSubscribe, userHandler
     }
     return next();
   });
-  app.use(requireHullMiddleware);
+  app.use(requireHullMiddleware());
   app.use(subscribeFactory({ onSubscribe }));
   app.use(processHandlersFactory(_handlers, userHandlerOptions));
   app.use((req, res) => { res.end("ok"); });

@@ -11,13 +11,15 @@ export default class QueueAgent {
       this.adapter = new KueAdapter(options);
     }
 
-    this.middleware = this.middleware.bind(this);
+    this.contextMiddleware = this.contextMiddleware.bind(this);
   }
 
-  middleware(req, res, next) {
-    req.hull = req.hull || {};
-    req.hull.enqueue = req.hull.enqueue || enqueue.bind(null, this.adapter, req.hull);
-    return next();
+  contextMiddleware() { // eslint-disable-line class-methods-use-this
+    return function middleware(req, res, next) {
+      req.hull = req.hull || {};
+      req.hull.enqueue = req.hull.enqueue || enqueue.bind(null, this.adapter, req.hull);
+      return next();
+    };
   }
 
   exit() {

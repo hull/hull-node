@@ -38,7 +38,7 @@ export default class InstrumentationAgent {
       this.raven.patchGlobal();
     }
 
-    this.middleware = this.middleware.bind(this);
+    this.contextMiddleware = this.contextMiddleware.bind(this);
   }
 
   startTransaction(jobName, callback) {
@@ -86,10 +86,12 @@ export default class InstrumentationAgent {
     };
   }
 
-  middleware(req, res, next) {
-    req.hull = req.hull || {};
-    req.hull.metric = req.hull.metric || new MetricAgent(req.hull, this);
-    next();
+  contextMiddleware() { // eslint-disable-line class-methods-use-this
+    return function middleware(req, res, next) {
+      req.hull = req.hull || {};
+      req.hull.metric = req.hull.metric || new MetricAgent(req.hull, this);
+      next();
+    };
   }
 
   metricVal(metric, value = 1) {

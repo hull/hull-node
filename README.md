@@ -2,11 +2,6 @@
 
 This library makes it easy to interact with the Hull API, send tracking and properties and handle Server-side Events we send to installed Ships.
 
-## Connector usage
-[Connector documentation](docs/CONNECTOR.md)
-
-## Standalone Client
-
 ```js
 import Hull from 'hull';
 
@@ -20,6 +15,7 @@ const hull = new Hull({
 Creating a new Hull client is pretty straightforward.
 In Ship Events, we create and scope one for you to abstract the lifecycle
 
+[More detailed documentation about Hull Client and about Connector development is available at gitbook.](https://hull.gitbooks.io/docs/)
 
 ## Calling the API
 

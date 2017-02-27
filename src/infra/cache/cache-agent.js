@@ -13,15 +13,17 @@ export default class Cache {
    */
   constructor(options = {}) {
     this.cache = CacheManager.caching(options);
-    this.middleware = this.middleware.bind(this);
+    this.contextMiddleware = this.contextMiddleware.bind(this);
   }
 
   /**
    * @param {Object} client Hull Client
    */
-  middleware(req, res, next) {
-    req.hull = req.hull || {};
-    req.hull.cache = req.hull.cache || new ShipCache(req.hull, this.cache);
-    next();
+  contextMiddleware() { // eslint-disable-line class-methods-use-this
+    return function middleware(req, res, next) {
+      req.hull = req.hull || {};
+      req.hull.cache = req.hull.cache || new ShipCache(req.hull, this.cache);
+      next();
+    };
   }
 }

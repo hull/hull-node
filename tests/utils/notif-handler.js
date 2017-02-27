@@ -9,7 +9,7 @@ import shipUpdate from "../fixtures/sns-messages/ship-update.json";
 import userUpdate from "../fixtures/sns-messages/user-report.json";
 import HullStub from "../support/hull-stub";
 
-import NotifHandler from "../../src/utils/notif-handler";
+import notifHandler from "../../src/utils/notif-handler";
 import notifMiddleware from "../../src/utils/notif-middleware";
 
 
@@ -73,17 +73,15 @@ describe("NotifHandler", () => {
   it("should bust the middleware at ship:update event", (done) => {
     const handler = sinon.spy();
     const app = express();
-    const notifHandler = NotifHandler({
+    app.use(notifMiddleware());
+    app.use(mockHullMiddleware);
+    app.use("/notify", notifHandler({
       handlers: {
         "ship:update": handler
       }
-    });
-    app.use(notifMiddleware());
-    app.use(mockHullMiddleware);
-    app.post("/notify", notifHandler);
+    }));
     const server = app.listen(() => {
       const port = server.address().port;
-
       post({ port, body: shipUpdate })
         .then(() => {
           return post({ port, body: shipUpdate })
