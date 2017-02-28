@@ -26,7 +26,7 @@ const Client = function Client(config = {}) {
   };
 
   const batch = FirehoseBatcher.getInstance(clientConfig.get(), (params, batcher) => {
-    return restAPI(batcher.config, 'firehose', 'post', params);
+    return restAPI(batcher.config, "firehose", "post", params);
   });
 
   this.api = function api(url, method, options) {
@@ -58,7 +58,7 @@ const Client = function Client(config = {}) {
   const ctxe = _.pick((this.configuration() || {}), ["organization", "id"]);
   const logFactory = level => (message, data) => logger[level](message, { context: ctxe, data });
   const logs = {};
-  ["silly", "debug", "verbose", "info", "warn", "error"].map(level => { logs[level] = logFactory(level); return level; });
+  ["silly", "debug", "verbose", "info", "warn", "error"].map((level) => { logs[level] = logFactory(level); return level; });
 
 
   this.logger = {
@@ -86,7 +86,7 @@ const Client = function Client(config = {}) {
       }
 
       if (context.sync === true) {
-        return this.post('me/traits', body);
+        return this.post("me/traits", body);
       }
 
       return batch({ type: "traits", body });
@@ -106,13 +106,13 @@ const Client = function Client(config = {}) {
       });
     };
   } else {
-    this.as = (userId, sudo = false) => {
+    this.as = (userId) => {
       // Sudo allows to be a user yet have admin rights... Use with care.
       if (!userId) {
         throw new Error("User Id was not defined when calling hull.as()");
       }
       // const scopedClientConfig = _.omit(config, "secret");
-      return new Client({ ...config, userId, sudo });
+      return new Client({ ...config, userId });
     };
   }
 };

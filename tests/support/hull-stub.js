@@ -17,4 +17,9 @@ export default class HullStub {
     return { id: this.id , secret: "shutt", organization: "xxx.hulltest.rocks" };
   }
 
+  static Middleware() {
+    return (req, res, next) => {
+
+    };
+  }
 }

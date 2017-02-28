@@ -23,9 +23,9 @@ module.exports = function CurrentUser(config = {}, req, res, next) {
 
   if (signedUser) {
     const valid = crypto.currentUserId(config, userId, userSig);
-    if (!!valid) {
+    if (valid) {
       req.hull.userId = userId;
     }
   }
   next();
-}
+};

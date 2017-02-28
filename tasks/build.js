@@ -6,7 +6,7 @@ var mkdirp = require('mkdirp');
 module.exports = function(gulp, src, dest) {
   mkdirp.sync(dest);
   gulp.task('build', () => {
-    return gulp.src(path.join(src, '**'))
+    return gulp.src(path.join(src, '**', '*.js'))
       .pipe(plumber())
       .pipe(babel())
       .pipe(gulp.dest(dest));

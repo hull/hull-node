@@ -1,3 +1,11 @@
+# 0.11.0-beta.1
+
+* Adds `/app` with `Hull.App`, `Server` and `Worker`
+* Adds `/helpers` with functions being added to the `req.hull.client` after being initiated by the `Hull.Middleware`
+* Adds `/infra` with `Instrumentation`, `Queue`, `Cache` and `Batcher` services
+* Adds `/utils` with `handlers`, `middlewares` and `routers` used as a building blocks of the `HullApp` and to be used by the ship/connector directly
+* BREAKING - changed the callback signature in `NotifHandler`
+
 # 0.10.8
 
 * Properly handle Passport strategies that don't accept a 6-argument method.
