@@ -6,7 +6,7 @@ import requireHullMiddleware from "./require-hull-middleware";
 
 export default function batchHandler(handler, { batchSize = 100, groupTraits = false } = {}) {
   const router = Router();
-  router.use(requireHullMiddleware);
+  router.use(requireHullMiddleware());
   router.post("/", (req, res, next) => {
     const { client } = req.hull;
 

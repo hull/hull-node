@@ -8,7 +8,7 @@ import Batcher from "../infra/batcher";
 export default function batcherHandler(handler, { maxSize = 100, maxTime = 10000 } = {}) {
   const ns = crypto.randomBytes(64).toString("hex");
   const router = Router();
-  router.use(requireHullMiddleware);
+  router.use(requireHullMiddleware());
   router.post("/", (req, res, next) => {
     Batcher.getHandler(ns, {
       ctx: req.hull,

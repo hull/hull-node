@@ -50,7 +50,7 @@ export default class HullConnector {
     return app;
   }
 
-  worker() {
+  worker(jobs) {
     this._worker = new Worker({
       Hull: this.Hull,
       instrumentation: this.instrumentation,
@@ -61,6 +61,7 @@ export default class HullConnector {
     this._worker.use(requireHullMiddleware());
     this._worker.use(segmentsMiddleware());
     this._worker.use(serviceMiddleware(this.service));
+    this._worker.setJobs(jobs);
     return this._worker;
   }
 

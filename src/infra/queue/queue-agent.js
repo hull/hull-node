@@ -15,7 +15,7 @@ export default class QueueAgent {
   }
 
   contextMiddleware() { // eslint-disable-line class-methods-use-this
-    return function middleware(req, res, next) {
+    return (req, res, next) => {
       req.hull = req.hull || {};
       req.hull.enqueue = req.hull.enqueue || enqueue.bind(null, this.adapter, req.hull);
       return next();

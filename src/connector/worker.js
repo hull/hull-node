@@ -39,7 +39,7 @@ export default class Worker {
     return this;
   }
 
-  attach(jobs) {
+  setJobs(jobs) {
     this.jobs = jobs;
   }
 

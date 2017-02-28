@@ -9,6 +9,7 @@
  */
 
 import Hull from "hull";
+import express from "app";
 
 import { Instrumentation, Cache, Queue } from "hull/lib/infra";
 
@@ -48,7 +49,9 @@ const service = {
   ...serviceFunctions
 };
 
-const app = new Hull.App({ hostSecret, port, instrumentation, cache, queue, service });
+const connector = new Hull.Connector({ hostSecret, port, instrumentation, cache, queue, service });
+const app = express();
+connector.setupApp(app);
 
 const startConfig = {
   server: process.env.COMBINED || process.env.WORKER || false,
@@ -56,11 +59,13 @@ const startConfig = {
 };
 
 if (startConfig.server) {
-  server({ app, clientId, clientSecret });
+  const app = server({ app, clientId, clientSecret });
+  connector.startApp(app);
 }
 
 if (startConfig.worker) {
   worker({ app });
+  connector.startWorker();
 }
 
-app.start(startConfig);
+

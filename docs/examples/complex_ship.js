@@ -1,5 +1,6 @@
 import Hull from "hull/src";
 import Promise from "bluebird";
+import express from "express";
 
 // pick what we need from the hull-node
 import { batchHandler, notifHandler, actionHandler, batcherHandler, oAuthHandler } from "hull/src/utils";
@@ -22,14 +23,14 @@ const service = {
   }
 }
 
-const app = new Hull.App({ port, hostSecret, service });
-
-const server = app.server();
+const connector = new Hull.Connector({ port, hostSecret, service });
+const app = express();
+connector.setupApp(app);
 
 /**
  * Custom endpoint to trigger a custom action
  */
-server.use("/fetch-all", actionHandler((ctx, { query, body }) => {
+app.use("/fetch-all", actionHandler((ctx, { query, body }) => {
   ctx.client.logger.info("fetch-all", ctx.segments.map(s => s.name), { query, body });
   return ctx.enqueue("fetchAll", { body });
 }));
@@ -37,7 +38,7 @@ server.use("/fetch-all", actionHandler((ctx, { query, body }) => {
 /**
  * Custom endpoint to fetch incoming data
  */
-server.use("/webhook", batcherHandler((ctx, messages) => {
+app.use("/webhook", batcherHandler((ctx, messages) => {
   ctx.client.logger.info("Batcher.messages", messages);
 }));
 
@@ -45,7 +46,7 @@ server.use("/webhook", batcherHandler((ctx, messages) => {
 /**
  * Handle a outgoing batch of users coming from Hull
  */
-server.use("/batch", batchHandler((ctx, users) => {
+app.use("/batch", batchHandler((ctx, users) => {
   const { service } = ctx;
   return service.sendUsers(users);
 }, { batchSize: 100, groupTraits: true }));
@@ -54,7 +55,7 @@ server.use("/batch", batchHandler((ctx, users) => {
 /**
  * Handle selected events happening on Hull platform
  */
-server.use("/notify", notifHandler({
+app.use("/notify", notifHandler({
   userHandlerOptions: {
     groupTraits: true,
     maxSize: 6,
@@ -76,7 +77,7 @@ server.use("/notify", notifHandler({
 /**
  * A handler to ease the oAuth flow
  */
-server.use("/auth", oAuthHandler({
+app.use("/auth", oAuthHandler({
   name: "Hubspot",
   Strategy: HubspotStrategy,
   options: {
@@ -114,7 +115,7 @@ server.use("/auth", oAuthHandler({
   }
 }));
 
-app.worker().attach({
+connector.worker({
   exampleJob: (ctx, { users }) => {
     console.log("exampleJob", users.length);
   },
@@ -124,4 +125,5 @@ app.worker().attach({
 })
 
 
-app.start({ worker: true, server: true });
+connector.startApp(app);
+connector.startWorker();

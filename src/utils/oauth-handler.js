@@ -47,7 +47,7 @@ export default function oauth({
 
   const router = express.Router();
 
-  router.use(requireHullMiddleware);
+  router.use(requireHullMiddleware());
   router.use(fetchToken);
   router.use(passport.initialize());
   router.use(bodyParser.urlencoded({ extended: true }));

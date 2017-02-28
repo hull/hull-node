@@ -20,7 +20,7 @@ export default class Cache {
    * @param {Object} client Hull Client
    */
   contextMiddleware() { // eslint-disable-line class-methods-use-this
-    return function middleware(req, res, next) {
+    return (req, res, next) => {
       req.hull = req.hull || {};
       req.hull.cache = req.hull.cache || new ShipCache(req.hull, this.cache);
       next();

@@ -87,7 +87,7 @@ export default class InstrumentationAgent {
   }
 
   contextMiddleware() { // eslint-disable-line class-methods-use-this
-    return function middleware(req, res, next) {
+    return (req, res, next) => {
       req.hull = req.hull || {};
       req.hull.metric = req.hull.metric || new MetricAgent(req.hull, this);
       next();
