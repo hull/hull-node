@@ -24,7 +24,7 @@ export default class HullConnector {
     exitHandler(() => {
       return Promise.all([
         Batcher.exit(),
-        queue.exit()
+        this.queue.exit()
       ]);
     });
   }
