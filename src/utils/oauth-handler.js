@@ -1,4 +1,3 @@
-import _ from "lodash";
 import express from "express";
 import passport from "passport";
 import bodyParser from "body-parser";
@@ -58,9 +57,10 @@ export default function oauth({
   });
 
   const strategy = new Strategy({ ...options, passReqToCallback: true }, function verifyAccount(req, accessToken, refreshToken, params, profile, done) {
-    if (_.isUndefined(done) && _.isFunction(profile)) {
+    if (done === undefined) {
       done = profile;
       profile = params;
+      params = undefined;
     }
     done(undefined, { accessToken, refreshToken, params, profile });
   });

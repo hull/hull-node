@@ -6,6 +6,10 @@
 * Adds `/utils` with `handlers`, `middlewares` and `routers` used as a building blocks of the `HullApp` and to be used by the ship/connector directly
 * BREAKING - changed the callback signature in `NotifHandler`
 
+# 0.10.8
+
+* Properly handle Passport strategies that don't accept a 6-argument method.
+
 # 0.10.7
 
 * Add optional `tokenInUrl` argument in `OAuthHandler` allowing to force static urls
