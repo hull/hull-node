@@ -59,7 +59,7 @@ const startConfig = {
 };
 
 if (startConfig.server) {
-  const app = server({ app, clientId, clientSecret });
+  server({ app, clientId, clientSecret });
   connector.startApp(app);
 }
 

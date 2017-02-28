@@ -1,9 +1,9 @@
-import Hull from "hull/src";
+import Hull from "hull";
 import Promise from "bluebird";
 import express from "express";
 
 // pick what we need from the hull-node
-import { batchHandler, notifHandler, actionHandler, batcherHandler, oAuthHandler } from "hull/src/utils";
+import { batchHandler, notifHandler, actionHandler, batcherHandler, oAuthHandler } from "hull/lib/utils";
 
 import { Strategy as HubspotStrategy } from "passport-hubspot";
 
