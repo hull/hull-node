@@ -66,7 +66,7 @@ module.exports = function hullClientMiddlewareFactory(Client, { hostSecret, clie
         // Promise<ship>
         return getCurrentShip(id, req.hull.client, req.hull.cache, bust).then((ship = {}) => {
           req.hull.ship = ship;
-          _.merge(req.hull.client, _.mapValues(helpers, func => func.bind(null, req.hull)));
+          req.hull.helpers = _.mapValues(helpers, func => func.bind(null, req.hull));
           req.hull.hostname = req.hostname;
           return next();
         }, (err) => {

@@ -8,15 +8,15 @@ export default function batchHandler(handler, { batchSize = 100, groupTraits = f
   const router = Router();
   router.use(requireHullMiddleware());
   router.post("/", (req, res, next) => {
-    const { client } = req.hull;
+    const { client, helpers } = req.hull;
 
-    return client.handleExtract({
+    return client.utils.extract.handle({
       body: req.body,
       batchSize,
       handler: (users) => {
         const segmentId = req.query.segment_id || null;
-        users = users.map(u => client.setUserSegments({ add_segment_ids: [segmentId] }, u));
-        users = users.filter(u => client.filterUserSegments(u));
+        users = users.map(u => helpers.setUserSegments({ add_segment_ids: [segmentId] }, u));
+        users = users.filter(u => helpers.filterUserSegments(u));
         if (groupTraits) {
           users = users.map(u => group(u));
         }

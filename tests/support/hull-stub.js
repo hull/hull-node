@@ -12,6 +12,7 @@ export default class HullStub {
 
   get(id) { return Promise.resolve({ id }); }
   put(id) { return Promise.resolve({ id }); }
+  post(id) { return Promise.resolve({ id }); }
 
   configuration() {
     return { id: this.id , secret: "shutt", organization: "xxx.hulltest.rocks" };

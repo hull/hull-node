@@ -5,6 +5,9 @@ import restAPI from "./rest-api";
 import crypto from "./lib/crypto";
 import currentUserMiddleware from "./middleware/current-user";
 import trait from "./trait";
+import * as extract from "./extract";
+import * as settings from "./settings";
+import * as propertiesUtils from "./properties";
 import FirehoseBatcher from "./firehose-batcher";
 
 const PUBLIC_METHODS = ["get", "post", "del", "put"];
@@ -53,6 +56,16 @@ const Client = function Client(config = {}) {
 
   this.utils = {
     groupTraits: trait.group,
+    properties: {
+      get: propertiesUtils.get.bind(this),
+    },
+    settings: {
+      update: settings.update.bind(this),
+    },
+    extract: {
+      request: extract.request.bind(this),
+      handle: extract.handle.bind(this),
+    }
   };
 
   const ctxe = _.pick((this.configuration() || {}), ["organization", "id"]);

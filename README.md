@@ -249,8 +249,32 @@ This utility can be also used in following way:
 
 ```js
 const hull = new Hull({ config });
-const userGroupedTraits = hull.utils.groupTraits(user_report);
+const userGroupedTraits = hull.utils.traits.group(user_report);
 ```
+
+### extract.request({ hostname, segment = null, format = "json", path = "batch", fields = [] })
+Performs a `hull.post("extract/user_reports", {})` call building all needed properties. It takes following arguments:
+
+- **hostname** - a hostname where the extract should be sent
+- **path** - a path of the endpoint which will handle the extract (*batch*)
+- **fields** - an array of users attributes to extract
+- **format** - prefered format
+- **segment** - extract only users matching selected segment, this needs to be an object with `id` at least, `segment.query` is optional
+
+### extract.handle({ body, batchSize, handler })
+The utility to download and parse the incoming extract.
+
+- **body** - json of incoming extract message - must contain `url` and `format`
+- **batchSize** - number of users to be passed to each handler call
+- **handler** - the callback function which would be called with batches of users
+
+### settings.update({ newSettings })
+A helper utility which simplify `hull.put("app", { private_settings })` calls. Using raw API you need to merge existing settings with those you want to update.
+This utility does it for you.
+
+### properties.get()
+A wrapper over `hull.get("search/user_reports/bootstrap")` call which unpacks the list of properties.
+
 
 
 ### Logging Methods: Hull.logger.debug(), Hull.logger.info() ...
