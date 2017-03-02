@@ -57,7 +57,7 @@ function processHandlersFactory(handlers, userHandlerOptions) {
             return Batcher.getHandler(`${ns}-${eventName}-${i}`, {
               ctx: context,
               options: {
-                maxSize: userHandlerOptions.maxSize || 1000,
+                maxSize: userHandlerOptions.maxSize || 100,
                 maxTime: userHandlerOptions.maxTime || 10000
               }
             })
