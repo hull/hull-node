@@ -69,11 +69,14 @@ module.exports = {
    * @param {Object} additionnal claims
    * @returns {String} The jwt token to identity the user.
    */
-  lookupToken(config, user = {}, claims = {}) {
+  lookupToken(config, user = {}, claimsOptions = {}) {
     checkConfig(config);
+    const claims = _.clone(claimsOptions);
     if (_.isString(user)) {
       if (!user) { throw new Error("Missing user ID"); }
       claims.sub = user;
+    } else if (user.id) {
+      claims.sub = user.id;
     } else {
       if (!_.isObject(user) || (!user.email && !user.external_id && !user.guest_id)) {
         throw new Error("you need to pass a User hash with an `email` or `external_id` or `guest_id` field");

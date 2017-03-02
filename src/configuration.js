@@ -13,6 +13,9 @@ const VALID = {
   boolean(val) {
     return (val === true || val === false);
   },
+  object(val) {
+    return _.isObject(val);
+  },
   objectId(str) {
     return VALID_OBJECT_ID.test(str);
   },
@@ -35,7 +38,8 @@ const VALID_PROPS = {
   prefix: VALID.string,
   domain: VALID.string,
   protocol: VALID.string,
-  userId: VALID.string,
+  userClaims: VALID.object,
+  userClaimsOptions: VALID.object,
   accessToken: VALID.string,
   hostSecret: VALID.string,
   flushAt: VALID.number,
@@ -49,8 +53,8 @@ class Configuration {
       throw new Error("Configuration is invalid, it should be a non-empty object");
     }
 
-    if (config.userId) {
-      const accessToken = crypto.lookupToken(config, config.userId);
+    if (config.userClaims) {
+      const accessToken = crypto.lookupToken(config, config.userClaims, config.userClaimsOptions);
       config = { ...config, accessToken };
     }
 

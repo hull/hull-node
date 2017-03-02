@@ -119,13 +119,11 @@ const Client = function Client(config = {}) {
       });
     };
   } else {
-    this.as = (userId) => {
-      // Sudo allows to be a user yet have admin rights... Use with care.
-      if (!userId) {
-        throw new Error("User Id was not defined when calling hull.as()");
+    this.as = (userClaims, userClaimsOptions) => {
+      if (!userClaims) {
+        throw new Error("User Claims was not defined when calling hull.as()");
       }
-      // const scopedClientConfig = _.omit(config, "secret");
-      return new Client({ ...config, userId });
+      return new Client({ ...config, userClaims, userClaimsOptions });
     };
   }
 };
