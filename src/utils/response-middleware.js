@@ -1,9 +1,10 @@
 import _ from "lodash";
 
 /**
- * @param  {Object}   req
- * @param  {Object}   res
- * @param  {Function} next
+ * @example
+ * app.get("/", (req, res, next) => {
+ *   promiseBasedFn.then(next, next);
+ * }, responseMiddleware())
  */
 export default function responseMiddlewareFactory() {
   return function responseMiddleware(result, req, res, next) {
@@ -17,7 +18,12 @@ export default function responseMiddlewareFactory() {
     } else {
       res.status(200);
     }
-    result = (_.isString(result)) ? result : "ok";
+    if (_.isError(result)) {
+      result = result.message || result;
+    } else {
+      result = (_.isString(result)) ? result : "ok";
+    }
+
     res.end(result);
     next();
   };
