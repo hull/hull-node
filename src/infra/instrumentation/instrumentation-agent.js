@@ -1,5 +1,5 @@
 import util from "util";
-import raven from "raven";
+import Raven from "raven";
 import metrics from "datadog-metrics";
 import dogapi from "dogapi";
 
@@ -32,10 +32,12 @@ export default class InstrumentationAgent {
 
     if (process.env.SENTRY_URL) {
       console.log("starting raven");
-      this.raven = new raven.Client(process.env.SENTRY_URL, {
+      this.raven = Raven.config(process.env.SENTRY_URL, {
         release: this.manifest.version
+      }).install((logged, err) => {
+        console.error(logged, err.stack || err);
+        process.exit(1);
       });
-      this.raven.patchGlobal();
     }
 
     this.contextMiddleware = this.contextMiddleware.bind(this);
@@ -70,7 +72,7 @@ export default class InstrumentationAgent {
 
   startMiddleware() {
     if (this.raven) {
-      return raven.middleware.express.requestHandler(this.raven);
+      return Raven.requestHandler();
     }
     return (req, res, next) => {
       next();
@@ -79,7 +81,7 @@ export default class InstrumentationAgent {
 
   stopMiddleware() {
     if (this.raven) {
-      return raven.middleware.express.errorHandler(this.raven);
+      return Raven.errorHandler();
     }
     return (req, res, next) => {
       next();
