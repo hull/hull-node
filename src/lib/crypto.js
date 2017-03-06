@@ -87,6 +87,11 @@ module.exports = {
     if (_.has(claimsOptions, "create")) {
       claims["io.hull.create"] = claimsOptions.create;
     }
+
+    if (_.has(claimsOptions, "active")) {
+      claims["io.hull.active"] = claimsOptions.active;
+    }
+
     return buildToken(config, claims);
   },
 
