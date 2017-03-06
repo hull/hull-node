@@ -94,4 +94,36 @@ describe("NotifHandler", () => {
         });
     });
   });
+
+  it("should handle a batch extract", (done) => {
+    const handler = sinon.spy();
+    const extractHandler = sinon.spy();
+    const app = express();
+    const body = { url: "http://localhost:9000/extract.json", format: "json" };
+
+    app.use(notifMiddleware());
+    app.use(mockHullMiddleware);
+    app.use((req, res, next) => {
+      req.hull.client.utils = {
+        extract: {
+          handle: extractHandler
+        }
+      };
+      next();
+    });
+    app.use("/notify", notifHandler({
+      handlers: {
+        "user:update": handler
+      }
+    }));
+    const server = app.listen(() => {
+      const port = server.address().port;
+      post({ port, body })
+        .then(() => {
+          expect(extractHandler.calledOnce).to.be.ok;
+          expect(extractHandler.getCall(0).args[0].body).to.eql(body);
+          done();
+        });
+    });
+  });
 });

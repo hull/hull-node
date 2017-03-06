@@ -45,7 +45,12 @@ export function handle({ body, batchSize, handler }) {
  */
 export function request({ hostname, segment = null, format = "json", path = "batch", fields = [] } = {}) {
   const client = this;
-  const search = client.configuration();
+  const conf = client.configuration();
+  const search = {
+    ship: conf.id,
+    secret: conf.secret,
+    organization: conf.organization
+  };
   if (segment) {
     search.segment_id = segment.id;
   }

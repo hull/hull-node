@@ -22,7 +22,7 @@ describe("extract.request", () => {
       .then(() => {
         expect(this.postStub.calledOnce).to.be.true;
         expect(this.postStub.calledWith("extract/user_reports", {
-          url: `https://localhost/batch?id=${stub.configuration().id}&secret=shutt&organization=xxx.hulltest.rocks`,
+          url: `https://localhost/batch?ship=${stub.configuration().id}&secret=shutt&organization=xxx.hulltest.rocks`,
           query: {},
           format: "json",
           fields: []

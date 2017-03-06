@@ -89,8 +89,42 @@ function processHandlersFactory(handlers, userHandlerOptions) {
   };
 }
 
+function handleExtractFactory({ handlers, userHandlerOptions }) {
+  return function handleExtract(req, res, next) {
+    if (!req.body || !req.body.url || !req.body.format || !handlers["user:update"]) {
+      return next();
+    }
 
-module.exports = function NotifHandler({ handlers = [], onSubscribe, userHandlerOptions = {} }) {
+    const { client, helpers } = req.hull;
+    return client.utils.extract.handle({
+      body: req.body,
+      batchSize: userHandlerOptions.maxSize || 100,
+      handler: (users) => {
+        const segmentId = req.query.segment_id || null;
+        users = users.map(u => helpers.setUserSegments({ add_segment_ids: [segmentId] }, u));
+        users = users.filter(u => helpers.filterUserSegments(u));
+        if (userHandlerOptions.groupTraits) {
+          users = users.map(u => group(u));
+        }
+        const messages = users.map((user) => {
+          return {
+            user,
+            segments: user.segment_ids.map(id => _.find(req.hull.segments, { id }))
+          };
+        });
+        return handlers["user:update"](req.hull, messages);
+      }
+    }).then(() => {
+      res.end("ok");
+    }, (err) => {
+      res.end("err");
+      client.logger.error("notifHandler.batch.err", err.stack || err);
+    });
+  };
+}
+
+
+module.exports = function notifHandler({ handlers = {}, onSubscribe, userHandlerOptions = {} }) {
   const _handlers = {};
   const app = express.Router();
 
@@ -110,6 +144,7 @@ module.exports = function NotifHandler({ handlers = [], onSubscribe, userHandler
     addEventHandlers(handlers);
   }
 
+  app.use(handleExtractFactory({ handlers, userHandlerOptions }));
   app.use((req, res, next) => {
     if (!req.hull.message) {
       const e = new Error("Empty Message");

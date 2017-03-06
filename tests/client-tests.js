@@ -31,7 +31,6 @@ describe("Hull", () => {
       const scoped = hull.as({ email: "foo@bar.com" }, { create: false });
       const scopedConfig = scoped.configuration();
       const scopedJwtClaims = jwt.decode(scopedConfig.accessToken, scopedConfig.secret);
-      console.log(scopedJwtClaims);
       expect(scopedJwtClaims)
         .to.have.property("io.hull.create")
         .that.eql(false);
