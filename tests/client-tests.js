@@ -25,7 +25,7 @@ describe("Hull", () => {
   });
 
   describe("as", () => {
-    it.only("should allow to pass create option", () => {
+    it("should allow to pass create option", () => {
       const hull = new Hull({ id: "562123b470df84b740000042", secret: "1234", organization: "test" });
 
       const scoped = hull.as({ email: "foo@bar.com" }, { create: false });
