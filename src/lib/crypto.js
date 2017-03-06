@@ -71,7 +71,7 @@ module.exports = {
    */
   lookupToken(config, user = {}, claimsOptions = {}) {
     checkConfig(config);
-    const claims = _.clone(claimsOptions);
+    const claims = {};
     if (_.isString(user)) {
       if (!user) { throw new Error("Missing user ID"); }
       claims.sub = user;
@@ -82,6 +82,10 @@ module.exports = {
         throw new Error("you need to pass a User hash with an `email` or `external_id` or `guest_id` field");
       }
       claims["io.hull.as"] = user;
+    }
+
+    if (_.has(claimsOptions, "create")) {
+      claims["io.hull.create"] = claimsOptions.create;
     }
     return buildToken(config, claims);
   },

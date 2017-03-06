@@ -25,14 +25,15 @@ describe("Hull", () => {
   });
 
   describe("as", () => {
-    it("should allow to pass create option", () => {
+    it.only("should allow to pass create option", () => {
       const hull = new Hull({ id: "562123b470df84b740000042", secret: "1234", organization: "test" });
 
       const scoped = hull.as({ email: "foo@bar.com" }, { create: false });
       const scopedConfig = scoped.configuration();
       const scopedJwtClaims = jwt.decode(scopedConfig.accessToken, scopedConfig.secret);
+      console.log(scopedJwtClaims);
       expect(scopedJwtClaims)
-        .to.have.property("create")
+        .to.have.property("io.hull.create")
         .that.eql(false);
       expect(scopedJwtClaims)
         .to.have.property("io.hull.as")
