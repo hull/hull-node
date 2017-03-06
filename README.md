@@ -258,7 +258,7 @@ Performs a `hull.post("extract/user_reports", {})` call building all needed prop
 - **hostname** - a hostname where the extract should be sent
 - **path** - a path of the endpoint which will handle the extract (*batch*)
 - **fields** - an array of users attributes to extract
-- **format** - prefered format
+- **format** - prefered format (*jsonx*)
 - **segment** - extract only users matching selected segment, this needs to be an object with `id` at least, `segment.query` is optional
 
 ### extract.handle({ body, batchSize, handler })
@@ -275,6 +275,36 @@ This utility does it for you.
 ### properties.get()
 A wrapper over `hull.get("search/user_reports/bootstrap")` call which unpacks the list of properties.
 
+```json
+{
+  "id": {
+    "id": "id",
+    "text": "Hull ID",
+    "type": "string",
+    "id_path": [
+      "User"
+    ],
+    "path": [
+      "User"
+    ],
+    "title": "Hull ID",
+    "key": "id"
+  },
+  "created_at": {
+    "id": "created_at",
+    "text": "Signup on",
+    "type": "date",
+    "id_path": [
+      "User"
+    ],
+    "path": [
+      "User"
+    ],
+    "title": "Signup on",
+    "key": "created_at"
+  }
+}
+```
 
 
 ### Logging Methods: Hull.logger.debug(), Hull.logger.info() ...
