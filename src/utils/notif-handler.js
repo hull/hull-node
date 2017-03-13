@@ -50,22 +50,34 @@ function processHandlersFactory(handlers, userHandlerOptions) {
 
       if (messageHandlers && messageHandlers.length > 0) {
         if (message.Subject === "user_report:update") {
+          // set `segment_ids` and `remove_segment_ids` on the user
+          const { left = [] } = _.get(notification, "message.changes.segments", {});
+          notification.message.user = context.helpers.setUserSegments({
+            add_segment_ids: notification.message.segments.map(s => s.id),
+            remove_segment_ids: left.map(s => s.id)
+          }, notification.message.user);
+
+          // optionally group user traits
           if (notification.message && notification.message.user && userHandlerOptions.groupTraits) {
             notification.message.user = group(notification.message.user);
           }
-          processing.push(Promise.all(messageHandlers.map((handler, i) => {
-            return Batcher.getHandler(`${ns}-${eventName}-${i}`, {
-              ctx: context,
-              options: {
-                maxSize: userHandlerOptions.maxSize || 100,
-                maxTime: userHandlerOptions.maxTime || 10000
-              }
-            })
-            .setCallback((messages) => {
-              return handler(context, messages);
-            })
-            .addMessage(notification.message);
-          })));
+
+          // if the user matches the filter segments
+          if (context.helpers.filterUserSegments(notification.message.user)) {
+            processing.push(Promise.all(messageHandlers.map((handler, i) => {
+              return Batcher.getHandler(`${ns}-${eventName}-${i}`, {
+                ctx: context,
+                options: {
+                  maxSize: userHandlerOptions.maxSize || 100,
+                  maxTime: userHandlerOptions.maxTime || 10000
+                }
+              })
+              .setCallback((messages) => {
+                return handler(context, messages);
+              })
+              .addMessage(notification.message);
+            })));
+          }
         } else {
           processing.push(Promise.all(messageHandlers.map((handler) => {
             return handler(context, notification.message);
@@ -84,6 +96,7 @@ function processHandlersFactory(handlers, userHandlerOptions) {
       return next();
     } catch (err) {
       err.status = 400;
+      console.error(err.stack || err);
       return next(err);
     }
   };
@@ -102,7 +115,6 @@ function handleExtractFactory({ handlers, userHandlerOptions }) {
       handler: (users) => {
         const segmentId = req.query.segment_id || null;
         users = users.map(u => helpers.setUserSegments({ add_segment_ids: [segmentId] }, u));
-        users = users.filter(u => helpers.filterUserSegments(u));
         if (userHandlerOptions.groupTraits) {
           users = users.map(u => group(u));
         }

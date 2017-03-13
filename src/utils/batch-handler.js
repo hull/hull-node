@@ -4,6 +4,9 @@ import { group } from "../trait";
 import responseMiddleware from "./response-middleware";
 import requireHullMiddleware from "./require-hull-middleware";
 
+/**
+ * @deprecated Use `notifyHandler` instead.
+ */
 export default function batchHandler(handler, { batchSize = 100, groupTraits = false } = {}) {
   const router = Router();
   router.use(requireHullMiddleware());
@@ -16,7 +19,6 @@ export default function batchHandler(handler, { batchSize = 100, groupTraits = f
       handler: (users) => {
         const segmentId = req.query.segment_id || null;
         users = users.map(u => helpers.setUserSegments({ add_segment_ids: [segmentId] }, u));
-        users = users.filter(u => helpers.filterUserSegments(u));
         if (groupTraits) {
           users = users.map(u => group(u));
         }
