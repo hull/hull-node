@@ -1,3 +1,10 @@
+# 0.11.0-beta.2
+* Reorganize the utils/helpers
+* Introduce hull.as() create option
+* Upgrade raven API and add default exit handler
+* Combine notifHandler and batchHandler
+* Automatically filter out users using segment filter on user:update and NOT on batch actions
+
 # 0.11.0-beta.1
 
 * Adds `/app` with `Hull.App`, `Server` and `Worker`
