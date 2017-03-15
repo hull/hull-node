@@ -3,7 +3,7 @@ import Promise from "bluebird";
 import setupApp from "./setup-app";
 import Worker from "./worker";
 import { Instrumentation, Cache, Queue, Batcher } from "../infra";
-import { exitHandler, serviceMiddleware, notifMiddleware, segmentsMiddleware, requireHullMiddleware } from "../utils";
+import { exitHandler, serviceMiddleware, notifMiddleware, segmentsMiddleware, requireHullMiddleware, helpersMiddleware } from "../utils";
 
 
 export default class HullConnector {
@@ -37,6 +37,7 @@ export default class HullConnector {
       queue: this.queue
     });
     app.use(this.clientMiddleware());
+    app.use(helpersMiddleware());
     app.use(segmentsMiddleware());
     app.use(serviceMiddleware(this.service));
     return app;
