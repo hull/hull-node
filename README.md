@@ -56,7 +56,7 @@ hull.configuration();
 ## hull.userToken()
 
 ```js
-hull.userToken({ email:'xxx@example.com', name:'FooBar' }, claims);
+hull.userToken({ email:'xxx@example.com', name:'FooBar' }, optionalClaims);
 ```
 
 Used for [Bring your own users](http://hull.io/docs/users/byou).
@@ -78,9 +78,9 @@ const app = express();
 
 // a middleware with no mount path; gets executed for every request to the app
 app.use(hull.currentUserMiddleware);
-app.use(function(req,res,next) {
+app.use(function(req, res, next) {
   console.log(req.hull.userId); // Should exist if there is a user logged in;
-})
+});
 ```
 
 Reverse of Bring your own Users. When using Hull's Identity management, tells you who the current user is. Generates a middleware to add to your Connect/Express apps.
@@ -112,11 +112,11 @@ You can use an internal Hull `id`, an ID from your database that we call `extern
 
 Assigning the `user` variable doesn't make an API call, it scopes the calls to another instance of `hull` client. This means `user` is an instance of the `hull` client scoped to this user.
 
-The second parameter lets you define additional options passed to the user resolution script:
+The second parameter lets you define additional options (JWT claims) passed to the user resolution script:
 
 * **create** - *boolean* - marks if the user should be lazily created if not found (default: *true*)
 
-
+### Possible usage
 > Return a hull `client` scoped to the user identified by it's Hull ID. Not lazily created. Needs an existing User
 
 ```js
@@ -152,7 +152,6 @@ hull.as({ email: "user@email.com" });
 # Methods for user-scoped instance
 
 ```js
-const userId = "5718b59b7a85ebf20e000169";
 const externalId = "dkjf565wd654e";
 const anonymousId = "44564-EJVWE-1CE56SE-SDVE879VW8D4";
 
@@ -180,12 +179,12 @@ user.track('new support ticket', { messages: 3,
 
 The `context` object lets you define event meta-data. Everything is optional
 
-- `source`: Defines a namespace, such as `zendesk`, `mailchimp`, `stripe`
-- `type`: Define a event type, such as `mail`, `ticket`, `payment`
-- `created_at`: Define an event date. defaults to `now()`
-- `event_id`: Define a way to de-duplicate events. If you pass events with the same unique `event_id`, they will overwrite the previous one.
-- `ip`: Define the Event's IP. Set to `null` if you're storing a server call, otherwise, geoIP will locate this event.
-- `referer`: Define the Referer. `null` for server calls.
+- **source**: Defines a namespace, such as `zendesk`, `mailchimp`, `stripe`
+- **type**: Define a event type, such as `mail`, `ticket`, `payment`
+- **created_at**: Define an event date. defaults to `now()`
+- **event_id**: Define a way to de-duplicate events. If you pass events with the same unique `event_id`, they will overwrite the previous one.
+- **ip**: Define the Event's IP. Set to `null` if you're storing a server call, otherwise, geoIP will locate this event.
+- **referer**: Define the Referer. `null` for server calls.
 
 
 ## user.traits(properties, context)
