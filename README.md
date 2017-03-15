@@ -258,7 +258,7 @@ Performs a `hull.post("extract/user_reports", {})` call building all needed prop
 - **hostname** - a hostname where the extract should be sent
 - **path** - a path of the endpoint which will handle the extract (*batch*)
 - **fields** - an array of users attributes to extract
-- **format** - prefered format (*jsonx*)
+- **format** - prefered format (*json*)
 - **segment** - extract only users matching selected segment, this needs to be an object with `id` at least, `segment.query` is optional
 
 ### extract.handle({ body, batchSize, handler })
