@@ -38,8 +38,9 @@ const VALID_PROPS = {
   prefix: VALID.string,
   domain: VALID.string,
   protocol: VALID.string,
-  userClaims: VALID.object,
-  userClaimsOptions: VALID.object,
+  userClaim: VALID.object,
+  accountClaim: VALID.object,
+  additionalClaims: VALID.object,
   accessToken: VALID.string,
   hostSecret: VALID.string,
   flushAt: VALID.number,
@@ -53,8 +54,13 @@ class Configuration {
       throw new Error("Configuration is invalid, it should be a non-empty object");
     }
 
-    if (config.userClaims) {
-      const accessToken = crypto.lookupToken(config, config.userClaims, config.userClaimsOptions);
+    if (config.userClaim) {
+      const accessToken = crypto.lookupToken(config, "user", config.userClaim, config.additionalClaims);
+      config = { ...config, accessToken };
+    }
+
+    if (config.accountClaim) {
+      const accessToken = crypto.lookupToken(config, "account", config.accountClaim, config.additionalClaims);
       config = { ...config, accessToken };
     }
 

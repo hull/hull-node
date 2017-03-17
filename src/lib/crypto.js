@@ -43,32 +43,46 @@ module.exports = {
   /**
    * Calculates the hash for a user lookup - io.hull.as
    *
+   * This is a wrapper over `buildToken` method.
+   * If the identClaim is a string or has id property, it's considered as an object id,
+   * and its value is set as a token subject.
+   * Otherwise it verifies if required ident properties are set
+   * and saves them as a custom ident claim.
+   *
    * @param {Object} config object
-   * @param {Object} user object or user ID as string
-   * @param {Object} additionnal claims
+   * @param {String} type - "user" or "account"
+   * @param {String|Object} identClaim main idenditiy claim - object or string
+   * @param {Object} additionalClaims
    * @returns {String} The jwt token to identity the user.
    */
-  lookupToken(config, user = {}, claimsOptions = {}) {
+  lookupToken(config, type, identClaim, additionalClaims = {}) {
+    type = _.toLower(type);
+    if (!_.includes(["user", "account"], type)) {
+      throw new Error("Lookup token supports only `user` and `account` types");
+    }
+
     checkConfig(config);
     const claims = {};
-    if (_.isString(user)) {
-      if (!user) { throw new Error("Missing user ID"); }
-      claims.sub = user;
-    } else if (user.id) {
-      claims.sub = user.id;
+    if (_.isString(identClaim)) {
+      if (!identClaim) { throw new Error(`Missing ${type} ID`); }
+      claims.sub = identClaim;
+    } else if (identClaim.id) {
+      claims.sub = identClaim.id;
     } else {
-      if (!_.isObject(user) || (!user.email && !user.external_id && !user.guest_id)) {
-        throw new Error("you need to pass a User hash with an `email` or `external_id` or `guest_id` field");
+      if (type === "user"
+        && (!_.isObject(identClaim) || (!identClaim.email && !identClaim.external_id && !identClaim.anonymous_id))) {
+        throw new Error("You need to pass a user hash with an `email` or `external_id` or `anonymous_id` field");
       }
-      claims["io.hull.as"] = user;
+
+      claims[`io.hull.as${_.upperFirst(type)}`] = identClaim;
     }
 
-    if (_.has(claimsOptions, "create")) {
-      claims["io.hull.create"] = claimsOptions.create;
+    if (_.has(additionalClaims, "create")) {
+      claims["io.hull.create"] = additionalClaims.create;
     }
 
-    if (_.has(claimsOptions, "active")) {
-      claims["io.hull.active"] = claimsOptions.active;
+    if (_.has(additionalClaims, "active")) {
+      claims["io.hull.active"] = additionalClaims.active;
     }
 
     return buildToken(config, claims);

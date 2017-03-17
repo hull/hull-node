@@ -45,7 +45,7 @@ const Client = function Client(config = {}) {
   });
 
   this.userToken = function userToken(data = clientConfig.get("userId"), claims) {
-    return crypto.lookupToken(clientConfig.get(), data, claims);
+    return crypto.lookupToken(clientConfig.get(), "user", data, claims);
   };
 
   this.currentUserMiddleware = currentUserMiddleware.bind(this, clientConfig.get());
@@ -115,11 +115,18 @@ const Client = function Client(config = {}) {
       });
     };
   } else {
-    this.as = (userClaims, userClaimsOptions) => {
-      if (!userClaims) {
-        throw new Error("User Claims was not defined when calling hull.as()");
+    this.asUser = (userClaim, additionalClaims) => {
+      if (!userClaim) {
+        throw new Error("User Claims was not defined when calling hull.asUser()");
       }
-      return new Client({ ...config, userClaims, userClaimsOptions });
+      return new Client({ ...config, userClaim, additionalClaims });
+    };
+
+    this.asAccount = (accountClaim, additionalClaims) => {
+      if (!accountClaim) {
+        throw new Error("Account Claims was not defined when calling hull.asAccount()");
+      }
+      return new Client({ ...config, accountClaim, additionalClaims });
     };
   }
 };
