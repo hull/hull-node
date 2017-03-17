@@ -11,7 +11,7 @@ export default function actionHandler(handler) {
   router.post("/", (req, res, next) => {
     return Promise.resolve(handler(req.hull, _.pick(req, ["body", "query"]))).then(next, next);
   });
-  router.use(responseMiddleware);
+  router.use(responseMiddleware());
 
   return router;
 }

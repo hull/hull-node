@@ -26,7 +26,7 @@ export default function batchHandler(handler, { batchSize = 100, groupTraits = f
       }
     }).then(next, next);
   });
-  router.use(responseMiddleware);
+  router.use(responseMiddleware());
 
   return router;
 }
