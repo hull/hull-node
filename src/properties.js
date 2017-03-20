@@ -30,11 +30,10 @@ function getProperties(raw, path, id_path) {
 
 /**
  * gets all existing Properties in the organization along with their metadata
- * @param  {Object} ctx The Context Object
  * @return {Promise}
  */
-export default function getAvailableProperties(ctx) {
-  return ctx.client
+export function get() { // eslint-disable-line import/prefer-default-export
+  return this
     .get("search/user_reports/bootstrap")
     .then(({ tree }) => getProperties(tree).properties);
 }

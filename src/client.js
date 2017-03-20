@@ -5,6 +5,9 @@ import restAPI from "./rest-api";
 import crypto from "./lib/crypto";
 import currentUserMiddleware from "./middleware/current-user";
 import trait from "./trait";
+import * as extract from "./extract";
+import * as settings from "./settings";
+import * as propertiesUtils from "./properties";
 import FirehoseBatcher from "./firehose-batcher";
 
 const PUBLIC_METHODS = ["get", "post", "del", "put"];
@@ -42,17 +45,23 @@ const Client = function Client(config = {}) {
   });
 
   this.userToken = function userToken(data = clientConfig.get("userId"), claims) {
-    return crypto.userToken(clientConfig.get(), data, claims);
-  };
-
-  this.lookupToken = function userToken(data = clientConfig.get("userId"), claims) {
-    return crypto.lookupToken(clientConfig.get(), data, claims);
+    return crypto.lookupToken(clientConfig.get(), "user", data, claims);
   };
 
   this.currentUserMiddleware = currentUserMiddleware.bind(this, clientConfig.get());
 
   this.utils = {
     groupTraits: trait.group,
+    properties: {
+      get: propertiesUtils.get.bind(this),
+    },
+    settings: {
+      update: settings.update.bind(this),
+    },
+    extract: {
+      request: extract.request.bind(this),
+      handle: extract.handle.bind(this),
+    }
   };
 
   const ctxe = _.pick((this.configuration() || {}), ["organization", "id"]);
@@ -106,13 +115,18 @@ const Client = function Client(config = {}) {
       });
     };
   } else {
-    this.as = (userId) => {
-      // Sudo allows to be a user yet have admin rights... Use with care.
-      if (!userId) {
-        throw new Error("User Id was not defined when calling hull.as()");
+    this.asUser = (userClaim, additionalClaims) => {
+      if (!userClaim) {
+        throw new Error("User Claims was not defined when calling hull.asUser()");
       }
-      // const scopedClientConfig = _.omit(config, "secret");
-      return new Client({ ...config, userId });
+      return new Client({ ...config, userClaim, additionalClaims });
+    };
+
+    this.asAccount = (accountClaim, additionalClaims) => {
+      if (!accountClaim) {
+        throw new Error("Account Claims was not defined when calling hull.asAccount()");
+      }
+      return new Client({ ...config, accountClaim, additionalClaims });
     };
   }
 };

@@ -2,7 +2,7 @@
 /* eslint-disable no-unused-expressions */
 import { expect } from "chai";
 
-import filterUserSegments from "../../src/helpers/filter-user-segments";
+import { filterUserSegments } from "../../src/helpers";
 
 import mockSettings from "../support/mock-settings";
 

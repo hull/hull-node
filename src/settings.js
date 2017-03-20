@@ -6,15 +6,11 @@
  * @param  {Object} newSettings settings to update
  * @return {Promise}
  */
-export default function updateSettings(ctx, newSettings) {
-  const { client, cache } = ctx;
-  return client.settings.update(newSettings)
+export function update(newSettings) { // eslint-disable-line import/prefer-default-export
+  return this.get("app")
     .then((ship) => {
-      ctx.ship = ship;
-      if (!cache) {
-        return ship;
-      }
-      return cache.del(ship.id)
-        .then(() => ship);
+      const private_settings = { ...ship.private_settings, ...newSettings };
+      ship.private_settings = private_settings;
+      return this.put(ship.id, { private_settings });
     });
 }
