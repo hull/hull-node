@@ -1,9 +1,16 @@
+# 0.11.0-beta.3
+* fix the `requestExtract` handler - allow passing `path` param
+* fix the `.asUser()` and `.asAccount()` to return `traits` and `track`
+* adds `.asUser().account()` method
+
 # 0.11.0-beta.2
 * Reorganize the utils/helpers
 * Introduce hull.as() create option
 * Upgrade raven API and add default exit handler
 * Combine notifHandler and batchHandler
 * Automatically filter out users using segment filter on user:update and NOT on batch actions
+* Renames `hull().as()` method to `hull().asUser()`
+* Adds initial support for accounts
 
 # 0.11.0-beta.1
 

@@ -50,32 +50,35 @@ module.exports = {
    * and saves them as a custom ident claim.
    *
    * @param {Object} config object
-   * @param {String} type - "user" or "account"
-   * @param {String|Object} identClaim main idenditiy claim - object or string
+   * @param {String} subjectType - "user" or "account"
+   * @param {String|Object} userClaim main idenditiy claim - object or string
+   * @param {String|Object} accountClaim main idenditiy claim - object or string
    * @param {Object} additionalClaims
    * @returns {String} The jwt token to identity the user.
    */
-  lookupToken(config, type, identClaim, additionalClaims = {}) {
-    type = _.toLower(type);
-    if (!_.includes(["user", "account"], type)) {
+  lookupToken(config, subjectType, objectClaims = {}, additionalClaims = {}) {
+    subjectType = _.toLower(subjectType);
+    if (!_.includes(["user", "account"], subjectType)) {
       throw new Error("Lookup token supports only `user` and `account` types");
     }
 
     checkConfig(config);
     const claims = {};
-    if (_.isString(identClaim)) {
-      if (!identClaim) { throw new Error(`Missing ${type} ID`); }
-      claims.sub = identClaim;
-    } else if (identClaim.id) {
-      claims.sub = identClaim.id;
-    } else {
-      if (type === "user"
-        && (!_.isObject(identClaim) || (!identClaim.email && !identClaim.external_id && !identClaim.anonymous_id))) {
-        throw new Error("You need to pass a user hash with an `email` or `external_id` or `anonymous_id` field");
-      }
 
-      claims[`io.hull.as${_.upperFirst(type)}`] = identClaim;
+    const subjectClaim = objectClaims[subjectType];
+
+    if (_.isString(subjectClaim)) {
+      claims.sub = subjectClaim;
+    } else if (subjectClaim.id) {
+      claims.sub = subjectClaim.id;
     }
+
+    _.reduce(objectClaims, (c, oClaims, objectType) => {
+      if (_.isObject(oClaims) && !_.isEmpty(oClaims)) {
+        c[`io.hull.as${_.upperFirst(objectType)}`] = oClaims;
+      }
+      return c;
+    }, claims);
 
     if (_.has(additionalClaims, "create")) {
       claims["io.hull.create"] = additionalClaims.create;
@@ -85,6 +88,7 @@ module.exports = {
       claims["io.hull.active"] = additionalClaims.active;
     }
 
+    claims["io.hull.subjectType"] = subjectType;
     return buildToken(config, claims);
   },
 

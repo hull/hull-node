@@ -25,6 +25,23 @@ describe("Hull", () => {
   });
 
   describe("as", () => {
+    it("should return scoped client with traits and track methods", () => {
+      const hull = new Hull({ id: "562123b470df84b740000042", secret: "1234", organization: "test" });
+
+      const scopedAccount = hull.asAccount({ name: "Hull" });
+      const scopedUser = hull.asUser("1234");
+
+      expect(scopedAccount).to.has.property("traits")
+        .that.is.an("function");
+      expect(scopedAccount).to.has.property("track")
+        .that.is.an("function");
+
+      expect(scopedUser).to.has.property("traits")
+        .that.is.an("function");
+      expect(scopedUser).to.has.property("track")
+        .that.is.an("function");
+    });
+
     it("should allow to pass create option", () => {
       const hull = new Hull({ id: "562123b470df84b740000042", secret: "1234", organization: "test" });
 
@@ -50,17 +67,6 @@ describe("Hull", () => {
         .that.eql("123456");
     });
 
-    it("should allow to pass account id as an object property", () => {
-      const hull = new Hull({ id: "562123b470df84b740000042", secret: "1234", organization: "test" });
-
-      const scoped = hull.asAccount({ id: "123456" });
-      const scopedConfig = scoped.configuration();
-      const scopedJwtClaims = jwt.decode(scopedConfig.accessToken, scopedConfig.secret);
-      expect(scopedJwtClaims)
-        .to.have.property("sub")
-        .that.eql("123456");
-    });
-
     it("should allow to pass account name as an object property", () => {
       const hull = new Hull({ id: "562123b470df84b740000042", secret: "1234", organization: "test" });
 
@@ -71,5 +77,52 @@ describe("Hull", () => {
         .to.have.property("io.hull.asAccount")
         .that.eql({ name: "Hull" });
     });
+
+    it("should allow to link user to an account", () => {
+      const hull = new Hull({ id: "562123b470df84b740000042", secret: "1234", organization: "test" });
+
+      const scoped = hull.asUser({ email: "foo@bar.com" }).account({ name: "Hull" });
+      const scopedJwtClaims = jwt.decode(scoped.configuration().accessToken, scoped.configuration().secret);
+
+      expect(scopedJwtClaims)
+        .to.have.property("io.hull.subjectType")
+        .that.eql("account");
+      expect(scopedJwtClaims)
+        .to.have.property("io.hull.asAccount")
+        .that.eql({ name: "Hull" });
+      expect(scopedJwtClaims)
+        .to.have.property("io.hull.asUser")
+        .that.eql({ email: "foo@bar.com" });
+    });
+
+    it("should allow to link user to an existing account", () => {
+      const hull = new Hull({ id: "562123b470df84b740000042", secret: "1234", organization: "test" });
+
+      const scoped = hull.asUser({ email: "foo@bar.com" }).account();
+      const scopedJwtClaims = jwt.decode(scoped.configuration().accessToken, scoped.configuration().secret);
+
+      expect(scopedJwtClaims)
+        .to.have.property("io.hull.subjectType")
+        .that.eql("account");
+      expect(scopedJwtClaims)
+        .to.not.have.property("io.hull.asAccount");
+      expect(scopedJwtClaims)
+        .to.have.property("io.hull.asUser")
+        .that.eql({ email: "foo@bar.com" });
+    });
+
+    it("should throw an error if any of required field is not passed", () => {
+      const hull = new Hull({ id: "562123b470df84b740000042", secret: "1234", organization: "test" });
+
+      expect(hull.asUser.bind(null, { some_id: "1234" }))
+        .to.throw(Error);
+      expect(hull.asAccount.bind(null, { some_other_id: "1234" }))
+        .to.throw(Error);
+
+      expect(hull.asUser.bind(null, { external_id: "1234" }))
+        .to.not.throw(Error);
+      expect(hull.asAccount.bind(null, { external_id: "1234" }))
+        .to.not.throw(Error);
+    })
   });
 });

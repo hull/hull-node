@@ -40,6 +40,7 @@ const VALID_PROPS = {
   protocol: VALID.string,
   userClaim: VALID.object,
   accountClaim: VALID.object,
+  subjectType: VALID.string,
   additionalClaims: VALID.object,
   accessToken: VALID.string,
   hostSecret: VALID.string,
@@ -47,20 +48,39 @@ const VALID_PROPS = {
   flushAfter: VALID.number
 };
 
-class Configuration {
+/**
+ * make sure that provided "identity claim"
+ * @param  {String} type          "user" or "account"
+ * @param  {String|Object} object identity claim
+ * @param  {Array} requiredFields fields which are required if the passed
+ * claim is an object
+ * @throws Error
+ */
+function assertClaimValidity(type, object, requiredFields) {
+  if (!_.isEmpty(object)) {
+    if (_.isString(object)) {
+      if (!object) {
+        throw new Error(`Missing ${type} ID`);
+      }
+    } else if (!_.isObject(object) || _.intersection(_.keys(object), requiredFields).length === 0) {
+      throw new Error(`You need to pass an ${type} hash with an ${requiredFields.join(", ")} field`);
+    }
+  }
+}
 
+class Configuration {
   constructor(config) {
     if (!_.isObject(config) || !_.size(config)) {
       throw new Error("Configuration is invalid, it should be a non-empty object");
     }
 
-    if (config.userClaim) {
-      const accessToken = crypto.lookupToken(config, "user", config.userClaim, config.additionalClaims);
-      config = { ...config, accessToken };
-    }
-
-    if (config.accountClaim) {
-      const accessToken = crypto.lookupToken(config, "account", config.accountClaim, config.additionalClaims);
+    if (config.userClaim || config.accountClaim) {
+      assertClaimValidity("user", config.userClaim, ["id", "email", "external_id", "anonymous_id"]);
+      assertClaimValidity("account", config.accountClaim, ["id", "external_id", "name", "domain"]);
+      const accessToken = crypto.lookupToken(config, config.subjectType, {
+        user: config.userClaim,
+        account: config.accountClaim
+      }, config.additionalClaims);
       config = { ...config, accessToken };
     }
 
