@@ -28,7 +28,7 @@ describe("Hull", () => {
     it("should return scoped client with traits and track methods", () => {
       const hull = new Hull({ id: "562123b470df84b740000042", secret: "1234", organization: "test" });
 
-      const scopedAccount = hull.asAccount({ name: "Hull" });
+      const scopedAccount = hull.asAccount({ domain: "hull.io" });
       const scopedUser = hull.asUser("1234");
 
       expect(scopedAccount).to.has.property("traits")
@@ -67,21 +67,24 @@ describe("Hull", () => {
         .that.eql("123456");
     });
 
-    it("should allow to pass account name as an object property", () => {
+    it("should allow to pass account domain as an object property", () => {
       const hull = new Hull({ id: "562123b470df84b740000042", secret: "1234", organization: "test" });
 
-      const scoped = hull.asAccount({ name: "Hull" });
+      const scoped = hull.asAccount({ domain: "hull.io" });
       const scopedConfig = scoped.configuration();
       const scopedJwtClaims = jwt.decode(scopedConfig.accessToken, scopedConfig.secret);
       expect(scopedJwtClaims)
         .to.have.property("io.hull.asAccount")
-        .that.eql({ name: "Hull" });
+        .that.eql({ domain: "hull.io" });
+      expect(scopedJwtClaims)
+        .to.have.property("io.hull.subjectType")
+        .that.eql("account");
     });
 
     it("should allow to link user to an account", () => {
       const hull = new Hull({ id: "562123b470df84b740000042", secret: "1234", organization: "test" });
 
-      const scoped = hull.asUser({ email: "foo@bar.com" }).account({ name: "Hull" });
+      const scoped = hull.asUser({ email: "foo@bar.com" }).account({ domain: "hull.io" });
       const scopedJwtClaims = jwt.decode(scoped.configuration().accessToken, scoped.configuration().secret);
 
       expect(scopedJwtClaims)
@@ -89,13 +92,13 @@ describe("Hull", () => {
         .that.eql("account");
       expect(scopedJwtClaims)
         .to.have.property("io.hull.asAccount")
-        .that.eql({ name: "Hull" });
+        .that.eql({ domain: "hull.io" });
       expect(scopedJwtClaims)
         .to.have.property("io.hull.asUser")
         .that.eql({ email: "foo@bar.com" });
     });
 
-    it("should allow to link user to an existing account", () => {
+    it("should allow to resolve an existing account user is linked to", () => {
       const hull = new Hull({ id: "562123b470df84b740000042", secret: "1234", organization: "test" });
 
       const scoped = hull.asUser({ email: "foo@bar.com" }).account();

@@ -76,7 +76,7 @@ class Configuration {
 
     if (config.userClaim || config.accountClaim) {
       assertClaimValidity("user", config.userClaim, ["id", "email", "external_id", "anonymous_id"]);
-      assertClaimValidity("account", config.accountClaim, ["id", "external_id", "name", "domain"]);
+      assertClaimValidity("account", config.accountClaim, ["id", "external_id", "domain"]);
       const accessToken = crypto.lookupToken(config, config.subjectType, {
         user: config.userClaim,
         account: config.accountClaim
