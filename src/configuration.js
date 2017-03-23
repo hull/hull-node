@@ -49,7 +49,7 @@ const VALID_PROPS = {
 };
 
 /**
- * make sure that provided "identity claim"
+ * make sure that provided "identity claim" is valid
  * @param  {String} type          "user" or "account"
  * @param  {String|Object} object identity claim
  * @param  {Array} requiredFields fields which are required if the passed
