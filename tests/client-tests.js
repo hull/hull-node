@@ -98,6 +98,23 @@ describe("Hull", () => {
         .that.eql({ email: "foo@bar.com" });
     });
 
+    it("should allow to link a user using its id to an account", () => {
+      const hull = new Hull({ id: "562123b470df84b740000042", secret: "1234", organization: "test" });
+
+      const scoped = hull.asUser("1234").account({ domain: "hull.io" });
+      const scopedJwtClaims = jwt.decode(scoped.configuration().accessToken, scoped.configuration().secret);
+
+      expect(scopedJwtClaims)
+        .to.have.property("io.hull.subjectType")
+        .that.eql("account");
+      expect(scopedJwtClaims)
+        .to.have.property("io.hull.asAccount")
+        .that.eql({ domain: "hull.io" });
+      expect(scopedJwtClaims)
+        .to.have.property("io.hull.asUser")
+        .that.eql({ id: "1234" });
+    });
+
     it("should allow to resolve an existing account user is linked to", () => {
       const hull = new Hull({ id: "562123b470df84b740000042", secret: "1234", organization: "test" });
 
@@ -126,6 +143,6 @@ describe("Hull", () => {
         .to.not.throw(Error);
       expect(hull.asAccount.bind(null, { external_id: "1234" }))
         .to.not.throw(Error);
-    })
+    });
   });
 });
