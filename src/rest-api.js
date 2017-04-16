@@ -68,7 +68,7 @@ function format(config, url) {
 }
 
 module.exports = function restAPI(config, url, method, params) {
-  if (method === 'del') { method = 'delete'; }
+  if (method === 'delete') { method = 'del'; }
   const token = config.get('sudo') ? config.get('secret') : (config.get('accessToken') || config.get('secret'));
   const conf = {
     token,
