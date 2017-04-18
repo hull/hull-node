@@ -76,6 +76,8 @@ module.exports = {
     _.reduce(objectClaims, (c, oClaims, objectType) => {
       if (_.isObject(oClaims) && !_.isEmpty(oClaims)) {
         c[`io.hull.as${_.upperFirst(objectType)}`] = oClaims;
+      } else if (_.isString(oClaims) && !_.isEmpty(oClaims) && objectType !== subjectType) {
+        c[`io.hull.as${_.upperFirst(objectType)}`] = { id: oClaims };
       }
       return c;
     }, claims);
