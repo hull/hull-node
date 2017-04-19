@@ -79,7 +79,7 @@ const Client = function Client(config = {}) {
   // Check conditions on when to create a "user client" or an "org client".
   // When to pass org scret or not
 
-  if (config.userId || config.accessToken) {
+  if (config.userClaim || config.accountClaim || config.accessToken) {
     this.traits = (traits, context = {}) => {
       // Quick and dirty way to add a source prefix to all traits we want in.
       const source = context.source;
@@ -114,19 +114,28 @@ const Client = function Client(config = {}) {
         }
       });
     };
+
+    if (config.userClaim) {
+      this.account = (accountClaim = {}) => {
+        if (!accountClaim) {
+          return new Client({ ...config, subjectType: "account" });
+        }
+        return new Client({ ...config, subjectType: "account", accountClaim });
+      };
+    }
   } else {
-    this.asUser = (userClaim, additionalClaims) => {
+    this.asUser = (userClaim, additionalClaims = {}) => {
       if (!userClaim) {
         throw new Error("User Claims was not defined when calling hull.asUser()");
       }
-      return new Client({ ...config, userClaim, additionalClaims });
+      return new Client({ ...config, subjectType: "user", userClaim, additionalClaims });
     };
 
-    this.asAccount = (accountClaim, additionalClaims) => {
+    this.asAccount = (accountClaim, additionalClaims = {}) => {
       if (!accountClaim) {
         throw new Error("Account Claims was not defined when calling hull.asAccount()");
       }
-      return new Client({ ...config, accountClaim, additionalClaims });
+      return new Client({ ...config, subjectType: "account", accountClaim, additionalClaims });
     };
   }
 };
