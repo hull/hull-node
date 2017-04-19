@@ -1,3 +1,6 @@
+# 0.11.0-beta.4
+* fix `helpers.updateSettings`
+
 # 0.11.0-beta.3
 * fix the `requestExtract` handler - allow passing `path` param
 * fix the `.asUser()` and `.asAccount()` to return `traits` and `track`

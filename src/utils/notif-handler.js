@@ -121,7 +121,15 @@ function handleExtractFactory({ handlers, userHandlerOptions }) {
         const messages = users.map((user) => {
           return {
             user,
-            segments: user.segment_ids.map(id => _.find(req.hull.segments, { id }))
+            segments: user.segment_ids.map(id => _.find(req.hull.segments, { id })),
+            events: [],
+            changes: {
+              user: {},
+              segments: {
+                left: [],
+                entered: []
+              }
+            }
           };
         });
         return handlers["user:update"](req.hull, messages);

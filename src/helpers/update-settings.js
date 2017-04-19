@@ -8,7 +8,7 @@
  */
 export default function updateSettings(ctx, newSettings) {
   const { client, cache } = ctx;
-  return client.settings.update(newSettings)
+  return client.utils.settings.update(newSettings)
     .then((ship) => {
       ctx.ship = ship;
       if (!cache) {
