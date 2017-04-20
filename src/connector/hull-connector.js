@@ -8,7 +8,7 @@ import { exitHandler, serviceMiddleware, notifMiddleware, segmentsMiddleware, re
 
 export default class HullConnector {
   constructor(Hull, {
-    hostSecret, port, clientConfig = {}, instrumentation, cache, queue, service
+    hostSecret, port, clientConfig = {}, instrumentation, cache, queue, service, connector_name
   } = {}) {
     this.Hull = Hull;
     this.instrumentation = instrumentation || new Instrumentation();
@@ -18,6 +18,10 @@ export default class HullConnector {
     this.hostSecret = hostSecret;
     this.service = service;
     this.clientConfig = clientConfig;
+
+    if (connector_name) {
+      this.clientConfig.connector_name = connector_name;
+    }
 
     this.notifMiddleware = notifMiddleware;
 

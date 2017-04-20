@@ -5,7 +5,7 @@ import Promise from "bluebird";
 
 import { updateSettings } from "../../src/helpers";
 
-describe.only("updateSettings", () => {
+describe("updateSettings", () => {
   it("should call utils.settings.update in the background", (done) => {
     const updateStub = sinon.stub().returns(Promise.resolve({}));
     updateSettings({

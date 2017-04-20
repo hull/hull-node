@@ -14,7 +14,10 @@ const PUBLIC_METHODS = ["get", "post", "del", "put"];
 
 const logger = new (winston.Logger)({
   transports: [
-    new (winston.transports.Console)({ level: "info" })
+    new (winston.transports.Console)({
+      level: "info",
+      json: true
+    })
   ]
 });
 
@@ -64,7 +67,7 @@ const Client = function Client(config = {}) {
     }
   };
 
-  const ctxe = _.pick((this.configuration() || {}), ["organization", "id"]);
+  const ctxe = _.pick((this.configuration() || {}), ["organization", "id", "connector_name"]);
   const logFactory = level => (message, data) => logger[level](message, { context: ctxe, data });
   const logs = {};
   ["silly", "debug", "verbose", "info", "warn", "error"].map((level) => { logs[level] = logFactory(level); return level; });
