@@ -2,6 +2,7 @@
 * fix `helpers.updateSettings`
 * adds optional `connector_name` parameter to `Hull` client and `Hull.Connector` which if set will be added to logs context
 * by default set json format of the logger console output
+* fix `del` method call - thanks @phillipalexander
 
 # 0.11.0-beta.3
 * fix the `requestExtract` handler - allow passing `path` param
