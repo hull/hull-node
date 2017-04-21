@@ -5,7 +5,7 @@ import requestClient from "request";
 import ps from "promise-streams";
 import BatchStream from "batch-stream";
 import URI from "urijs";
-
+import _ from "lodash";
 
 /**
  * @param {Object} body Request Body Object
@@ -43,14 +43,15 @@ export function handle({ body, batchSize, handler }) {
  * @param  {Object} options
  * @return {Promise}
  */
-export function request({ hostname, segment = null, format = "json", path = "batch", fields = [] } = {}) {
+export function request({ hostname, segment = null, format = "json", path = "batch", fields = [], additionalQuery = {} }) {
   const client = this;
   const conf = client.configuration();
-  const search = {
+  const search = _.merge({
     ship: conf.id,
     secret: conf.secret,
     organization: conf.organization
-  };
+  }, additionalQuery);
+
   if (segment) {
     search.segment_id = segment.id;
   }

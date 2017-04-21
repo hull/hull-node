@@ -3,7 +3,7 @@
  * @param  {Object} options
  * @return {Promise}
  */
-export default function requestExtract(ctx, { segment = null, path, fields = [] } = {}) {
+export default function requestExtract(ctx, { segment = null, path, fields = [], additionalQuery = {} } = {}) {
   const { client, hostname } = ctx;
-  return client.utils.extract.request({ hostname, segment, path, fields });
+  return client.utils.extract.request({ hostname, segment, path, fields, additionalQuery });
 }

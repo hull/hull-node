@@ -4,6 +4,7 @@
 * if the name is not provided explicitly the `Hull.Connector` will try to read it from `manifest.json`
 * by default set json format of the logger console output
 * fix `del` method call - thanks @phillipalexander
+* adds `additionalQuery` to `req.hull.helpers.requestExtract` and `req.hull.client.extract.request`
 
 # 0.11.0-beta.3
 * fix the `requestExtract` handler - allow passing `path` param
