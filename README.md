@@ -260,7 +260,7 @@ const hull = new Hull({ config });
 const userGroupedTraits = hull.utils.traits.group(user_report);
 ```
 
-### extract.request({ hostname, segment = null, format = "json", path = "batch", fields = [] })
+### extract.request({ hostname, segment = null, format = "json", path = "batch", fields = [], additionalQuery = {} })
 
 ```js
 hull.utils.extract.request({
