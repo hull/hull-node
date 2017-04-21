@@ -46,7 +46,7 @@ const VALID_PROPS = {
   hostSecret: VALID.string,
   flushAt: VALID.number,
   flushAfter: VALID.number,
-  connector_name: VALID.string
+  connectorName: VALID.string
 };
 
 /**

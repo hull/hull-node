@@ -52,10 +52,10 @@ describe("HullConnector", () => {
 
   it("should allow passing name to clientConfig and to Hull Middleware", () => {
     sinon.spy(HullStub, "Middleware");
-    const connector = new HullConnector(HullStub, { connector_name: "example" });
-    expect(connector.clientConfig.connector_name).to.be.eql("example");
+    const connector = new HullConnector(HullStub, { connectorName: "example" });
+    expect(connector.clientConfig.connectorName).to.be.eql("example");
 
     connector.clientMiddleware();
-    expect(HullStub.Middleware.getCall(0).args[0].clientConfig).to.be.eql({ connector_name: "example" });
+    expect(HullStub.Middleware.getCall(0).args[0].clientConfig).to.be.eql({ connectorName: "example" });
   });
 });

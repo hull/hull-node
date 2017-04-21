@@ -33,8 +33,8 @@ describe("Hull Logger", () => {
 
   });
 
-  it("should allow passing connector_name to the context", () => {
-    const hull = new Hull({ id: "562123b470df84b740000042", secret: "1234", organization: "test", connector_name: "testing" });
+  it("should allow passing connectorName to the context and results in connector_name in logs", () => {
+    const hull = new Hull({ id: "562123b470df84b740000042", secret: "1234", organization: "test", connectorName: "testing" });
     hull.logger.info("test", { foo: "bar" });
     process.stdout.write = originalWrite;
     expect(JSON.parse(result)).to.be.eql({
