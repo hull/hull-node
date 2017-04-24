@@ -5,6 +5,7 @@
 * by default set json format of the logger console output
 * fix `del` method call - thanks @phillipalexander
 * adds `additionalQuery` to `req.hull.helpers.requestExtract` and `req.hull.client.extract.request`
+* adds third, optional parameter to `notifHandler` `user:update` handler to mark if we are processing batch or notifications - in case of batch it includes `query` and `body` params from request
 
 # 0.11.0-beta.3
 * fix the `requestExtract` handler - allow passing `path` param

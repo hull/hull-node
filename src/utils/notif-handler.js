@@ -132,7 +132,7 @@ function handleExtractFactory({ handlers, userHandlerOptions }) {
             }
           };
         });
-        return handlers["user:update"](req.hull, messages);
+        return handlers["user:update"](req.hull, messages, { query: req.query, body: req.body });
       }
     }).then(() => {
       res.end("ok");
