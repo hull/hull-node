@@ -130,14 +130,14 @@ describe("NotifHandler", () => {
   it("should add segment infromation to the user", (done) => {
     const handler = sinon.spy();
     const setUserSegments = sinon.spy();
-    const filterUserSegments = sinon.spy();
+    const filterNotification = sinon.spy();
     const body = userUpdate;
     const app = express();
 
     app.use(notifMiddleware());
     app.use(mockHullMiddleware);
     app.use((req, res, next) => {
-      req.hull.helpers = { setUserSegments, filterUserSegments };
+      req.hull.helpers = { filterNotification };
       next();
     });
     app.use("/notify", notifHandler({
@@ -149,8 +149,7 @@ describe("NotifHandler", () => {
       const port = server.address().port;
       post({ port, body })
         .then(() => {
-          expect(setUserSegments.calledOnce).to.be.true;
-          expect(filterUserSegments.calledOnce).to.be.true;
+          expect(filterNotification.calledOnce).to.be.true;
           done();
         });
     });

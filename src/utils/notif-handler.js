@@ -50,20 +50,13 @@ function processHandlersFactory(handlers, userHandlerOptions) {
 
       if (messageHandlers && messageHandlers.length > 0) {
         if (message.Subject === "user_report:update") {
-          // set `segment_ids` and `remove_segment_ids` on the user
-          const { left = [] } = _.get(notification, "message.changes.segments", {});
-          notification.message.user = context.helpers.setUserSegments({
-            add_segment_ids: notification.message.segments.map(s => s.id),
-            remove_segment_ids: left.map(s => s.id)
-          }, notification.message.user);
-
           // optionally group user traits
           if (notification.message && notification.message.user && userHandlerOptions.groupTraits) {
             notification.message.user = group(notification.message.user);
           }
 
           // if the user matches the filter segments
-          if (context.helpers.filterUserSegments(notification.message.user)) {
+          if (context.helpers.filterNotification(notification.message)) {
             processing.push(Promise.all(messageHandlers.map((handler, i) => {
               return Batcher.getHandler(`${ns}-${eventName}-${i}`, {
                 ctx: context,
@@ -108,28 +101,20 @@ function handleExtractFactory({ handlers, userHandlerOptions }) {
       return next();
     }
 
-    const { client, helpers } = req.hull;
+    const { client } = req.hull;
     return client.utils.extract.handle({
       body: req.body,
       batchSize: userHandlerOptions.maxSize || 100,
       handler: (users) => {
         const segmentId = req.query.segment_id || null;
-        users = users.map(u => helpers.setUserSegments({ add_segment_ids: [segmentId] }, u));
         if (userHandlerOptions.groupTraits) {
           users = users.map(u => group(u));
         }
         const messages = users.map((user) => {
+          const segmentIds = _.uniq(_.concat(user.segment_ids || [], [segmentId]));
           return {
             user,
-            segments: user.segment_ids.map(id => _.find(req.hull.segments, { id })),
-            events: [],
-            changes: {
-              user: {},
-              segments: {
-                left: [],
-                entered: []
-              }
-            }
+            segments: segmentIds.map(id => _.find(req.hull.segments, { id }))
           };
         });
         return handlers["user:update"](req.hull, messages, { query: req.query, body: req.body });
