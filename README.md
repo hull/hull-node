@@ -213,7 +213,7 @@ user.traits({
 
 ## Utils
 
-### traits.group(user_report)
+### traits.group(user_report) {#utils-traits-group}
 
 The Hull API returns traits in a "flat" format, with '/' delimiters in the key.
 `hull.utils.traits.group(user_report)` can be used to group those traits into subobjects:
@@ -260,7 +260,7 @@ const hull = new Hull({ config });
 const userGroupedTraits = hull.utils.traits.group(user_report);
 ```
 
-### extract.request({ hostname, segment = null, format = "json", path = "batch", fields = [], additionalQuery = {} })
+### extract.request({ hostname, segment = null, format = "json", path = "batch", fields = [], additionalQuery = {} }) {#utils-extract-request}
 
 ```js
 hull.utils.extract.request({
@@ -280,7 +280,7 @@ Performs a `hull.post("extract/user_reports", {})` call, building all needed pro
 - **format** - prefered format (default: *json*)
 - **segment** - extract only users matching selected segment, this needs to be an object with `id` at least, `segment.query` is optional
 
-### extract.handle({ body, batchSize, handler })
+### extract.handle({ body, batchSize, handler }) {#utils-extract-handle}
 
 The utility to download and parse the incoming extract.
 
@@ -299,7 +299,7 @@ hull.utils.extract.handle({
 - **batchSize** - number of users to be passed to each handler call
 - **handler** - the callback function which would be called with batches of users
 
-### settings.update({ newSettings })
+### settings.update({ newSettings }) {#utils-settings-update}
 A helper utility which simplify `hull.put("app", { private_settings })` calls. Using raw API you need to merge existing settings with those you want to update.
 This utility does it for you.
 
@@ -318,7 +318,7 @@ hull.get("app")
   });
 ```
 
-### properties.get()
+### properties.get() {#utils-properties-get}
 A wrapper over `hull.get("search/user_reports/bootstrap")` call which unpacks the list of properties.
 
 ```js
