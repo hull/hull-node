@@ -12,6 +12,9 @@ export default class KueAdapter {
     this.options = options;
     this.queue = kue.createQueue(options);
     this.queue.watchStuckJobs();
+    this.queue.on("error", (err) => {
+      console.error("queue.adapter.error", err);
+    });
     this.app = kue.app;
 
     ["inactiveCount", "activeCount", "completeCount", "failedCount", "delayedCount"].forEach((name) => {
