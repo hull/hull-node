@@ -48,5 +48,14 @@ describe("HullConnector", () => {
     const connector = new HullConnector(HullStub);
 
     connector.setupApp(expressMock);
-  })
+  });
+
+  it("should allow passing name to clientConfig and to Hull Middleware", () => {
+    sinon.spy(HullStub, "Middleware");
+    const connector = new HullConnector(HullStub, { connectorName: "example" });
+    expect(connector.clientConfig.connectorName).to.be.eql("example");
+
+    connector.clientMiddleware();
+    expect(HullStub.Middleware.getCall(0).args[0].clientConfig).to.be.eql({ connectorName: "example" });
+  });
 });

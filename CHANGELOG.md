@@ -1,3 +1,17 @@
+# 0.11.0-beta.4
+* fix `helpers.updateSettings`
+* adds optional `connectorName` parameter to `Hull` client and `Hull.Connector` which if set will be added to logs context (which will end up as `connector_name` in the logs)
+* if the name is not provided explicitly the `Hull.Connector` will try to read it from `manifest.json`
+* by default set json format of the logger console output
+* fix `del` method call - thanks @phillipalexander
+* adds `additionalQuery` to `req.hull.helpers.requestExtract` and `req.hull.client.extract.request`
+* adds third, optional parameter to `notifHandler` `user:update` handler to mark if we are processing batch or notifications - in case of batch it includes `query` and `body` params from request
+* renamed `req.hull.helpers.filterUserSegments` to `req.hull.helpers.filterNotification`
+* changed the filter to pass users who just left the filtered segment for last sync
+* switched `batchHandler` to notification format instead of the simplified `user` object
+* removed `setUserSegments`, instead default `segments` and `changes.segments.left` parameters should be used
+* removed filter from internal `batchHandler` inside `notifHandler`
+
 # 0.11.0-beta.3
 * fix the `requestExtract` handler - allow passing `path` param
 * fix the `.asUser()` and `.asAccount()` to return `traits` and `track`

@@ -30,4 +30,19 @@ describe("extract.request", () => {
         done();
       });
   });
+
+  it("should allow to pass additionalQuery", function test1(done) {
+    const stub = new HullStub;
+    request.call(stub, { hostname: "localhost", additionalQuery: { foo: "bar" } })
+      .then(() => {
+        expect(this.postStub.calledOnce).to.be.true;
+        expect(this.postStub.calledWith("extract/user_reports", {
+          url: `https://localhost/batch?ship=${stub.configuration().id}&secret=shutt&organization=xxx.hulltest.rocks&foo=bar`,
+          query: {},
+          format: "json",
+          fields: []
+        })).to.be.true;
+        done();
+      });
+  });
 });

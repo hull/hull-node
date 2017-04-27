@@ -1,4 +1,5 @@
 import Promise from "bluebird";
+import fs from "fs";
 
 import setupApp from "./setup-app";
 import Worker from "./worker";
@@ -8,7 +9,7 @@ import { exitHandler, serviceMiddleware, notifMiddleware, segmentsMiddleware, re
 
 export default class HullConnector {
   constructor(Hull, {
-    hostSecret, port, clientConfig = {}, instrumentation, cache, queue, service
+    hostSecret, port, clientConfig = {}, instrumentation, cache, queue, service, connectorName
   } = {}) {
     this.Hull = Hull;
     this.instrumentation = instrumentation || new Instrumentation();
@@ -18,6 +19,17 @@ export default class HullConnector {
     this.hostSecret = hostSecret;
     this.service = service;
     this.clientConfig = clientConfig;
+
+    if (connectorName) {
+      this.clientConfig.connectorName = connectorName;
+    } else {
+      try {
+        const manifest = JSON.parse(fs.readFileSync(`${process.cwd}/manifest.json`));
+        if (manifest.name) {
+          this.clientConfig.connectorName = manifest.name;
+        }
+      } catch (error) {} // eslint-disable-line no-empty
+    }
 
     this.notifMiddleware = notifMiddleware;
 
