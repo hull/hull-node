@@ -65,7 +65,6 @@ export default class Worker {
           .then(() => {
             if (!this.jobs[jobName]) {
               const err = new Error(`Job not found: ${jobName}`);
-              console.log("HULLCLIENT", req.hull.client);
               req.hull.client.logger.error(err.message);
               return Promise.reject(err);
             }
