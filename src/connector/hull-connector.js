@@ -72,6 +72,7 @@ export default class HullConnector {
     });
     this._worker.use(this.clientMiddleware());
     this._worker.use(requireHullMiddleware());
+    this._worker.use(helpersMiddleware());
     this._worker.use(segmentsMiddleware());
     this._worker.use(serviceMiddleware(this.service));
     this._worker.setJobs(jobs);

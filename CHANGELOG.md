@@ -1,3 +1,9 @@
+# 0.11.0
+* includes changes from all `0.11.0-beta` pre-releases
+* makes sure that the json logging is always in one-line
+* adds `helpersMiddleware` to the worker middleware stack
+* updates outdated dependencies
+
 # 0.11.0-beta.4
 * fix `helpers.updateSettings`
 * adds optional `connectorName` parameter to `Hull` client and `Hull.Connector` which if set will be added to logs context (which will end up as `connector_name` in the logs)

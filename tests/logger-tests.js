@@ -50,4 +50,11 @@ describe("Hull Logger", () => {
       }
     });
   });
+
+  it("should always return one-liners", () => {
+    const hull = new Hull({ id: "562123b470df84b740000042", secret: "1234", organization: "test", connectorName: "testing" });
+    hull.logger.info("test", { foo: "bar", test: { bar: "foo" } });
+    process.stdout.write = originalWrite;
+    expect(/\n./g.test(result)).to.be.false;
+  })
 });
