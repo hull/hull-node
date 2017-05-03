@@ -11,7 +11,8 @@ const reqStub = {
     },
     client: {
       logger: {
-        info: () => {}
+        info: () => {},
+        debug: () => {}
       }
     }
   }

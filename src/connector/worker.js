@@ -68,7 +68,7 @@ export default class Worker {
               req.hull.client.logger.error(err.message);
               return Promise.reject(err);
             }
-            req.hull.client.logger.info("dispatch", { id: job.id, name: jobName });
+            req.hull.client.logger.debug("dispatch", { id: job.id, name: jobName });
             req.hull.metric.increment(`ship.job.${jobName}.start`);
             return this.jobs[jobName].call(job, req.hull, jobData);
           })

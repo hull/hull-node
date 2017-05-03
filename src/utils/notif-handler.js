@@ -41,7 +41,7 @@ function processHandlersFactory(handlers, userHandlerOptions) {
   const ns = crypto.randomBytes(64).toString("hex");
   return function process(req, res, next) {
     try {
-      const { message, notification } = req.hull;
+      const { message, notification, client } = req.hull;
       const eventName = getHandlerName(message.Subject);
       const messageHandlers = handlers[eventName];
       const processing = [];
@@ -70,6 +70,11 @@ function processHandlersFactory(handlers, userHandlerOptions) {
               })
               .addMessage(notification.message);
             })));
+          } else {
+            client.logger.info("outgoing.user.skip", _.merge(
+              _.pick(notification.message.user, "id", "external_id", "email"),
+              { reason: "outside filtered users" }
+            ));
           }
         } else {
           processing.push(Promise.all(messageHandlers.map((handler) => {

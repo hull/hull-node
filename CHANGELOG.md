@@ -3,6 +3,8 @@
 * makes sure that the json logging is always in one-line
 * adds `helpersMiddleware` to the worker middleware stack
 * updates outdated dependencies
+* adds initial flow support
+* adds logging to nofifHandler
 
 # 0.11.0-beta.4
 * fix `helpers.updateSettings`

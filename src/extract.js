@@ -74,7 +74,7 @@ export function request({ hostname, segment = null, format = "json", path = "bat
   })()
   .then(({ query }) => {
     const params = { query, format, url, fields };
-    client.logger.info("requestExtract", params);
+    client.logger.debug("requestExtract", params);
     return client.post("extract/user_reports", params);
   });
 }
