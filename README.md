@@ -7,7 +7,7 @@ Creating a new Hull client is pretty straightforward:
 ```js
 import Hull from 'hull';
 
-const hull = new Hull({
+const client = new Hull({
   id: 'HULL_ID',
   secret: 'HULL_SECRET',
   organization: 'HULL_ORGANIZATION_DOMAIN'
@@ -22,9 +22,9 @@ Once you have instantiated a client, you can use one of the `get`, `post`,
 `put`or `delete` methods to perform actions of our APIs.
 
 ```js
-// hull.api.get works too.
+// client.api.get works too.
 const params = {};
-hull.get(path, params).then(function(data) {
+client.get(path, params).then(function(data) {
   console.log(response);
 }, function(err, response) {
   console.log(err);
@@ -36,12 +36,12 @@ to send with the request. They all return Promises so you can use the `.then()` 
 
 # Instance Methods
 
-## hull.configuration()
+## client.configuration()
 
 Returns the global configuration object.
 
 ```js
-hull.configuration();
+client.configuration();
 // returns:
 { prefix: '/api/v1',
   domain: 'hullapp.io',
@@ -53,31 +53,31 @@ hull.configuration();
 ```
 
 
-## hull.userToken()
+## client.userToken()
 
 ```js
-hull.userToken({ email:'xxx@example.com', name:'FooBar' }, optionalClaims);
+client.userToken({ email:'xxx@example.com', name:'FooBar' }, optionalClaims);
 ```
 
 Used for [Bring your own users](http://hull.io/docs/users/byou).
 Creates a signed string for the user passed in hash. `userHash` needs an `email` field.
 [You can then pass this client-side to Hull.js](http://www.hull.io/docs/users/byou) to authenticate users client-side and cross-domain
 
-## hull.currentUserId()
+## client.currentUserId()
 
 ```js
-hull.currentUserId(userId, userSig)
+client.currentUserId(userId, userSig)
 ```
 
 Checks the validity of the signature relatively to a user id
 
-## hull.currentUserMiddleware()
+## client.currentUserMiddleware()
 
 ```js
 const app = express();
 
 // a middleware with no mount path; gets executed for every request to the app
-app.use(hull.currentUserMiddleware);
+app.use(client.currentUserMiddleware);
 app.use(function(req, res, next) {
   console.log(req.hull.userId); // Should exist if there is a user logged in;
 });
@@ -85,21 +85,21 @@ app.use(function(req, res, next) {
 
 Reverse of Bring your own Users. When using Hull's Identity management, tells you who the current user is. Generates a middleware to add to your Connect/Express apps.
 
-## Impersonating a User - hull.as()
+## Impersonating a User - client.as()
 
 One of the more frequent use case is to perform API calls with the identity of a given user. We provide several methods to do so.
 
 ```js
 // if you have a user id from your database, use the `external_id` field
-const user = hull.as({ external_id: "dkjf565wd654e" });
+const user = client.asUser({ external_id: "dkjf565wd654e" });
 
 // if you have a Hull Internal User Id:
-const user = hull.as({ id: "5718b59b7a85ebf20e000169" });
+const user = client.asUser({ id: "5718b59b7a85ebf20e000169" });
 // or just as a string:
-const user = hull.as("5718b59b7a85ebf20e000169");
+const user = client.asUser("5718b59b7a85ebf20e000169");
 
 // you can optionally pass additional user resolution options as a second argument:
-const user = hull.as({ id: "5718b59b7a85ebf20e000169" }, { create: false });
+const user = client.asUser({ id: "5718b59b7a85ebf20e000169" }, { create: false });
 
 // Constant `user` is an instance of Hull, scoped to a specific user.
 user.get("/me").then(function(me) {
@@ -120,32 +120,32 @@ The second parameter lets you define additional options (JWT claims) passed to t
 > Return a hull `client` scoped to the user identified by it's Hull ID. Not lazily created. Needs an existing User
 
 ```js
-hull.as(userId);
+client.asUser(userId);
 ```
 
 > Return a hull `client` scoped to the user identified by it's Social network ID. Lazily created if [Guest Users](http://www.hull.io/docs/users/guest_users) are enabled
 
 ```js
-hull.as('instagram|facebook|google:userId');
+client.asUser('instagram|facebook|google:userId');
 ```
 
 > Return a hull `client` scoped to the user identified by it's External ID (from your dashboard). Lazily created if [Guest Users](http://www.hull.io/docs/users/guest_users) are enabled
 
 ```js
-hull.as({ external_id: 'externalId' });
+client.asUser({ external_id: 'externalId' });
 ```
 
 > Return a hull `client` scoped to the user identified by it's External ID (from your dashboard). Lazily created if [Guest Users](http://www.hull.io/docs/users/guest_users) are enabled
 
 ```js
-hull.as({ anonymous_id: 'anonymousId' });
+client.asUser({ anonymous_id: 'anonymousId' });
 ```
 
 > Return a hull `client` scoped to the user identified by only by an anonymousId. Lets you start tracking and storing properties from a user before you have a UserID ready for him. Lazily created if [Guest Users](http://www.hull.io/docs/users/guest_users) are enabled
 > When you have a UserId, just pass both to link them.
 
 ```js
-hull.as({ email: "user@email.com" });
+client.asUser({ email: "user@email.com" });
 ```
 
 
@@ -155,7 +155,7 @@ hull.as({ email: "user@email.com" });
 const externalId = "dkjf565wd654e";
 const anonymousId = "44564-EJVWE-1CE56SE-SDVE879VW8D4";
 
-const user = hull.as({ external_id: externalId, anonymous_id: anonymousId });
+const user = client.asUser({ external_id: externalId, anonymous_id: anonymousId });
 ```
 
 When you do this, you get a new client that has a different behaviour. It's now behaving as a User would. It means it does API calls as a user and has new methods to track and store properties
@@ -216,7 +216,7 @@ user.traits({
 ### traits.group(user_report) {#utils-traits-group}
 
 The Hull API returns traits in a "flat" format, with '/' delimiters in the key.
-`hull.utils.traits.group(user_report)` can be used to group those traits into subobjects:
+`client.utils.traits.group(user_report)` can be used to group those traits into subobjects:
 
 ```js
 import { group: groupTraits } from "hull/trait";
@@ -256,14 +256,14 @@ groupTraits({
 This utility can be also used in following way:
 
 ```js
-const hull = new Hull({ config });
-const userGroupedTraits = hull.utils.traits.group(user_report);
+const client = new Hull({ config });
+const userGroupedTraits = client.utils.traits.group(user_report);
 ```
 
 ### extract.request({ hostname, segment = null, format = "json", path = "batch", fields = [], additionalQuery = {} }) {#utils-extract-request}
 
 ```js
-hull.utils.extract.request({
+client.utils.extract.request({
   hostname: "https://some-public-url.com",
   fields: ["first_name", "last_name"],
   segment: {
@@ -272,7 +272,7 @@ hull.utils.extract.request({
 });
 ```
 
-Performs a `hull.post("extract/user_reports", {})` call, building all needed properties for the action. It takes following arguments:
+Performs a `client.post("extract/user_reports", {})` call, building all needed properties for the action. It takes following arguments:
 
 - **hostname** - a hostname where the extract should be sent
 - **path** - a path of the endpoint which will handle the extract (default: *batch*)
@@ -285,7 +285,7 @@ Performs a `hull.post("extract/user_reports", {})` call, building all needed pro
 The utility to download and parse the incoming extract.
 
 ```js
-hull.utils.extract.handle({
+client.utils.extract.handle({
   body: req.body,
   batchSize: 50, // get 50 users at once
   handler: (users) => {
@@ -304,14 +304,14 @@ A helper utility which simplify `hull.put("app", { private_settings })` calls. U
 This utility does it for you.
 
 ```js
-const hull = new Hull({ config });
+const client = new Hull({ config });
 
-hull.get("app")
+client.get("app")
   .then(ship => {
     assert.equal(ship.private_settings.existing_property, "foo");
-    return hull.utils.settings.update({ new_property: "bar"});
+    return client.utils.settings.update({ new_property: "bar"});
   })
-  .then(() => hull.get("app"))
+  .then(() => client.get("app"))
   .then(ship => {
     assert.equal(ship.private_settings.existing_property, "foo");
     assert.equal(ship.private_settings.new_property, "bar");
@@ -319,10 +319,10 @@ hull.get("app")
 ```
 
 ### properties.get() {#utils-properties-get}
-A wrapper over `hull.get("search/user_reports/bootstrap")` call which unpacks the list of properties.
+A wrapper over `client.get("search/user_reports/bootstrap")` call which unpacks the list of properties.
 
 ```js
-hull.utils.properties.get()
+client.utils.properties.get()
   .then(properties => {
     console.log(properties); // see result below
   });
@@ -363,11 +363,11 @@ hull.utils.properties.get()
 
 ```js
 Hull.logger.info("message", { object }); //Class logging method,
-hull.logger.info("message", { object }); //Instance logging method, adds Ship ID and Organization to Context. Use if available.
+client.logger.info("message", { object }); //Instance logging method, adds Ship ID and Organization to Context. Use if available.
 
 //Debug works the same way but only logs if process.env.DEBUG===true
 Hull.logger.info("message", { object }); //Class logging method,
-hull.logger.info("message", { object });
+client.logger.info("message", { object });
 
 //You can add more logging destinations like this:
 import winstonSlacker from "winston-slacker";
