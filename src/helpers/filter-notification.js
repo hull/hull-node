@@ -1,21 +1,26 @@
+// @flow
 import _ from "lodash";
 
-
 /**
- * Returns information if the users should be sent in outgoing sync.
- * This version should filter out all users if the `synchronized_segments`
- * setting is empty
+ * Returns information if provided notification should be sent in an outgoing sync.
+ * By default it uses a setting called `synchronized_segments`. If the user belongs
+ * to one of set segments the notification will be passed through.
+ *
+ * If the field doesn't exists it will pass all notifications, if the setting exists but it's empty
+ * it will send noone.
+ *
  * @param  {Object} ctx The Context Object
  * @param  {Object} notification Hull user:update notification
  * @param  {String} fieldName the name of settings name
  * @return {Boolean}
  */
-export default function filterNotification(ctx, notification, fieldName = "synchronized_segments") {
+export default function filterNotification(ctx: Object, notification: Object, fieldName: ?string): boolean {
+  fieldName = fieldName || _.get(ctx, "connectorConfig.segmentFilterSetting");
   if (!_.has(ctx.ship.private_settings, fieldName)) {
     return true;
   }
   const filterSegmentIds = _.get(ctx.ship.private_settings, fieldName, []);
 
-  const segments = _.uniq(_.concat(notification.segments || [], _.get(notification, "changes.segments.left", [])));
+  const segments = _.get(notification, "segments", []);
   return _.intersection(filterSegmentIds, segments.map(s => s.id)).length > 0;
 }

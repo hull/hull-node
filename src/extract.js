@@ -49,7 +49,8 @@ export function request({ hostname, segment = null, format = "json", path = "bat
   const search = _.merge({
     ship: conf.id,
     secret: conf.secret,
-    organization: conf.organization
+    organization: conf.organization,
+    source: "connector"
   }, additionalQuery);
 
   if (segment) {

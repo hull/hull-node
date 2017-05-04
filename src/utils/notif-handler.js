@@ -37,16 +37,16 @@ function getHandlerName(eventName) {
   return `${model}:${action}`;
 }
 
-function processHandlersFactory(handlers, userHandlerOptions) {
+function processHandlersFactory(handlers, userHandlerOptions = {}) {
   const ns = crypto.randomBytes(64).toString("hex");
   return function process(req, res, next) {
     try {
-      const { message, notification, client } = req.hull;
+      const { message, notification, helpers, connectorConfig = {} } = req.hull;
       const eventName = getHandlerName(message.Subject);
       const messageHandlers = handlers[eventName];
       const processing = [];
 
-      const context = req.hull;
+      const ctx = req.hull;
 
       if (messageHandlers && messageHandlers.length > 0) {
         if (message.Subject === "user_report:update") {
@@ -54,31 +54,24 @@ function processHandlersFactory(handlers, userHandlerOptions) {
           if (notification.message && notification.message.user && userHandlerOptions.groupTraits) {
             notification.message.user = group(notification.message.user);
           }
-
-          // if the user matches the filter segments
-          if (context.helpers.filterNotification(notification.message)) {
-            processing.push(Promise.all(messageHandlers.map((handler, i) => {
-              return Batcher.getHandler(`${ns}-${eventName}-${i}`, {
-                ctx: context,
-                options: {
-                  maxSize: userHandlerOptions.maxSize || 100,
-                  maxTime: userHandlerOptions.maxTime || 10000
-                }
-              })
-              .setCallback((messages) => {
-                return handler(context, messages);
-              })
-              .addMessage(notification.message);
-            })));
-          } else {
-            client.logger.info("outgoing.user.skip", _.merge(
-              _.pick(notification.message.user, "id", "external_id", "email"),
-              { reason: "outside filtered users" }
-            ));
-          }
+          // add `matchesFilter` boolean flag
+          notification.message.matchesFilter = helpers.filterNotification(notification.message, userHandlerOptions.segmentFilterSetting || connectorConfig.segmentFilterSetting);
+          processing.push(Promise.all(messageHandlers.map((handler, i) => {
+            return Batcher.getHandler(`${ns}-${eventName}-${i}`, {
+              ctx,
+              options: {
+                maxSize: userHandlerOptions.maxSize || 100,
+                maxTime: userHandlerOptions.maxTime || 10000
+              }
+            })
+            .setCallback((messages) => {
+              return handler(ctx, messages);
+            })
+            .addMessage(notification.message);
+          })));
         } else {
           processing.push(Promise.all(messageHandlers.map((handler) => {
-            return handler(context, notification.message);
+            return handler(ctx, notification.message);
           })));
         }
       }
@@ -106,7 +99,7 @@ function handleExtractFactory({ handlers, userHandlerOptions }) {
       return next();
     }
 
-    const { client } = req.hull;
+    const { client, helpers } = req.hull;
     return client.utils.extract.handle({
       body: req.body,
       batchSize: userHandlerOptions.maxSize || 100,
@@ -116,13 +109,23 @@ function handleExtractFactory({ handlers, userHandlerOptions }) {
           users = users.map(u => group(u));
         }
         const messages = users.map((user) => {
-          const segmentIds = _.uniq(_.concat(user.segment_ids || [], [segmentId]));
+          const segmentIds = _.compact(_.uniq(_.concat(user.segment_ids || [], [segmentId])));
           return {
             user,
             segments: segmentIds.map(id => _.find(req.hull.segments, { id }))
           };
         });
-        return handlers["user:update"](req.hull, messages, { query: req.query, body: req.body });
+
+        // add `matchesFilter` boolean flag
+        messages.map((m) => {
+          if (req.query.source === "connector") {
+            m.matchesFilter = helpers.filterNotification(m, userHandlerOptions.segmentFilterSetting || req.hull.connectorConfig.segmentFilterSetting);
+          } else {
+            m.matchesFilter = true;
+          }
+          return m;
+        });
+        return handlers["user:update"](req.hull, messages);
       }
     }).then(() => {
       res.end("ok");

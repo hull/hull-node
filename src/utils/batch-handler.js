@@ -8,11 +8,11 @@ import requireHullMiddleware from "./require-hull-middleware";
 /**
  * @deprecated Use `notifyHandler` instead.
  */
-export default function batchHandler(handler, { batchSize = 100, groupTraits = false } = {}) {
+export default function batchHandler(handler, { batchSize = 100, groupTraits = false, segmentFilterSetting } = {}) {
   const router = Router();
   router.use(requireHullMiddleware());
   router.post("/", (req, res, next) => {
-    const { client, segments } = req.hull;
+    const { client, segments, helpers, connectorConfig } = req.hull;
 
     return client.utils.extract.handle({
       body: req.body,
@@ -24,14 +24,23 @@ export default function batchHandler(handler, { batchSize = 100, groupTraits = f
         }
 
         const messages = users.map((u) => {
-          const segmentIds = _.uniq(_.concat(u.segment_ids || [], [segmentId]));
+          const segmentIds = _.compact(_.uniq(_.concat(u.segment_ids || [], [segmentId])));
           return {
             user: u,
             segments: segmentIds.map(id => _.find(segments, { id }))
           };
         });
 
-        return handler(req.hull, messages, { query: req.query, body: req.body });
+        // add `matchesFilter` boolean flag
+        messages.map((m) => {
+          if (req.query.source === "connector") {
+            m.matchesFilter = helpers.filterNotification(m, segmentFilterSetting || connectorConfig.segmentFilterSetting);
+          } else {
+            m.matchesFilter = true;
+          }
+          return m;
+        });
+        return handler(req.hull, messages);
       }
     }).then(next, next);
   });

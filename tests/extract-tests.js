@@ -22,7 +22,7 @@ describe("extract.request", () => {
       .then(() => {
         expect(this.postStub.calledOnce).to.be.true;
         expect(this.postStub.calledWith("extract/user_reports", {
-          url: `https://localhost/batch?ship=${stub.configuration().id}&secret=shutt&organization=xxx.hulltest.rocks`,
+          url: `https://localhost/batch?ship=${stub.configuration().id}&secret=shutt&organization=xxx.hulltest.rocks&source=connector`,
           query: {},
           format: "json",
           fields: []
@@ -37,7 +37,7 @@ describe("extract.request", () => {
       .then(() => {
         expect(this.postStub.calledOnce).to.be.true;
         expect(this.postStub.calledWith("extract/user_reports", {
-          url: `https://localhost/batch?ship=${stub.configuration().id}&secret=shutt&organization=xxx.hulltest.rocks&foo=bar`,
+          url: `https://localhost/batch?ship=${stub.configuration().id}&secret=shutt&organization=xxx.hulltest.rocks&source=connector&foo=bar`,
           query: {},
           format: "json",
           fields: []

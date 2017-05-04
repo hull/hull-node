@@ -66,6 +66,7 @@ module.exports = function hullClientMiddlewareFactory(Client, { hostSecret, clie
         return getCurrentShip(id, req.hull.client, req.hull.cache, bust).then((ship = {}) => {
           req.hull.ship = ship;
           req.hull.hostname = req.hostname;
+          req.hull.options = _.merge(req.query, req.body);
           return next();
         }, (err) => {
           const e = new Error(err.message);

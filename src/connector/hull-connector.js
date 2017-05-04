@@ -4,12 +4,12 @@ import fs from "fs";
 import setupApp from "./setup-app";
 import Worker from "./worker";
 import { Instrumentation, Cache, Queue, Batcher } from "../infra";
-import { exitHandler, serviceMiddleware, notifMiddleware, segmentsMiddleware, requireHullMiddleware, helpersMiddleware } from "../utils";
+import { exitHandler, serviceMiddleware, segmentsMiddleware, requireHullMiddleware, helpersMiddleware } from "../utils";
 
 
 export default class HullConnector {
   constructor(Hull, {
-    hostSecret, port, clientConfig = {}, instrumentation, cache, queue, service, connectorName
+    hostSecret, port, clientConfig = {}, instrumentation, cache, queue, service, connectorName, segmentFilterSetting
   } = {}) {
     this.Hull = Hull;
     this.instrumentation = instrumentation || new Instrumentation();
@@ -19,6 +19,7 @@ export default class HullConnector {
     this.hostSecret = hostSecret;
     this.service = service;
     this.clientConfig = clientConfig;
+    this.connectorConfig = {};
 
     if (connectorName) {
       this.clientConfig.connectorName = connectorName;
@@ -31,7 +32,9 @@ export default class HullConnector {
       } catch (error) {} // eslint-disable-line no-empty
     }
 
-    this.notifMiddleware = notifMiddleware;
+    if (segmentFilterSetting) {
+      this.connectorConfig.segmentFilterSetting = segmentFilterSetting;
+    }
 
     exitHandler(() => {
       return Promise.all([
@@ -47,6 +50,11 @@ export default class HullConnector {
       instrumentation: this.instrumentation,
       cache: this.cache,
       queue: this.queue
+    });
+    app.use((req, res, next) => {
+      req.hull = req.hull || {};
+      req.hull.connectorConfig = this.connectorConfig;
+      next();
     });
     app.use(this.clientMiddleware());
     app.use(helpersMiddleware());
@@ -69,6 +77,11 @@ export default class HullConnector {
       instrumentation: this.instrumentation,
       cache: this.cache,
       queue: this.queue
+    });
+    this._worker.use((req, res, next) => {
+      req.hull = req.hull || {};
+      req.hull.connectorConfig = this.connectorConfig;
+      next();
     });
     this._worker.use(this.clientMiddleware());
     this._worker.use(requireHullMiddleware());

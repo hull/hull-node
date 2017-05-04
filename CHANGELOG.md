@@ -5,6 +5,8 @@
 * updates outdated dependencies
 * adds initial flow support
 * adds logging to nofifHandler
+* adds `segmentFilterSetting` setting to enable filtering - by default the filtering is not enabled
+* `notifHandler` and `batchHandler` pass all notifications to handler, but adds `matchesFilter` flag (true/false)
 
 # 0.11.0-beta.4
 * fix `helpers.updateSettings`
