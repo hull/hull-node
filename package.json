@@ -17,7 +17,7 @@
     "test": "npm run test:lint && npm run test:flow && npm run test:units",
     "test:lint": "eslint src",
     "test:modules": "npm outdated --depth=0",
-    "test:units": "NODE_ENV=test mocha --require babel-register -R spec ./tests/* ./tests/**/*",
+    "test:units": "NODE_ENV=test mocha --require babel-register -R spec ./tests/* ./tests/**/* ./spec/*",
     "test:flow": "flow check",
     "update": "updtr",
     "clean": "rimraf lib",

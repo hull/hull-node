@@ -8,7 +8,7 @@ var expect = chai.expect;
 chai.use(require('sinon-chai'));
 chai.should();
 
-var Configuration = require('../lib/configuration'),
+var Configuration = require('../src/configuration'),
     config = {
       id: '550964db687ee7866d000057',
       secret: 'abcd12345',
