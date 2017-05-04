@@ -62,7 +62,7 @@ app.use("/notify", notifHandler({
     maxTime: 10000
   },
   handlers: {
-    "ship:update": (ctx, messages) => {
+    "ship:update": (ctx, message) => {
       ctx.client.logger.info("ship was updated");
     },
     "user:update": (ctx, messages) => {

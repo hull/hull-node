@@ -54,8 +54,8 @@ const app = express();
 connector.setupApp(app);
 
 const startConfig = {
-  server: process.env.COMBINED || process.env.WORKER || false,
-  worker: process.env.COMBINED || process.env.SERVER || false
+  server: process.env.COMBINED || process.env.SERVER || false,
+  worker: process.env.COMBINED || process.env.WORKER || false
 };
 
 if (startConfig.server) {

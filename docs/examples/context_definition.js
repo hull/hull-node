@@ -14,18 +14,9 @@ export default const HullContext = {
       };
     },
 
-    // loggin utility - similar to metrics, should we move it away from here?
     logger: {
       info: () => {},
     },
-
-    filterUserSegments: () => {},
-    updateSettings: () => {},
-    requestExtract: () => {
-      req.query = hull.client.configuration();
-    },
-    handleExtract: () => {},
-    getAvailableProperties: () => {}
   },
 
   // ship configuration object

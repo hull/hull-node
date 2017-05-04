@@ -9,7 +9,7 @@ export default function Server({ app, clientId, clientSecret }) {
   }));
 
   app.use("/notify", notifHandler({
-    "user:update": (ctx, messages) => {
+    "user:update": (ctx, message) => {
     }
     "ship:update": (ctx, messages) => {
     }
