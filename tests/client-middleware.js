@@ -51,7 +51,7 @@ describe("Client Middleware", () => {
   });
 
   it("should fetch a ship", function (done) {
-    const instance = Middleware(HullStub, { hostSecret: "secret", fetchShip: true });
+    const instance = Middleware(HullStub, { hostSecret: "secret" });
     instance(this.reqStub, {}, () => {
       expect(this.reqStub.hull.ship.private_settings.value).to.equal("test");
       expect(this.getStub.calledOnce).to.be.true;
@@ -60,7 +60,7 @@ describe("Client Middleware", () => {
   });
 
   it("should fetch ship every time without caching", function (done) {
-    const instance = Middleware(HullStub, { hostSecret: "secret", fetchShip: true, cacheShip: false });
+    const instance = Middleware(HullStub, { hostSecret: "secret" });
     instance(this.reqStub, {}, () => {
       expect(this.reqStub.hull.ship.private_settings.value).to.equal("test");
       instance(this.reqStub, {}, () => {
@@ -72,7 +72,22 @@ describe("Client Middleware", () => {
   });
 
   it("should store a ship in cache", function (done) {
-    const instance = Middleware(HullStub, { hostSecret: "secret", fetchShip: true, cacheShip: true });
+    const instance = Middleware(HullStub, { hostSecret: "secret" });
+    this.reqStub.hull = {
+      cache: {
+        cache: false,
+        wrap: function (id, cb) {
+          if (this.cache) {
+            return Promise.resolve(this.cache);
+          }
+          return cb()
+            .then(ship => {
+              this.cache = ship;
+              return ship;
+            });
+        }
+      }
+    };
     instance(this.reqStub, {}, () => {
       expect(this.reqStub.hull.ship.private_settings.value).to.equal("test");
       instance(this.reqStub, {}, () => {
@@ -84,7 +99,7 @@ describe("Client Middleware", () => {
   });
 
   it("should bust the cache for specific requests", function (done) {
-    const instance = Middleware(HullStub, { hostSecret: "secret", fetchShip: true, cacheShip: true });
+    const instance = Middleware(HullStub, { hostSecret: "secret" });
     instance(this.reqStub, {}, () => {
       expect(this.reqStub.hull.ship.private_settings.value).to.equal("test");
       this.reqStub.hull.message = {
@@ -100,13 +115,14 @@ describe("Client Middleware", () => {
 
   it("should take an optional `clientConfig` param", function (done) {
     const hullSpy = sinon.stub() ;
-    const instance = Middleware(hullSpy, { hostSecret: "secret", clientConfig: { flushAt: 123 } })
+    const instance = Middleware(hullSpy, { hostSecret: "secret", clientConfig: { flushAt: 123, connector_name: "foo" } })
     instance(this.reqStub, {}, () => {
       expect(hullSpy.calledWith({
         id: "ship_id",
         secret: "secret",
         organization: "local",
-        flushAt: 123
+        flushAt: 123,
+        connector_name: "foo"
       })).to.be.true;
       done();
     });

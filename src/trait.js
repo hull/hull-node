@@ -1,8 +1,9 @@
+// @flow
 import _ from "lodash";
 
 module.exports = {
 
-  group(user) {
+  group(user: Object): Object {
     return _.reduce(user, (grouped, value, key) => {
       let dest = key;
       if (key.match(/^traits_/)) {
@@ -16,7 +17,7 @@ module.exports = {
     }, {});
   },
 
-  normalize(traits) {
+  normalize(traits: Object): Object {
     return _.reduce(traits, (memo, value, key) => {
       if (!_.isObject(value)) {
         value = { operation: "set", value };

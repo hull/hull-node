@@ -2,7 +2,8 @@ import express from "express";
 import passport from "passport";
 import bodyParser from "body-parser";
 import querystring from "querystring";
-import hullClient from "./middleware/client";
+
+import requireHullMiddleware from "./require-hull-middleware";
 
 const HOME_URL = "/";
 const LOGIN_URL = "/login";
@@ -19,17 +20,15 @@ function fetchToken(req, res, next) {
   next();
 }
 
-export default function oauth(Client, {
+export default function oauth({
   name,
   tokenInUrl = true,
   isSetup = function setup() { return Promise.resolve(); },
   onAuthorize = function onAuth() { return Promise.resolve(); },
   onLogin = function onLog() { return Promise.resolve(); },
-  hostSecret = "",
   Strategy,
   views = {},
-  options = {},
-  shipCache = null
+  options = {}
 }) {
   function getURL(req, url, qs = { token: req.hull.token }) {
     const host = `https://${req.hostname}${req.baseUrl}${url}`;
@@ -47,9 +46,9 @@ export default function oauth(Client, {
 
   const router = express.Router();
 
+  router.use(requireHullMiddleware());
   router.use(fetchToken);
   router.use(passport.initialize());
-  router.use(bodyParser.json());
   router.use(bodyParser.urlencoded({ extended: true }));
 
   passport.serializeUser((req, user, done) => {
@@ -68,13 +67,10 @@ export default function oauth(Client, {
 
   passport.use(strategy);
 
-
-  const hullMiddleware = hullClient(Client, { hostSecret, fetchShip: true, cacheShip: false, shipCache });
-
-  router.get(HOME_URL, hullMiddleware, (req, res) => {
-    const { client, ship = {}, } = req.hull;
+  router.get(HOME_URL, (req, res) => {
+    const { ship = {}, } = req.hull;
     const data = { name, urls: getURLs(req), ship };
-    isSetup(req, { hull: client, ship })
+    isSetup(req)
       .then(
         (setup = {}) => { res.render(views.home, { ...data, ...setup }); },
         (setup = {}) => { res.render(views.login, { ...data, ...setup }); }
@@ -88,8 +84,8 @@ export default function oauth(Client, {
     })(req, res, next);
   }
 
-  router.all(LOGIN_URL, hullMiddleware, (req, res, next) => {
-    onLogin(req, { hull: req.hull.client, ship: req.hull.ship })
+  router.all(LOGIN_URL, (req, res, next) => {
+    onLogin(req)
       .then(() => next())
       .catch(() => next());
   }, (req, res, next) => {
@@ -100,13 +96,13 @@ export default function oauth(Client, {
     next();
   }, authorize);
 
-  router.get(FAILURE_URL, hullMiddleware, function loginFailue(req, res) { return res.render(views.failure, { name, urls: getURLs(req) }); });
-  router.get(SUCCESS_URL, hullMiddleware, function login(req, res) { return res.render(views.success, { name, urls: getURLs(req) }); });
+  router.get(FAILURE_URL, function loginFailue(req, res) { return res.render(views.failure, { name, urls: getURLs(req) }); });
+  router.get(SUCCESS_URL, function login(req, res) { return res.render(views.success, { name, urls: getURLs(req) }); });
 
-  router.get(CALLBACK_URL, hullMiddleware, authorize, (req, res) => {
-    onAuthorize(req, { hull: req.hull.client, ship: req.hull.ship })
+  router.get(CALLBACK_URL, authorize, (req, res) => {
+    onAuthorize(req)
       .then(() => res.redirect(getURL(req, SUCCESS_URL)))
-      .catch((error) => res.redirect(getURL(req, FAILURE_URL, { token: req.hull.token, error })));
+      .catch(error => res.redirect(getURL(req, FAILURE_URL, { token: req.hull.token, error })));
   });
 
   return router;

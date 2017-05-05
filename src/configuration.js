@@ -1,19 +1,20 @@
-'use strict';
-
-import _ from 'lodash';
-import pkg from '../package.json';
-import crypto from './lib/crypto';
+import _ from "lodash";
+import pkg from "../package.json";
+import crypto from "./lib/crypto";
 
 const GLOBALS = {
-  prefix: '/api/v1',
-  domain: 'hullapp.io',
-  protocol: 'https'
+  prefix: "/api/v1",
+  domain: "hullapp.io",
+  protocol: "https"
 };
 
-const VALID_OBJECT_ID = new RegExp('^[0-9a-fA-F]{24}$');
+const VALID_OBJECT_ID = new RegExp("^[0-9a-fA-F]{24}$");
 const VALID = {
   boolean(val) {
     return (val === true || val === false);
+  },
+  object(val) {
+    return _.isObject(val);
   },
   objectId(str) {
     return VALID_OBJECT_ID.test(str);
@@ -34,40 +35,68 @@ const REQUIRED_PROPS = {
 
 const VALID_PROPS = {
   ...REQUIRED_PROPS,
-  sudo: VALID.boolean,
   prefix: VALID.string,
   domain: VALID.string,
   protocol: VALID.string,
-  userId: VALID.string,
+  userClaim: VALID.object,
+  accountClaim: VALID.object,
+  subjectType: VALID.string,
+  additionalClaims: VALID.object,
   accessToken: VALID.string,
+  hostSecret: VALID.string,
   flushAt: VALID.number,
-  flushAfter: VALID.number
+  flushAfter: VALID.number,
+  connectorName: VALID.string
 };
 
-class Configuration {
+/**
+ * make sure that provided "identity claim" is valid
+ * @param  {String} type          "user" or "account"
+ * @param  {String|Object} object identity claim
+ * @param  {Array} requiredFields fields which are required if the passed
+ * claim is an object
+ * @throws Error
+ */
+function assertClaimValidity(type, object, requiredFields) {
+  if (!_.isEmpty(object)) {
+    if (_.isString(object)) {
+      if (!object) {
+        throw new Error(`Missing ${type} ID`);
+      }
+    } else if (!_.isObject(object) || _.intersection(_.keys(object), requiredFields).length === 0) {
+      throw new Error(`You need to pass an ${type} hash with an ${requiredFields.join(", ")} field`);
+    }
+  }
+}
 
+class Configuration {
   constructor(config) {
     if (!_.isObject(config) || !_.size(config)) {
-      throw new Error('Configuration is invalid, it should be a non-empty object');
+      throw new Error("Configuration is invalid, it should be a non-empty object");
     }
 
-    if (config.userId) {
-      const accessToken = crypto.lookupToken(config, config.userId);
+    if (config.userClaim || config.accountClaim) {
+      assertClaimValidity("user", config.userClaim, ["id", "email", "external_id", "anonymous_id"]);
+      assertClaimValidity("account", config.accountClaim, ["id", "external_id", "domain"]);
+      const accessToken = crypto.lookupToken(config, config.subjectType, {
+        user: config.userClaim,
+        account: config.accountClaim
+      }, config.additionalClaims);
       config = { ...config, accessToken };
     }
 
-    this._state = {...GLOBALS};
+    this._state = { ...GLOBALS };
 
-    _.each(REQUIRED_PROPS, (test, prop)=>{
-      if (!config.hasOwnProperty(prop)) {
-        throw new Error('Configuration is missing required property: ' + prop);
+    _.each(REQUIRED_PROPS, (test, prop) => {
+      if (!Object.prototype.hasOwnProperty.call(config, prop)) {
+        throw new Error(`Configuration is missing required property: ${prop}`);
       }
       if (!test(config[prop])) {
-        throw new Error(prop + ' property in Configuration is invalid: ' + config[prop]);
+        throw new Error(`${prop} property in Configuration is invalid: ${config[prop]}`);
       }
     });
 
-    _.each(VALID_PROPS, (test, key)=>{
+    _.each(VALID_PROPS, (test, key) => {
       if (config[key]) {
         this._state[key] = config[key];
       }

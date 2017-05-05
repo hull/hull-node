@@ -2,87 +2,226 @@
 
 This library makes it easy to interact with the Hull API, send tracking and properties and handle Server-side Events we send to installed Ships.
 
-## Usage
+Creating a new Hull client is pretty straightforward:
 
 ```js
 import Hull from 'hull';
 
-const hull = new Hull({
+const client = new Hull({
   id: 'HULL_ID',
   secret: 'HULL_SECRET',
   organization: 'HULL_ORGANIZATION_DOMAIN'
 });
 ```
 
-Creating a new Hull client is pretty straightforward.
-In Ship Events, we create and scope one for you to abstract the lifecycle
-
+[Detailed documentation about Hull Client and about Connector development is available at gitbook.](https://hull.gitbooks.io/docs/)
 
 ## Calling the API
 
+Once you have instantiated a client, you can use one of the `get`, `post`,
+`put`or `delete` methods to perform actions of our APIs.
+
 ```js
-//hull.api.get works too.
-const params = {}
-hull.get(path, params).then(function(data){
+// client.api.get works too.
+const params = {};
+client.get(path, params).then(function(data) {
   console.log(response);
-},function(err, response){
+}, function(err, response) {
   console.log(err);
 });
 ```
-
-> Once you have instanciated a client, you can use one of the `get`, `post`,
-`put`or `delete` methods to perform actions of our APIs.
 
 The first parameter is the route, the second is the set of parameters you want
 to send with the request. They all return Promises so you can use the `.then()` syntax if you're more inclined.
 
 # Instance Methods
 
-## hull.configuration()
+## client.configuration()
 
-Returns the global configuration
-
-## hull.userToken()
+Returns the global configuration object.
 
 ```js
-hull.userToken({email:'xxx@example.com',name:'FooBar'}, claims)
+client.configuration();
+// returns:
+{ prefix: '/api/v1',
+  domain: 'hullapp.io',
+  protocol: 'https',
+  id: '58765f7de3aa14001999',
+  secret: '12347asc855041674dc961af50fc1',
+  organization: 'fa4321.hullbeta.io',
+  version: '0.7.4' }
+```
+
+
+## client.userToken()
+
+```js
+client.userToken({ email:'xxx@example.com', name:'FooBar' }, optionalClaims);
 ```
 
 Used for [Bring your own users](http://hull.io/docs/users/byou).
 Creates a signed string for the user passed in hash. `userHash` needs an `email` field.
 [You can then pass this client-side to Hull.js](http://www.hull.io/docs/users/byou) to authenticate users client-side and cross-domain
 
-## hull.currentUserId()
+## client.currentUserId()
 
 ```js
-hull.currentUserId(userId, userSig)
+client.currentUserId(userId, userSig)
 ```
 
 Checks the validity of the signature relatively to a user id
 
-## hull.currentUserMiddleware()
+## client.currentUserMiddleware()
 
 ```js
 const app = express();
 
 // a middleware with no mount path; gets executed for every request to the app
-app.use(hull.currentUserMiddleware);
-app.use(function(req,res,next){
-  console.log(req.hull.userId) // Should exist if there is a user logged in;
-})
+app.use(client.currentUserMiddleware);
+app.use(function(req, res, next) {
+  console.log(req.hull.userId); // Should exist if there is a user logged in;
+});
 ```
 
 Reverse of Bring your own Users. When using Hull's Identity management, tells you who the current user is. Generates a middleware to add to your Connect/Express apps.
 
+## Impersonating a User - client.as()
+
+One of the more frequent use case is to perform API calls with the identity of a given user. We provide several methods to do so.
+
+```js
+// if you have a user id from your database, use the `external_id` field
+const user = client.asUser({ external_id: "dkjf565wd654e" });
+
+// if you have a Hull Internal User Id:
+const user = client.asUser({ id: "5718b59b7a85ebf20e000169" });
+// or just as a string:
+const user = client.asUser("5718b59b7a85ebf20e000169");
+
+// you can optionally pass additional user resolution options as a second argument:
+const user = client.asUser({ id: "5718b59b7a85ebf20e000169" }, { create: false });
+
+// Constant `user` is an instance of Hull, scoped to a specific user.
+user.get("/me").then(function(me) {
+  console.log(me);
+});
+user.userToken();
+```
+
+You can use an internal Hull `id`, an ID from your database that we call `external_id`, an `email` address or `guest_id`.
+
+Assigning the `user` variable doesn't make an API call, it scopes the calls to another instance of `hull` client. This means `user` is an instance of the `hull` client scoped to this user.
+
+The second parameter lets you define additional options (JWT claims) passed to the user resolution script:
+
+* **create** - *boolean* - marks if the user should be lazily created if not found (default: *true*)
+
+### Possible usage
+> Return a hull `client` scoped to the user identified by it's Hull ID. Not lazily created. Needs an existing User
+
+```js
+client.asUser(userId);
+```
+
+> Return a hull `client` scoped to the user identified by it's Social network ID. Lazily created if [Guest Users](http://www.hull.io/docs/users/guest_users) are enabled
+
+```js
+client.asUser('instagram|facebook|google:userId');
+```
+
+> Return a hull `client` scoped to the user identified by it's External ID (from your dashboard). Lazily created if [Guest Users](http://www.hull.io/docs/users/guest_users) are enabled
+
+```js
+client.asUser({ external_id: 'externalId' });
+```
+
+> Return a hull `client` scoped to the user identified by it's External ID (from your dashboard). Lazily created if [Guest Users](http://www.hull.io/docs/users/guest_users) are enabled
+
+```js
+client.asUser({ anonymous_id: 'anonymousId' });
+```
+
+> Return a hull `client` scoped to the user identified by only by an anonymousId. Lets you start tracking and storing properties from a user before you have a UserID ready for him. Lazily created if [Guest Users](http://www.hull.io/docs/users/guest_users) are enabled
+> When you have a UserId, just pass both to link them.
+
+```js
+client.asUser({ email: "user@email.com" });
+```
+
+
+# Methods for user-scoped instance
+
+```js
+const externalId = "dkjf565wd654e";
+const anonymousId = "44564-EJVWE-1CE56SE-SDVE879VW8D4";
+
+const user = client.asUser({ external_id: externalId, anonymous_id: anonymousId });
+```
+
+When you do this, you get a new client that has a different behaviour. It's now behaving as a User would. It means it does API calls as a user and has new methods to track and store properties
+
+## user.track(event, props, context)
+
+Stores a new event.
+
+```js
+user.track('new support ticket', { messages: 3,
+  priority:'high'
+}, {
+  source: 'zendesk',
+  type: 'ticket',
+  event_id: 'uuid1234' //Pass a unique ID to ensure event de-duplication
+  ip: null, //don't store ip - it's a server call
+  referer: null, //don't store referer - it's a server call
+  created_at: '2013-02-08 09:30:26.123+07:00' //ISO 8601. moment.js does it very well
+});
+```
+
+The `context` object lets you define event meta-data. Everything is optional
+
+- **source**: Defines a namespace, such as `zendesk`, `mailchimp`, `stripe`
+- **type**: Define a event type, such as `mail`, `ticket`, `payment`
+- **created_at**: Define an event date. defaults to `now()`
+- **event_id**: Define a way to de-duplicate events. If you pass events with the same unique `event_id`, they will overwrite the previous one.
+- **ip**: Define the Event's IP. Set to `null` if you're storing a server call, otherwise, geoIP will locate this event.
+- **referer**: Define the Referer. `null` for server calls.
+
+
+## user.traits(properties, context)
+
+Stores Attributes on the user:
+
+```js
+user.traits({
+  opened_tickets: 12
+}, { source: 'zendesk' });
+// 'source' is optional. Will store the traits grouped under the source name.
+// Alternatively, you can send properties for multiple groups with the flat syntax:
+user.traits({ "zendesk/opened_tickets": 12, "clearbit/name": "foo" });
+```
+
+By default the `traits` calls are grouped in background and send to the Hull API in batches, that will cause some small delay. If you need to be sure the properties are set immediately on the user, you can use the context param `{ sync: true }`.
+
+```js
+user.traits({
+  fetched_at: new Date().toISOString()
+}, {
+  source: 'mailchimp',
+  sync: true
+});
+```
 
 ## Utils
 
-### hull.utils.groupTraits(user_report)
+### traits.group(user_report) {#utils-traits-group}
+
+The Hull API returns traits in a "flat" format, with '/' delimiters in the key.
+`client.utils.traits.group(user_report)` can be used to group those traits into subobjects:
 
 ```js
-const hull = new Hull({config});
+import { group: groupTraits } from "hull/trait";
 
-hull.utils.groupTraits({
+groupTraits({
   'email': 'romain@user',
   'name': 'name',
   'traits_coconut_name': 'coconut',
@@ -114,153 +253,121 @@ hull.utils.groupTraits({
 };
 ```
 
-The Hull API returns traits in a "flat" format, with '/' delimiters in the key.
-The Events handler  Returns a grouped version of the traits in the flat user report we return from the API.
-> The NotifHandler already does this by default.
-
-
-# Impersonating a User
+This utility can be also used in following way:
 
 ```js
-//If you only have an anonymous ID, use the `anonymous_id` field
-var user = hull.as({ anonymous_id: '123456789' });
-
-//if you have a user id from your database, use the `external_id` field
-var user = hull.as({ external_id: 'dkjf565wd654e' });
-
-//if you retrieved a Hull Internal User Id:
-//second argument is optional and specifies wether we get the user's right or admin rights.
-var user = hull.as('5718b59b7a85ebf20e000169', false);
-
-//user is an instance of Hull, scoped to a specific user.
-//Default is false: "get user rights".
-user.get('/me').then(function(me){
-  console.log(me)
-});
-user.userToken();
-//It will act as if the user performed the action if the second parameter is falsy
+const client = new Hull({ config });
+const userGroupedTraits = client.utils.traits.group(user_report);
 ```
 
-One of the more frequent use case is to perform API calls with the identity of a given user. We provide several methods to do so.
-
-You can use an internal Hull `id`, an Anonymous ID from that we call a `anonymous_id`, an ID from your database that we call `external_id`, or even the ID from a supported social service such as Instagram;
-
-Assigning the `user` variable doesn't make an API call, it scopes the calls to another instance of `hull` client. This means `user` is an instance of the `hull` client scoped to this user.
-
-The second parameter lets you define whether the calls are perform with Admin rights or the User's rights.
-
-
-> Return a hull `client` scoped to the user identified by it's Hull ID. Not lazily created. Needs an existing User
+### extract.request({ hostname, segment = null, format = "json", path = "batch", fields = [], additionalQuery = {} }) {#utils-extract-request}
 
 ```js
-hull.as(userId)
-```
-
-> Return a hull `client` scoped to the user identified by it's Social network ID. Lazily created if [Guest Users](http://www.hull.io/docs/users/guest_users) are enabled
-
-```js
-hull.as('instagram|facebook|google:userId', sudo)
-```
-
-> Return a hull `client` scoped to the user identified by it's External ID (from your dashboard). Lazily created if [Guest Users](http://www.hull.io/docs/users/guest_users) are enabled
-
-```js
-hull.as({external_id:'externalId'}, sudo)
-```
-
-> Return a hull `client` scoped to the user identified by it's External ID (from your dashboard). Lazily created if [Guest Users](http://www.hull.io/docs/users/guest_users) are enabled
-
-```js
-hull.as({anonymous_id:'anonymousId'}, sudo)
-```
-
-> Return a hull `client` scoped to the user identified by only by an anonymousId. Lets you start tracking and storing properties from a user before you have a UserID ready for him. Lazily created if [Guest Users](http://www.hull.io/docs/users/guest_users) are enabled
-> When you have a UserId, just pass both to link them.
-
-```js
-hull.as({email:'user@email.com'}, sudo)
-```
-
-
-# Methods for user-scoped instances
-
-```js
-const sudo = true;
-const userId = '5718b59b7a85ebf20e000169';
-const externalId = 'dkjf565wd654e';
-const anonymousId = '44564-EJVWE-1CE56SE-SDVE879VW8D4';
-
-const user = hull.as({external_id: externalId, anonymous_id: anonymousId})
-```
-
-When you do this, you get a new client that has a different behaviour. It's now behaving as a User would. It means it does API calls as a user and has new methods to track and store properties
-
-## user.track(event, props, context)
-
-
-```js
-user.track('new support ticket', { messages: 3,
-  priority:'high'
-}, {
-  source: 'zendesk',
-  type: 'ticket',
-  event_id: 'uuid1234' //Pass a unique ID to ensure event de-duplication
-  ip: null, //don't store ip - it's a server call
-  referer: null, //don't store referer - it's a server call
-  created_at: '2013-02-08 09:30:26.123+07:00' //ISO 8601. moment.js does it very well
+client.utils.extract.request({
+  hostname: "https://some-public-url.com",
+  fields: ["first_name", "last_name"],
+  segment: {
+    id: "54321"
+  }
 });
 ```
 
-Stores a new event.
+Performs a `client.post("extract/user_reports", {})` call, building all needed properties for the action. It takes following arguments:
 
-The `context` object lets you define event meta-data. Everything is optional
+- **hostname** - a hostname where the extract should be sent
+- **path** - a path of the endpoint which will handle the extract (default: *batch*)
+- **fields** - an array of users attributes to extract (default: *[]*)
+- **format** - prefered format (default: *json*)
+- **segment** - extract only users matching selected segment, this needs to be an object with `id` at least, `segment.query` is optional
 
-- `source`: Defines a namespace, such as `zendesk`, `mailchimp`, `stripe`
-- `type`: Define a event type, such as `mail`, `ticket`, `payment`
-- `created_at`: Define an event date. defaults to `now()`
-- `event_id`: Define a way to de-duplicate events. If you pass events with the same unique `event_id`, they will overwrite the previous one.
-- `ip`: Define the Event's IP. Set to `null` if you're storing a server call, otherwise, geoIP will locate this event.
-- `referer`: Define the Referer. `null` for server calls.
+### extract.handle({ body, batchSize, handler }) {#utils-extract-handle}
 
-
-## user.traits(properties, context)
+The utility to download and parse the incoming extract.
 
 ```js
-user.traits({
-  opened_tickets: 12
-}, { source: 'zendesk' });
-// 'source' is optional. Will store the traits grouped under the source name.
-// Alternatively, you can send properties for multiple groups with the flat syntax:
-// user.traits({ "zendesk/opened_tickets": 12, "clearbit/name": "toto"});
-```
-
-Stores Properties on the user.
-
-If you need to be sure the properties are set immediately on the user, you can use the context param `{ sync: true }`.
-
-
-```js
-user.traits({
-  fetched_at: new Date().toISOString()
-}, {
-  source: 'mailchimp',
-  sync: true
+client.utils.extract.handle({
+  body: req.body,
+  batchSize: 50, // get 50 users at once
+  handler: (users) => {
+    assert(users.length <= 50);
+  }
 });
+
 ```
 
+- **body** - json of incoming extract message - must contain `url` and `format`
+- **batchSize** - number of users to be passed to each handler call
+- **handler** - the callback function which would be called with batches of users
 
-# Class Methods
+### settings.update({ newSettings }) {#utils-settings-update}
+A helper utility which simplify `hull.put("app", { private_settings })` calls. Using raw API you need to merge existing settings with those you want to update.
+This utility does it for you.
+
+```js
+const client = new Hull({ config });
+
+client.get("app")
+  .then(ship => {
+    assert.equal(ship.private_settings.existing_property, "foo");
+    return client.utils.settings.update({ new_property: "bar"});
+  })
+  .then(() => client.get("app"))
+  .then(ship => {
+    assert.equal(ship.private_settings.existing_property, "foo");
+    assert.equal(ship.private_settings.new_property, "bar");
+  });
+```
+
+### properties.get() {#utils-properties-get}
+A wrapper over `client.get("search/user_reports/bootstrap")` call which unpacks the list of properties.
+
+```js
+client.utils.properties.get()
+  .then(properties => {
+    console.log(properties); // see result below
+  });
+
+{
+  "id": {
+    "id": "id",
+    "text": "Hull ID",
+    "type": "string",
+    "id_path": [
+      "User"
+    ],
+    "path": [
+      "User"
+    ],
+    "title": "Hull ID",
+    "key": "id"
+  },
+  "created_at": {
+    "id": "created_at",
+    "text": "Signup on",
+    "type": "date",
+    "id_path": [
+      "User"
+    ],
+    "path": [
+      "User"
+    ],
+    "title": "Signup on",
+    "key": "created_at"
+  }
+}
+```
+
 
 ### Logging Methods: Hull.logger.debug(), Hull.logger.info() ...
 
 
 ```js
 Hull.logger.info("message", { object }); //Class logging method,
-hull.logger.info("message", { object }); //Instance logging method, adds Ship ID and Organization to Context. Use if available.
+client.logger.info("message", { object }); //Instance logging method, adds Ship ID and Organization to Context. Use if available.
 
 //Debug works the same way but only logs if process.env.DEBUG===true
 Hull.logger.info("message", { object }); //Class logging method,
-hull.logger.info("message", { object });
+client.logger.info("message", { object });
 
 //You can add more logging destinations like this:
 import winstonSlacker from "winston-slacker";
@@ -271,449 +378,3 @@ Hull.logger.add(winstonSlacker,  { ... });
 Uses [Winston](https://github.com/winstonjs/winston)
 
 The Logger comes in two flavors, `Hull.logger.xxx` and `hull.logger.xxx` - The first one is a generic logger, the second one injects the current instance of `Hull` so you can retreive ship name, id and organization for more precision.
-
-## NotifHandler()
-
-NotifHandler is a packaged solution to receive User and Segment Notifications from Hull. It's built to be used as an express route. Hull will receive notifications if your ship's `manifest.json` exposes a `subscriptions` key:
-
-```json
-{
-  "subscriptions" : [ { "url" : "/notify" } ]
-}
-```
-
-Here's how to use it.
-
-```js
-const app = express();
-import { NotifHandler } from 'hull';
-
-const handler = NotifHandler({
-  hostSecret: hostSecret //Ship's Host secret
-  onSubscribe() {} // called when a new subscription is installed
-  onError() {} // called when an error is raised
-  handlers: {
-    groupTraits: true, //Receive a nested object or a flat object for user properties containing '/'
-    'event': function() {
-      console.log('Event Handler here', notif, context);
-      // notif: {
-      //    message: {
-      //      user: { id: '123', ... },
-      //      segments: [ { } ],
-      //      event: []
-      //    },
-      //    subject: 'event',
-      //    timestamp: "2016-02-03T17:01:57.393Z' }
-      // },
-      // context: {
-      //  hull: <Instance of Hull Client>
-      //  ship: <Current ship instance if available>,
-      //  req: < Original request, Useful to retreive additional data>
-      // }
-
-    },
-    'ship:update': function(notif, context){},
-    'segment:update': function(notif, context){},
-    'segment:delete': function(notif, context){},
-    'user:delete': function(notif, context){},
-    'user:create': function(notif, context){},
-    'user:update' : function(notif, context) {
-      console.log('Event Handler here', notif, context);
-      // notif: {
-      //    message: {
-      //      user: { id: '123', ... },
-      //      segments: [ { } ],
-      //      changes: {},
-      //      events: [ {}, {} ]
-      //    },
-      //    subject: 'user_report:update',
-      //    timestamp: "2016-02-03T17:01:57.393Z' }
-      // },
-      // context: {
-      //  hull: <Instance of Hull Client>
-      //  ship: <Current ship instance if available>,
-      //  req: < Original request, Useful to retreive additional data>
-      // }
-    }
-  }
-})
-
-
-app.post('/notify', handler);
-```
-
-Your app can subscribe to events from Hull and receive Events via http POST.
-For this we provide a helper called NotifHandler that handles all the complexity of subscribing to events and routing them to specific methods. All you need to do is declare which methods handle what Events.
-
-
-### Example of `user:update` payload
-
-```javascript
-{
-
-  // Current user properties
-  "user": {
-    "id": "572f63eb8c35fc5d4300034e",
-    "anonymous_ids": [ "1462723549-f16cea7e-6a7d-4ba5-b506-c16bfd43ebbe" ],
-    "created_at": "2016-05-08T16:06:04Z",
-    "name": "Romain Dardour",
-    "first_name": "Romain",
-    "last_name": "Dardour",
-    "domain": "hull.io",
-    "email": "romain@hull.io",
-    "phone": "+33600000000",
-    "picture": "https://d1ts43dypk8bqh.cloudfront.net/v1/avatars/a63f299c-4fbb-4c2e-8d7e-8b4af888f890",
-    "accepts_marketing": false,
-
-    "address_city": "Paris",
-    "address_country": "France",
-    "address_state": "Île-de-France",
-
-    "last_seen_at": "2017-01-10T16:26:25Z",
-    "last_known_ip": "54.227.22.135",
-
-    // Session data
-    "first_seen_at": "2016-09-28T13:19:59Z",
-    "first_session_initial_referrer": "",
-    "first_session_initial_url": "https://hull-2.myshopify.com/",
-    "first_session_platform_id": "561fb665450f34b1cf00000f",
-    "first_session_started_at": "2016-09-28T13:19:59Z",
-
-    "latest_session_initial_referrer": "https://hull-2.myshopify.com/",
-    "latest_session_initial_url": "https://hull-2.myshopify.com/account/login",
-    "latest_session_platform_id": "561fb665450f34b1cf00000f",
-    "latest_session_started_at": "2016-10-25T10:15:34Z",
-
-    "signup_session_initial_referrer": "",
-    "signup_session_initial_url": "https://hull-2.myshopify.com/",
-    "signup_session_platform_id": "561fb665450f34b1cf00000f",
-    "signup_session_started_at": "2016-09-28T13:19:59Z",
-
-
-    // Custom traits
-    "traits": {
-      "usage_score" : 89.5
-    },
-
-    // Custom traits group `hubspot`
-    "hubspot": {
-      "associated_deals_count": "1",
-      "became_opportunity_at": "2016-09-09T07:04:36+00:00",
-      "created_at": "2016-09-09T07:01:01+00:00",
-      "email": "romain@hull.io",
-      "fetched_at": "2017-01-10T16:40:30Z",
-      "first_deal_created_at": "2016-09-28T13:24:35+00:00",
-      "first_name": "Romain",
-      "job_title": "COO",
-      "last_name": "Dardour",
-      "lifecycle_stage": "opportunity",
-      "recent_deal_amount": "",
-      "updated_at": "2017-01-10T16:37:55+00:00"
-    }
-  },
-
-  // List of segments the user belongs to
-  "segments": [
-    {
-      "id": "57adda830ffa84da28000083",
-      "name": "Dudes called Romain",
-      "type": "users_segment",
-      "created_at": "2016-08-12T14:17:39Z",
-      "updated_at": "2016-10-21T07:39:01Z"
-    },
-    {
-      "id": "572091bf13440a016c00002b",
-      "name": "Views Products Frequently",
-      "type": "users_segment",
-      "created_at": "2016-04-27T10:17:35Z",
-      "updated_at": "2016-12-01T10:51:24Z"
-    }
-  ],
-
-  // List of events captured since last Notification
-  "events": [
-    {
-      "context": {
-        "location": {
-          "latitude": 48.8628,
-          "longitude": 2.3292
-        },
-        "page": {
-          "url": "https://hull-2.myshopify.com/products/suspendisse-congue-sodales-massa-sit-amet-euismod-aliquet-sapien-non-dictum"
-        }
-      },
-      "created_at": "2017-01-11T17:52:11Z",
-      "event": "Viewed Product",
-      "event_source": "track",
-      "event_type": "track",
-      "properties": {
-        "category": "luctus",
-        "id": 2986706563,
-        "name": "Black Cat Classic Espresso",
-        "price": 25
-      }
-    }
-  ],
-
-  // Changes since last Notification
-  "changes": {
-    "user": {
-      "traits_hubspot/fetched_at": [ "2016-12-09T10:47:13Z", "2017-01-10T16:40:30Z" ],
-      "traits_hubspot/updated_at": [ "2016-12-09T10:46:03+00:00", "2017-01-10T16:37:55+00:00" ]
-    },
-    "segments": {
-      "entered": [
-        {
-          "id": "572091bf13440a016c00002b",
-          "name": "Views Products Frequently",
-          "type": "users_segment",
-          "created_at": "2016-04-27T10:17:35Z",
-          "updated_at": "2016-12-01T10:51:24Z"
-        }
-      ],
-      "left": [
-        {
-          "created_at": "2016-02-03T10:47:07Z",
-          "id": "56b1daab5580c06798000051",
-          "name": "Approved users",
-          "type": "users_segment",
-          "updated_at": "2016-12-01T10:57:30Z"
-        }
-      ]
-    },
-    "is_new": false
-  },
-  "event": "user:update",
-  "timestamp": "2017-01-10T16:41:00.831Z"
-}
-```
-
-## BatchHandler()
-
-BatchHandler is a packaged solution to receive Batches of Users. It's built to be used as an express route. Hull will receive notifications if your ship's `manifest.json` exposes a `batch` tag in `tags`:
-
-```json
-{
-  "tags" : [ "batch" ]
-}
-```
-
-Here is how to use it:
-
-```js
-const app = express();
-import { NotifHandler } from 'hull';
-
-const handler = BatchHandler({
-  groupTraits: false,
-  handler: function(notifications=[], context) {
-    //notifications itms are the same format as individual notifications from NotifHandler, but only contain a `message` object containing the user.
-    //Context is the same as in NotifHandler
-    notifications.map(n => updateUser(n, context));
-}
-})
-app.post('/batch', handler);
-```
-
-## OAuthHandler()
-
-OAuth Handler is a packaged authentication handler using [Passport](http://passportjs.org/). You give it the right parameters, it handles the entire auth scenario for you.
-
-It exposes hooks to check if the ship is Set up correctly, inject additional parameters during login, and save the returned settings during callback.
-
-Here is how to use it:
-
-```js
-import Hull from "hull";
-import { Strategy as HubspotStrategy } from "passport-hubspot";
-import { renderFile } from "ejs";
-import express from "express";
-
-
-app.set("views", `${__dirname}/../views`);
-app.set("view engine", "ejs");
-app.engine("html", renderFile);
-app.use(express.static(path.resolve(__dirname, "..", "dist")));
-app.use(express.static(path.resolve(__dirname, "..", "assets")));
-
-const { OAuthHandler } = Hull;
-
-app.use("/auth", OAuthHandler({
-  hostSecret,
-  name: "Hubspot",
-  tokenInUrl: true,
-  Strategy: HubspotStrategy,
-  options: {
-    clientID: "xxxxxxxxx",
-    clientSecret: "xxxxxxxxx", //Client Secret
-    scope: ["offline", "contacts-rw", "events-rw"] //App Scope
-  },
-  isSetup(req, { /* hull,*/ ship }) {
-    if (!!req.query.reset) return Promise.reject();
-    const { token } = ship.private_settings || {};
-    return (!!token) ? Promise.resolve({ valid: true, total: 2}) : Promise.reject({ valid: false, total: 0});
-  },
-  onLogin: (req, { hull, ship }) => {
-    req.authParams = { ...req.body, ...req.query };
-    return save(hull, ship, {
-      portalId: req.authParams.portalId
-    });
-  },
-  onAuthorize: (req, { hull, ship }) => {
-    const { refreshToken, accessToken } = (req.account || {});
-    return save(hull, ship, {
-      refresh_token: refreshToken,
-      token: accessToken
-    });
-  },
-  views: {
-    login: "login.html",
-    home: "home.html",
-    failure: "failure.html",
-    success: "success.html"
-  },
-}));
-```
-
-
-### manifest.json
-```json
-{
-  "admin" : "/auth/",
-}
-```
-### Params:
-
-##### hostSecret
-The ship hosted secret (Not the one received from Hull. The one the hosted app itself defines. Will be used to encode tokens).
-
-##### name
-The name displayed to the User in the various screens.
-
-##### tokenInUrl
-
-Some services (like Stripe) require an exact URL match.
-Some others (like Hubspot) don't pass the state back on the other hand.
-
-Setting this flag to false (default: true) removes the `token` Querystring parameter in the URL to only rely on the `state` param. 
-
-##### Strategy
-A Passport Strategy.
-
-##### options
-An options hash passed to Passport to configure the OAuth Strategy. (See [Passport OAuth Configuration](http://passportjs.org/docs/oauth))
-
-##### isSetup()
-A method returning a Promise, resolved if the ship is correctly setup, or rejected if it needs to display the Login screen.
-
-Lets you define in the Ship the name of the parameters you need to check for.
-
-You can return parameters in the Promise resolve and reject methods, that will be passed to the view. This lets you display status and show buttons and more to the customer
-
-##### onLogin()
-A method returning a Promise, resolved when ready.
-
-Best used to process form parameters, and place them in `req.authParams` to be submitted to the Login sequence. Useful to add strategy-specific parameters, such as a portal ID for Hubspot for instance.
-
-##### onAuthorize()
-
-A method returning a Promise, resolved when complete.
-Best used to save tokens and continue the sequence once saved.
-
-##### views
-
-Required, A hash of view files for the different screens.
-Each view will receive the following data:
-
-```js
-views: {
-  login: "login.html",
-  home: "home.html",
-  failure: "failure.html",
-  success: "success.html"
-}
-//each view will receive the following data:
-{
-  name: "The name passed as handler",
-  urls: {
-    login: '/auth/login',
-    success: '/auth/success',
-    failure: '/auth/failure',
-    home: '/auth/home',
-  },
-  ship: ship //The entire Ship instance's config
-}
-```
-
-# Middlewares
-
-## Hull.Middleware()
-
-```js
-import Hull from "hull";
-
-const hullClient = Hull.Middleware;
-
-app.use(hullClient({ hostSecret:"supersecret", fetchShip: true, cacheShip: true }));
-
-app.use((req, res) => { res.json({ message: "thanks" }); });
-
-app.use(function(err, res, req, next){
-  if(err) return res.status(err.status || 500).send({ message: err.message });
-});
-```
-
-This middleware standardizes the instanciation of a Hull client from configuration passed as a Query string or as a token. It also optionally fetches the entire ship's configuration and caches it to save requests.
-
-Here is what happens when your express app receives a query.
-
-1. If a config object is found in `req.hull.config` it will be used to create an instance of the client.
-2. If a token is present in `req.hull.token`, the middleware will try to use the `hostSecret` to decode it, store it in `req.hull.client`. When using `req.hull.token`, the decoded token should be a valid configuration object: `{id, organization, secret}`
-3. If the query string contains `id`, `secret`, `organization`, they will be stored in `req.hull.config`
-4. After this, if a valid configuration is in `req.hull.config`, a Hull client instance will be created and stored in `req.hull.client`
-
-- When this is done, if `fetchShip=true`(default) then the Ship will be fetched and stored in `req.hull.ship`
-- If `cacheShip=true` (default) the results will be cached.
-- If the configuration or the secret is invalid, an error will be thrown that you can catch using express error handlers.
-
-```js
-app.use(function(req, res, next){
-   //... your token retreiving method
-   req.hull.token = myToken;
-   next();
-})
-app.use(hullClient({ hostSecret:"supersecret", fetchShip: true, cacheShip: true }));
-app.use(function(req, res){
-  req.hull.config // {id, organization, secret}
-  req.hull.client //instance of Hull client.
-  req.hull.ship   //ship object - use to retreive current configuration.
-});
-
-```
-
-
-# Routes
-
-A simple set of route handlers to reduce boilerplate by a tiny bit.
-
-## Hull.Routes.Readme
-
-```js
-import Hull from 'hull';
-const { Routes } = Hull;
-//Redirect to a properly formatted and designed version of the /README.MD file.
-//Convenience method
-app.get("/readme", Routes.Readme);
-app.get("/", Routes.Readme);
-//
-```
-
-
-## Hull.Routes.Manifest
-
-```js
-import Hull from 'hull';
-const { Routes } = Hull;
-//Serves the manifest.json from it's root to the right url; Convenience method
-app.get("/manifest.json", Routes.Manifest(__dirname));
-```

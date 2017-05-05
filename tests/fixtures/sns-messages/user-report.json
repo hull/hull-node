@@ -1,5 +1,5 @@
 {
   "Type": "Notification",
-  "Subject": "user:update",
-  "Message": "{}"
+  "Subject": "user_report:update",
+  "Message": "{\"user\":{\"id\":\"5874cf3273d64d280b000ffb\"},\"segments\":[{\"id\":\"579677ff03777d1769000042\",\"name\":\"Not in mailchimp\",\"type\":\"users_segment\",\"created_at\":\"2016-07-25T20:35:11Z\",\"updated_at\":\"2017-01-02T08:59:30Z\"}],\"events\":[],\"changes\":{\"user\":{\"is_approved\":[true,false]},\"segments\":{\"left\":[{\"id\":\"578feb3d44d74b8a4f000054\",\"name\":\"Approved users\",\"type\":\"users_segment\",\"created_at\":\"2016-07-20T21:21:01Z\",\"updated_at\":\"2016-07-20T21:21:01Z\"}]},\"is_new\":false}}"
 }

@@ -5,13 +5,20 @@ import restAPI from "./rest-api";
 import crypto from "./lib/crypto";
 import currentUserMiddleware from "./middleware/current-user";
 import trait from "./trait";
+import * as extract from "./extract";
+import * as settings from "./settings";
+import * as propertiesUtils from "./properties";
 import FirehoseBatcher from "./firehose-batcher";
 
 const PUBLIC_METHODS = ["get", "post", "del", "put"];
 
 const logger = new (winston.Logger)({
   transports: [
-    new (winston.transports.Console)({ level: "info" })
+    new (winston.transports.Console)({
+      level: "info",
+      json: true,
+      stringify: true
+    })
   ]
 });
 
@@ -26,7 +33,7 @@ const Client = function Client(config = {}) {
   };
 
   const batch = FirehoseBatcher.getInstance(clientConfig.get(), (params, batcher) => {
-    return restAPI(batcher.config, 'firehose', 'post', params);
+    return restAPI(batcher.config, "firehose", "post", params);
   });
 
   this.api = function api(url, method, options) {
@@ -42,23 +49,32 @@ const Client = function Client(config = {}) {
   });
 
   this.userToken = function userToken(data = clientConfig.get("userId"), claims) {
-    return crypto.userToken(clientConfig.get(), data, claims);
-  };
-
-  this.lookupToken = function userToken(data = clientConfig.get("userId"), claims) {
-    return crypto.lookupToken(clientConfig.get(), data, claims);
+    return crypto.lookupToken(clientConfig.get(), "user", data, claims);
   };
 
   this.currentUserMiddleware = currentUserMiddleware.bind(this, clientConfig.get());
 
   this.utils = {
     groupTraits: trait.group,
+    properties: {
+      get: propertiesUtils.get.bind(this),
+    },
+    settings: {
+      update: settings.update.bind(this),
+    },
+    extract: {
+      request: extract.request.bind(this),
+      handle: extract.handle.bind(this),
+    }
   };
 
-  const ctxe = _.pick((this.configuration() || {}), ["organization", "id"]);
+  const ctxe = _.mapKeys(
+    _.pick((this.configuration() || {}), ["organization", "id", "connectorName"]),
+    (value, key) => _.snakeCase(key)
+  );
   const logFactory = level => (message, data) => logger[level](message, { context: ctxe, data });
   const logs = {};
-  ["silly", "debug", "verbose", "info", "warn", "error"].map(level => { logs[level] = logFactory(level); return level; });
+  ["silly", "debug", "verbose", "info", "warn", "error"].map((level) => { logs[level] = logFactory(level); return level; });
 
 
   this.logger = {
@@ -70,7 +86,7 @@ const Client = function Client(config = {}) {
   // Check conditions on when to create a "user client" or an "org client".
   // When to pass org scret or not
 
-  if (config.userId || config.accessToken) {
+  if (config.userClaim || config.accountClaim || config.accessToken) {
     this.traits = (traits, context = {}) => {
       // Quick and dirty way to add a source prefix to all traits we want in.
       const source = context.source;
@@ -86,7 +102,7 @@ const Client = function Client(config = {}) {
       }
 
       if (context.sync === true) {
-        return this.post('me/traits', body);
+        return this.post("me/traits", body);
       }
 
       return batch({ type: "traits", body });
@@ -105,14 +121,28 @@ const Client = function Client(config = {}) {
         }
       });
     };
+
+    if (config.userClaim) {
+      this.account = (accountClaim = {}) => {
+        if (!accountClaim) {
+          return new Client({ ...config, subjectType: "account" });
+        }
+        return new Client({ ...config, subjectType: "account", accountClaim });
+      };
+    }
   } else {
-    this.as = (userId, sudo = false) => {
-      // Sudo allows to be a user yet have admin rights... Use with care.
-      if (!userId) {
-        throw new Error("User Id was not defined when calling hull.as()");
+    this.asUser = (userClaim, additionalClaims = {}) => {
+      if (!userClaim) {
+        throw new Error("User Claims was not defined when calling hull.asUser()");
       }
-      // const scopedClientConfig = _.omit(config, "secret");
-      return new Client({ ...config, userId, sudo });
+      return new Client({ ...config, subjectType: "user", userClaim, additionalClaims });
+    };
+
+    this.asAccount = (accountClaim, additionalClaims = {}) => {
+      if (!accountClaim) {
+        throw new Error("Account Claims was not defined when calling hull.asAccount()");
+      }
+      return new Client({ ...config, subjectType: "account", accountClaim, additionalClaims });
     };
   }
 };

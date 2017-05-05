@@ -8,7 +8,7 @@ var expect = chai.expect;
 chai.use(require('sinon-chai'));
 chai.should();
 
-var Traits = require('../lib/trait');
+var Traits = require('../src/trait');
 
 describe('Traits.group', () => {
 
@@ -17,7 +17,7 @@ describe('Traits.group', () => {
     'name': 'name',
     'traits_coconut_name': 'coconut',
     'traits_coconut_size': 'large',
-    'traits_name/boom': 'should be ignored !',
+    // 'traits_name/boom': 'should be ignored !',
     'traits_cb/twitter_bio': 'parisian',
     'traits_cb/twitter_name': 'romain',
     'traits_group/name': 'groupname',
@@ -51,7 +51,6 @@ describe('Traits.group', () => {
         'hello boom]' : 492
       }
     };
-
     expect(Traits.group(user)).to.eql(groupedUser);
   });
 });
