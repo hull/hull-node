@@ -127,4 +127,30 @@ describe("Client Middleware", () => {
       done();
     });
   });
+
+  it("should not register client for empty query", function (done) {
+    const hullSpy = sinon.stub() ;
+    const instance = Middleware(hullSpy, { hostSecret: "secret" });
+    const req = {};
+    instance(req, {}, () => {
+      expect(req.hull.client).to.be.undefined;
+      expect(req.hull.ship).to.be.undefined;
+      done();
+    });
+  });
+
+  it("should not register client for empty configuration", function (done) {
+    const hullSpy = sinon.stub() ;
+    const instance = Middleware(hullSpy, { hostSecret: "secret" });
+    const req = {
+      hull: {
+        configuration: {}
+      }
+    };
+    instance(req, {}, () => {
+      expect(req.hull.client).to.be.undefined;
+      expect(req.hull.ship).to.be.undefined;
+      done();
+    });
+  });
 });

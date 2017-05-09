@@ -21,7 +21,7 @@
     "test:flow": "flow check",
     "update": "updtr",
     "clean": "rimraf lib",
-    "coverage": "gulp coverage",
+    "coverage": "nyc npm run test:units",
     "build": "gulp build",
     "watch": "gulp watch",
     "prepublish": "npm run build"
@@ -82,6 +82,7 @@
     "mkdirp": "^0.5.1",
     "mocha": "^3.0.0",
     "node-mocks-http": "^1.6.1",
+    "nyc": "^10.3.2",
     "rimraf": "^2.6.0",
     "sinon": "^2.2.0",
     "sinon-chai": "^2.10.0",
@@ -92,6 +93,11 @@
       "stub",
       "spy",
       "expect"
+    ]
+  },
+  "nyc": {
+    "include": [
+      "src"
     ]
   }
 }
