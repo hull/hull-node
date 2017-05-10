@@ -108,7 +108,7 @@ user.get("/me").then(function(me) {
 user.userToken();
 ```
 
-You can use an internal Hull `id`, an ID from your database that we call `external_id`, an `email` address or `guest_id`.
+You can use an internal Hull `id`, an ID from your database that we call `external_id`, an `email` address or `anonymous_id`.
 
 Assigning the `user` variable doesn't make an API call, it scopes the calls to another instance of `hull` client. This means `user` is an instance of the `hull` client scoped to this user.
 
