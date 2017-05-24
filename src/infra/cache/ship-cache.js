@@ -52,13 +52,13 @@ export default class ShipCache {
    */
   del(id) {
     const shipCacheKey = this.getShipKey(id);
-    const promise = new Promise();
-    this.cache.del(shipCacheKey, (error) => {
-      if (error) {
-        return promise.reject(error);
-      }
-      return promise.resolve();
+    return new Promise((resolve, reject) => {
+      this.cache.del(shipCacheKey, (error) => {
+        if (error) {
+          return reject(error);
+        }
+        return resolve();
+      });
     });
-    return promise;
   }
 }

@@ -1,5 +1,5 @@
 # 0.11.1
-* `ShipCache` properly return a Promise for `del` method also for node-cache-manager stores which doesn't support Promise
+* `ShipCache` properly returns a Promise for `del` method also for node-cache-manager stores which don't support Promise
 * adds `queue` param to `queueUiRouter` to match naming of `Connector` - `queueAgent` is deprecated and will be removed in `0.12.0`
 
 # 0.11.0
