@@ -1,6 +1,7 @@
 # 0.11.1
 * `ShipCache` properly returns a Promise for `del` method also for node-cache-manager stores which don't support Promise
 * adds `queue` param to `queueUiRouter` to match naming of `Connector` - `queueAgent` is deprecated and will be removed in `0.12.0`
+* fix the way Hull.Connector tried to load `manifest.json` file
 
 # 0.11.0
 * includes changes from all `0.11.0-beta` pre-releases
