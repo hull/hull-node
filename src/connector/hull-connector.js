@@ -25,7 +25,7 @@ export default class HullConnector {
       this.clientConfig.connectorName = connectorName;
     } else {
       try {
-        const manifest = JSON.parse(fs.readFileSync(`${process.cwd}/manifest.json`));
+        const manifest = JSON.parse(fs.readFileSync(`${process.cwd()}/manifest.json`));
         if (manifest.name) {
           this.clientConfig.connectorName = manifest.name;
         }

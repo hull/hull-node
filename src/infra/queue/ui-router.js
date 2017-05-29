@@ -21,11 +21,12 @@ function auth(pass) {
   };
 }
 
-export default function QueueUiRouter({ hostSecret, queueAgent }) {
+export default function QueueUiRouter({ hostSecret, queueAgent, queue }) {
   const router = Router();
 
   router.use(auth(hostSecret));
-  router.use("/_api", queueAgent.adapter.app);
+  // @deprecated queueAgent
+  router.use("/_api", (queueAgent || queue).adapter.app);
   router.use("/", ui.app);
 
   return router;
