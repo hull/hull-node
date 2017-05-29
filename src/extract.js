@@ -15,7 +15,7 @@ import _ from "lodash";
  *
  * return handleExtract(req, 100, (users) => Promise.resolve())
  */
-export function handle({ body, batchSize, handler }) {
+export function handle({ body, batchSize, handler, onResponse, onError }) {
   const { logger } = this;
   const { url, format } = body;
   if (!url) return Promise.reject(new Error("Missing URL"));
@@ -24,6 +24,16 @@ export function handle({ body, batchSize, handler }) {
   const batch = new BatchStream({ size: batchSize });
 
   return requestClient({ url })
+    .on("response", (response) => {
+      if (_.isFunction(onResponse)) {
+        onResponse(response);
+      }
+    })
+    .on("error", (error) => {
+      if (_.isFunction(onError)) {
+        onError(error);
+      }
+    })
     .pipe(decoder)
     .pipe(batch)
     .pipe(ps.map({ concurrent: 2 }, (...args) => {

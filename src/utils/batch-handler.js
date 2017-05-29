@@ -2,7 +2,6 @@ import { Router } from "express";
 import _ from "lodash";
 
 import { group } from "../trait";
-import responseMiddleware from "./response-middleware";
 import requireHullMiddleware from "./require-hull-middleware";
 
 /**
@@ -11,12 +10,19 @@ import requireHullMiddleware from "./require-hull-middleware";
 export default function batchHandler(handler, { batchSize = 100, groupTraits = false, segmentFilterSetting } = {}) {
   const router = Router();
   router.use(requireHullMiddleware());
-  router.post("/", (req, res, next) => {
+  router.post("/", (req, res) => {
     const { client, segments, helpers, connectorConfig } = req.hull;
 
     return client.utils.extract.handle({
       body: req.body,
       batchSize,
+      onResponse: () => {
+        res.end("ok");
+      },
+      onError: (err) => {
+        client.logger.error("batch.error", err.stack);
+        res.sendStatus(400);
+      },
       handler: (users) => {
         const segmentId = req.query.segment_id || null;
         if (groupTraits) {
@@ -42,9 +48,8 @@ export default function batchHandler(handler, { batchSize = 100, groupTraits = f
         });
         return handler(req.hull, messages);
       }
-    }).then(next, next);
+    });
   });
-  router.use(responseMiddleware());
 
   return router;
 }
