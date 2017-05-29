@@ -1,5 +1,6 @@
 import Promise from "bluebird";
 import fs from "fs";
+import _ from "lodash";
 
 import setupApp from "./setup-app";
 import Worker from "./worker";
@@ -27,7 +28,7 @@ export default class HullConnector {
       try {
         const manifest = JSON.parse(fs.readFileSync(`${process.cwd()}/manifest.json`));
         if (manifest.name) {
-          this.clientConfig.connectorName = manifest.name;
+          this.clientConfig.connectorName = _.kebabCase(manifest.name);
         }
       } catch (error) {} // eslint-disable-line no-empty
     }
