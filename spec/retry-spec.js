@@ -21,7 +21,7 @@ describe("client retrying", function test() {
 
     client.get("/testing")
       .catch(err => {
-        expect(minihull.requests.get("incoming").size().value()).to.be.eql(3);
+        expect(minihull.stubGet("/api/v1/testing").callCount).to.be.eql(3);
         minihull.close();
         done();
       });
@@ -50,7 +50,7 @@ describe("client retrying", function test() {
 
     client.get("/testing")
       .then(() => {
-        expect(minihull.requests.get("incoming").size().value()).to.be.eql(2);
+        expect(minihull.stubGet("/api/v1/testing").callCount).to.be.eql(2);
         minihull.close();
         done();
       });
@@ -72,7 +72,7 @@ describe("client retrying", function test() {
 
     client.get("/testing", {}, { timeout: 20, retry: 10 })
       .catch(err => {
-        expect(minihull.requests.get("incoming").size().value()).to.be.eql(3);
+        expect(minihull.stubGet("/api/v1/testing").callCount).to.be.eql(3);
         minihull.close();
         done();
       });
@@ -99,7 +99,7 @@ describe("client retrying", function test() {
 
     client.get("/testing", {}, { timeout: 20, retry: 10 })
       .then(() => {
-        expect(minihull.requests.get("incoming").size().value()).to.be.eql(2);
+        expect(minihull.stubGet("/api/v1/testing").callCount).to.be.eql(2);
         minihull.close();
         done();
       });
