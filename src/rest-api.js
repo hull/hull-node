@@ -51,20 +51,19 @@ function perform(config = {}, method = "get", path, params = {}, options = {}) {
     actions.reject = reject;
 
     query
-    .on("success", actions.resolve);
+    .on("success", actions.resolve)
+    .on("error", actions.reject);
 
     if (method === "get") {
-      query.on("503", function handle503Error() {
-        if (retryCount < 2) {
+      query.on("fail", function handleError(body, response) {
+        if (response.statusCode === 503 && retryCount < 2) {
           retryCount += 1;
           return this.retry(100);
         }
         return actions.reject();
       });
     } else {
-      query
-        .on("error", actions.reject)
-        .on("fail", actions.reject);
+      query.on("fail", actions.reject);
     }
 
     if (options.timeout && options.retry) {

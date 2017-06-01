@@ -3,7 +3,7 @@ import Hull from "../src";
 
 import Minihull from "minihull";
 
-describe.only("client retrying", function test() {
+describe("client retrying", function test() {
   it("should retry 2 times if get 503 response, then reject", (done) => {
     const minihull = new Minihull();
     minihull.stubGet("/api/v1/testing")
