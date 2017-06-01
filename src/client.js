@@ -33,18 +33,21 @@ const Client = function Client(config = {}) {
   };
 
   const batch = FirehoseBatcher.getInstance(clientConfig.get(), (params, batcher) => {
-    return restAPI(batcher.config, "firehose", "post", params);
+    return restAPI(batcher.config, "firehose", "post", params, {
+      timeout: 15000,
+      retry: 5000
+    });
   });
 
-  this.api = function api(url, method, options) {
-    return restAPI(clientConfig, url, method, options);
+  this.api = function api(url, method, params, options = {}) {
+    return restAPI(clientConfig, url, method, params, options);
   };
   _.each(PUBLIC_METHODS, (method) => {
-    this[method] = (url, options) => {
-      return restAPI(clientConfig, url, method, options);
+    this[method] = (url, params, options = {}) => {
+      return restAPI(clientConfig, url, method, params, options);
     };
-    this.api[method] = (url, options) => {
-      return restAPI(clientConfig, url, method, options);
+    this.api[method] = (url, params, options = {}) => {
+      return restAPI(clientConfig, url, method, params, options);
     };
   });
 
