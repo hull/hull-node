@@ -1,5 +1,6 @@
 import _ from "lodash";
 import winston from "winston";
+import uuidV4 from "uuid/v4";
 import Configuration from "./configuration";
 import restAPI from "./rest-api";
 import crypto from "./lib/crypto";
@@ -112,6 +113,9 @@ const Client = function Client(config = {}) {
     };
 
     this.track = (event, properties = {}, context = {}) => {
+      _.defaults(context, {
+        event_id: uuidV4()
+      });
       return batch({
         type: "track",
         body: {
