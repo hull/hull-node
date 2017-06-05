@@ -1,3 +1,7 @@
+# 0.11.3
+* add `timeout` and `retry` to client api calls options; when defined thogether timeout specifies number of miliseconds after which the connection would be timeouted and retry specifies number of miliseconds when the retry will be done after the timeout
+* by default `client.get` method retries twice calls when error 503 is returned
+
 # 0.11.2
 * normalize the connector name in logs context
 * make the `batchHandler` respond as soon as it starts to download the extract payload
