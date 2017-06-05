@@ -37,10 +37,16 @@ module.exports = function hullClientMiddlewareFactory(Client, { hostSecret, clie
     .then(() => {
       if (cache) {
         return cache.wrap(id, () => {
-          return client.get(id);
+          return client.get(id, {}, {
+            timeout: 5000,
+            retry: 1000
+          });
         });
       }
-      return client.get(id);
+      return client.get(id, {}, {
+        timeout: 5000,
+        retry: 1000
+      });
     });
   }
 

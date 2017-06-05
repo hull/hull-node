@@ -23,7 +23,12 @@ export default function segmentsMiddlewareFactory() {
       }
       return Promise.resolve();
     })().then(() => {
-      return cache.wrap("segments", () => req.hull.client.get("/segments"));
+      return cache.wrap("segments", () => {
+        return req.hull.client.get("/segments", {}, {
+          timeout: 5000,
+          retry: 1000
+        });
+      });
     }).then((segments) => {
       req.hull.segments = _.map(segments, (s) => {
         const fieldName = connectorConfig.segmentFilterSetting;

@@ -15,7 +15,7 @@ function isAbsolute(url = "") {
   return /http[s]?:\/\//.test(url);
 }
 
-function perform(config = {}, method = "get", path, params = {}) {
+function perform(config = {}, method = "get", path, params = {}, options = {}) {
   const opts = {
     headers: {
       ...DEFAULT_HEADERS,
@@ -29,6 +29,10 @@ function perform(config = {}, method = "get", path, params = {}) {
     opts.headers["Hull-User-Id"] = config.userId;
   }
 
+  if (options.timeout) {
+    opts.timeout = options.timeout;
+  }
+
   if (method === "get") {
     opts.query = params;
   } else {
@@ -39,6 +43,7 @@ function perform(config = {}, method = "get", path, params = {}) {
   if (!methodCall) { throw new Error(`Unsupported method ${method}`); }
 
   const actions = {};
+  let retryCount = 0;
   const query = methodCall(path, opts);
 
   const promise = new Promise((resolve, reject) => {
@@ -47,8 +52,29 @@ function perform(config = {}, method = "get", path, params = {}) {
 
     query
     .on("success", actions.resolve)
-    .on("error", actions.reject)
-    .on("fail", actions.reject);
+    .on("error", actions.reject);
+
+    if (method === "get") {
+      query.on("fail", function handleError(body, response) {
+        if (response.statusCode === 503 && retryCount < 2) {
+          retryCount += 1;
+          return this.retry(100);
+        }
+        return actions.reject();
+      });
+    } else {
+      query.on("fail", actions.reject);
+    }
+
+    if (options.timeout && options.retry) {
+      query.on("timeout", function handleTimeout() {
+        if (retryCount < 2) {
+          retryCount += 1;
+          return this.retry(options.retry);
+        }
+        return actions.reject();
+      });
+    }
     return query;
   });
 
@@ -65,7 +91,7 @@ function format(config, url) {
   return `${config.get("protocol")}://${config.get("organization")}${config.get("prefix")}/${strip(url)}`;
 }
 
-module.exports = function restAPI(config, url, method, params) {
+module.exports = function restAPI(config, url, method, params, options = {}) {
   const token = config.get("sudo") ? config.get("secret") : (config.get("accessToken") || config.get("secret"));
   const conf = {
     token,
@@ -75,5 +101,5 @@ module.exports = function restAPI(config, url, method, params) {
   };
 
   const path = format(config, url);
-  return perform(conf, method.toLowerCase(), path, params);
+  return perform(conf, method.toLowerCase(), path, params, options);
 };
