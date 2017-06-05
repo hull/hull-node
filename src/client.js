@@ -35,8 +35,8 @@ const Client = function Client(config = {}) {
 
   const batch = FirehoseBatcher.getInstance(clientConfig.get(), (params, batcher) => {
     return restAPI(batcher.config, "firehose", "post", params, {
-      timeout: 15000,
-      retry: 5000
+      timeout: process.env.BATCH_TIMEOUT || 15000,
+      retry: process.env.BATCH_RETRY || 5000
     });
   });
 
