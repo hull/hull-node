@@ -1,6 +1,7 @@
 src/
 spec/
 tasks/
+docs/
 .babelrc
 .editorconfig
 .gitignore
