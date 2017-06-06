@@ -61,8 +61,8 @@ client.configuration();
   protocol: 'https',
   id: '58765f7de3aa14001999',
   secret: '12347asc855041674dc961af50fc1',
-  organization: 'fa4321.hullbeta.io',
-  version: '0.7.4' }
+  organization: 'fa4321.hullapp.io',
+  version: '0.11.3' }
 ```
 
 
