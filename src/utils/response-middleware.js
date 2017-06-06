@@ -11,7 +11,7 @@ export default function responseMiddlewareFactory() {
     if (_.isError(result)) {
       const errorData = {
         error: (result.stack || result),
-        req: _.pick(req, "url", "method")
+        req: _.pick(req, "url", "method", "message")
       };
       try {
         req.hull.client.logger.error("action.error", errorData);
