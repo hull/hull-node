@@ -47,6 +47,20 @@ client.get(path, params).then(function(data) {
 The first parameter is the route, the second is the set of parameters you want
 to send with the request. They all return Promises so you can use the `.then()` syntax if you're more inclined.
 
+### options
+
+Every API client method `get`, `post`, `put` and `delete` accepts two options `timeout` and `retry`:
+
+```js
+client.get(path, {}, {
+  timeout: 10000,
+  retry: 5000
+});
+```
+
+* **timeout** - option controls if the client should retry the request if the client timeout error happens or if there is an error 503 returned serverside - the value of the option is applied for client side error
+* **retry** - controls the time between timeout or 503 error occurence and the next retry being done
+
 ## Instance Methods
 
 ### client.configuration()
