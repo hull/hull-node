@@ -1,5 +1,6 @@
 import _ from "lodash";
 import winston from "winston";
+import uuidV4 from "uuid/v4";
 import Configuration from "./configuration";
 import restAPI from "./rest-api";
 import crypto from "./lib/crypto";
@@ -33,18 +34,21 @@ const Client = function Client(config = {}) {
   };
 
   const batch = FirehoseBatcher.getInstance(clientConfig.get(), (params, batcher) => {
-    return restAPI(batcher.config, "firehose", "post", params);
+    return restAPI(batcher.config, "firehose", "post", params, {
+      timeout: process.env.BATCH_TIMEOUT || 10000,
+      retry: process.env.BATCH_RETRY || 5000
+    });
   });
 
-  this.api = function api(url, method, options) {
-    return restAPI(clientConfig, url, method, options);
+  this.api = function api(url, method, params, options = {}) {
+    return restAPI(clientConfig, url, method, params, options);
   };
   _.each(PUBLIC_METHODS, (method) => {
-    this[method] = (url, options) => {
-      return restAPI(clientConfig, url, method, options);
+    this[method] = (url, params, options = {}) => {
+      return restAPI(clientConfig, url, method, params, options);
     };
-    this.api[method] = (url, options) => {
-      return restAPI(clientConfig, url, method, options);
+    this.api[method] = (url, params, options = {}) => {
+      return restAPI(clientConfig, url, method, params, options);
     };
   });
 
@@ -109,6 +113,9 @@ const Client = function Client(config = {}) {
     };
 
     this.track = (event, properties = {}, context = {}) => {
+      _.defaults(context, {
+        event_id: uuidV4()
+      });
       return batch({
         type: "track",
         body: {

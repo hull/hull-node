@@ -9,10 +9,14 @@ import _ from "lodash";
 export default function responseMiddlewareFactory() {
   return function responseMiddleware(result, req, res, next) {
     if (_.isError(result)) {
+      const errorData = {
+        error: (result.stack || result),
+        req: _.pick(req, "url", "method", "message")
+      };
       try {
-        req.hull.client.logger.error("action.error", result.stack || result);
+        req.hull.client.logger.error("action.error", errorData);
       } catch (e) {
-        console.error("action.error", result.stack || result);
+        console.error("action.error", errorData);
       }
       res.status(500);
     } else {

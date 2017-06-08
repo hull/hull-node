@@ -26,6 +26,7 @@ export default class InstrumentationAgent {
       metrics.init({
         host: process.env.HOST,
       });
+      dogapi.initialize({ api_key: process.env.DATADOG_API_KEY });
       this.dogapi = dogapi;
     }
 
