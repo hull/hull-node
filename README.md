@@ -112,7 +112,7 @@ app.use(function(req, res, next) {
 
 Reverse of Bring your own Users. When using Hull's Identity management, tells you who the current user is. Generates a middleware to add to your Connect/Express apps.
 
-## Impersonating a User - client.as()
+## Impersonating a User - client.asUser()
 
 One of the more frequent use case is to perform API calls with the identity of a given user. We provide several methods to do so.
 
@@ -501,13 +501,13 @@ import express from "express";
 import Hull from "hull";
 
 const app = express();
-const connector = new Hull.Connector({ hostSecret });
+const connector = new Hull.Connector({ hostSecret, port });
 
 connector.setupApp(app); // apply connector related features to the application
 app.post("/fetch-all", (req, res) => {
   res.end("ok");
 });
-connector.startApp(app, port); // internally calls app.listen
+connector.startApp(app); // internally calls app.listen
 ```
 
 ### setupApp(express app)
@@ -596,7 +596,7 @@ import express from "express";
 import Hull from "hull";
 
 const app = express();
-const connector = new Hull.Connector({ hostSecret });
+const connector = new Hull.Connector({ hostSecret, port });
 // apply connector related features to the application
 connector.setupApp(app);
 
@@ -608,7 +608,7 @@ connector.worker({
 app.post("/fetch-all", (req, res) => {
     req.hull.enqueue("customJob", { users: [] });
 });
-connector.startApp(app, port);
+connector.startApp(app);
 connector.startWorker();
 ```
 
@@ -976,7 +976,7 @@ app.use("/fetch-all", actionHandler((ctx, { query, body }) => {
   return serviceClient.getHistoricalData()
     .then(users => {
       users.map(u => {
-        client.as({ email: u.email }).traits({
+        client.asUser({ email: u.email }).traits({
           new_trait: u.custom_value
         });
       });

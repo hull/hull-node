@@ -16,6 +16,7 @@ function isAbsolute(url = "") {
 }
 
 function perform(config = {}, method = "get", path, params = {}, options = {}) {
+  // restler options
   const opts = {
     headers: {
       ...DEFAULT_HEADERS,
@@ -27,6 +28,10 @@ function perform(config = {}, method = "get", path, params = {}, options = {}) {
 
   if (config.userId && typeof config.userId === "string") {
     opts.headers["Hull-User-Id"] = config.userId;
+  }
+
+  if (method === "get") {
+    options.timeout = options.timeout || 10000;
   }
 
   if (options.timeout) {
@@ -53,10 +58,6 @@ function perform(config = {}, method = "get", path, params = {}, options = {}) {
     query
     .on("success", actions.resolve)
     .on("error", actions.reject);
-
-    if (method === "get") {
-      options.timeout = 10000;
-    }
 
     query.on("fail", function handleError(body, response) {
       if (response.statusCode === 503 && options.timeout && retryCount < 2) {
