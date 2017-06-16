@@ -609,7 +609,7 @@ app.post("/fetch-all", (req, res) => {
     req.hull.enqueue("customJob", { users: [] });
 });
 connector.startApp(app);
-connector.startWorker();
+connector.startWorker(queueName = "queueApp");
 ```
 
 ## Infrastructure
@@ -698,6 +698,8 @@ The core part of the **Context Object** is described in [Hull Middleware documen
   + respond quickly in the express application actions (they just queue the work)
   + split the workload into smaller chunks (e.g. for extract parsing)
   + control the concurrency - most of the SERVICE APIs have rate limits
+
+  - **options.queueName** - when you start worker with a different queue name, you can explicitly set it here to queue specific jobs to that queue
 
   ```js
   req.hull.enqueue("jobName", { user: [] }, options = {});
