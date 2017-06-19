@@ -58,4 +58,38 @@ describe("HullConnector", () => {
     connector.clientMiddleware();
     expect(HullStub.Middleware.getCall(0).args[0].clientConfig).to.be.eql({ connectorName: "example" });
   });
+
+  it("should allow to set the name of internal queue", () => {
+    const queue = {
+      contextMiddleware: () => (() => {}),
+      adapter: {
+        process: () => {}
+      }
+    };
+    const processSpy = sinon.spy(queue.adapter, "process");
+
+    const connector = new HullConnector(HullStub, { queue });
+    connector.worker();
+    connector.startWorker("example");
+
+    expect(processSpy.calledOnce).to.be.true;
+    expect(processSpy.getCall(0).args[0]).to.be.equal("example");
+  });
+
+  it("should default name of internal queue to queueApp", () => {
+    const queue = {
+      contextMiddleware: () => (() => {}),
+      adapter: {
+        process: () => {}
+      }
+    };
+    const processSpy = sinon.spy(queue.adapter, "process");
+
+    const connector = new HullConnector(HullStub, { queue });
+    connector.worker();
+    connector.startWorker();
+
+    expect(processSpy.calledOnce).to.be.true;
+    expect(processSpy.getCall(0).args[0]).to.be.equal("queueApp");
+  });
 });
