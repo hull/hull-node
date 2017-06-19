@@ -1,5 +1,4 @@
 /* global describe, it */
-// import Promise from "bluebird";
 import { expect } from "chai";
 import sinon from "sinon";
 import HullStub from "../support/hull-stub";
