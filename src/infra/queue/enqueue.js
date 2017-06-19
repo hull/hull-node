@@ -8,8 +8,9 @@ export default function enqueue(queueAdapter, ctx, jobName, jobPayload, options 
       organization
     }
   };
+  const queueName = options.queueName || "queueApp";
 
-  return queueAdapter.create("queueApp", {
+  return queueAdapter.create(queueName, {
     name: jobName,
     payload: jobPayload,
     context

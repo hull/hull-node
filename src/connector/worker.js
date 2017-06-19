@@ -43,12 +43,10 @@ export default class Worker {
     this.jobs = jobs;
   }
 
-  process() {
-    // FIXME: move queue name to dependencies
-    this.queueAdapter.process("queueApp", (job) => {
+  process(queueName = "queueApp") {
+    this.queueAdapter.process(queueName, (job) => {
       return this.dispatch(job);
     });
-    this.Hull.logger.info("workerApp.process");
     return this;
   }
 
