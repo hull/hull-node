@@ -2,9 +2,9 @@ import crypto from "crypto";
 import express from "express";
 import https from "https";
 import _ from "lodash";
+import { group } from "hull-client/lib/trait";
 import requireHullMiddleware from "./require-hull-middleware";
 import Batcher from "../infra/batcher";
-import { group } from "../trait";
 
 function subscribeFactory(options) {
   return function subscribe(req, res, next) {
@@ -100,6 +100,7 @@ function handleExtractFactory({ handlers, userHandlerOptions }) {
     }
 
     const { client, helpers } = req.hull;
+
     return client.utils.extract.handle({
       body: req.body,
       batchSize: userHandlerOptions.maxSize || 100,

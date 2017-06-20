@@ -1,7 +1,7 @@
 import { Router } from "express";
 import _ from "lodash";
+import { group } from "hull-client/lib/trait";
 
-import { group } from "../trait";
 import requireHullMiddleware from "./require-hull-middleware";
 
 /**

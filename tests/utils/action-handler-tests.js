@@ -2,26 +2,28 @@
 import { expect, should } from "chai";
 import sinon from "sinon";
 import httpMocks from "node-mocks-http";
-import hullStub from "../support/hull-stub";
 import Promise from "bluebird";
+import hullStub from "../support/hull-stub";
 
 import actionHandler from "../../src/utils/action-handler";
 
 
-
 describe("actionHandler", () => {
   it("should support plain truthy return values", (done) => {
-    const request  = httpMocks.createRequest({
-      method: 'POST',
-      url: '/'
+    const request = httpMocks.createRequest({
+      method: "POST",
+      url: "/"
     });
     request.hull = {
-      client: new hullStub
+      client: new hullStub()
     };
     const response = httpMocks.createResponse();
     actionHandler(() => {
       return "done";
     }).handle(request, response, (err) => {
+      console.log("++++++++++++++++");
+      console.log(err);
+      console.log("----------------");
       expect(response.statusCode).to.equal(200);
       expect(response._isEndCalled()).to.be.ok;
       expect(response._getData()).to.equal("done");
@@ -30,12 +32,12 @@ describe("actionHandler", () => {
   });
 
   it("should support plain error return values", (done) => {
-    const request  = httpMocks.createRequest({
-      method: 'POST',
-      url: '/'
+    const request = httpMocks.createRequest({
+      method: "POST",
+      url: "/"
     });
     request.hull = {
-      client: new hullStub
+      client: new hullStub()
     };
     const response = httpMocks.createResponse();
     actionHandler(() => {
@@ -48,13 +50,13 @@ describe("actionHandler", () => {
     });
   });
 
-   it("should support resolving promises", (done) => {
-    const request  = httpMocks.createRequest({
-      method: 'POST',
-      url: '/'
+  it("should support resolving promises", (done) => {
+    const request = httpMocks.createRequest({
+      method: "POST",
+      url: "/"
     });
     request.hull = {
-      client: new hullStub
+      client: new hullStub()
     };
     const response = httpMocks.createResponse();
     actionHandler(() => {
@@ -70,12 +72,12 @@ describe("actionHandler", () => {
   });
 
   it("should support promises rejected with an error", (done) => {
-    const request  = httpMocks.createRequest({
-      method: 'POST',
-      url: '/'
+    const request = httpMocks.createRequest({
+      method: "POST",
+      url: "/"
     });
     request.hull = {
-      client: new hullStub
+      client: new hullStub()
     };
     const response = httpMocks.createResponse();
     actionHandler(() => {
