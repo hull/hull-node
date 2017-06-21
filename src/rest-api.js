@@ -30,6 +30,10 @@ function perform(config = {}, method = "get", path, params = {}, options = {}) {
     opts.headers["Hull-User-Id"] = config.userId;
   }
 
+  if (options.timeout) {
+    opts.timeout = options.timeout;
+  }
+
   if (method === "get") {
     options.timeout = options.timeout || 10000;
   }
