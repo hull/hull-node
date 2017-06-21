@@ -1,5 +1,5 @@
 [ignore]
-
+.*/node_modules/.*/\(lib\|test\|examples\).*\.json$
 [include]
 src/
 [libs]

@@ -1,14 +1,21 @@
 import enqueue from "./enqueue";
 import KueAdapter from "./adapter/kue";
+import BullAdapter from "./adapter/bull";
 import MemoryAdapter from "./adapter/memory";
 
 export default class QueueAgent {
 
   constructor(adapterName, options) {
-    if (!adapterName) {
-      this.adapter = new MemoryAdapter();
-    } else {
-      this.adapter = new KueAdapter(options);
+    switch (adapterName) {
+      case "bull":
+        this.adapter = new BullAdapter(options);
+        break;
+      case "kue":
+        this.adapter = new KueAdapter(options);
+        break;
+      case "memory":
+      default:
+        this.adapter = new MemoryAdapter();
     }
 
     this.contextMiddleware = this.contextMiddleware.bind(this);
