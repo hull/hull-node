@@ -100,10 +100,10 @@ export default class HullConnector {
     return this._middleware;
   }
 
-  startWorker() {
+  startWorker(queueName = "queueApp") {
     if (this._worker) {
-      this._worker.process();
-      this.Hull.logger.info("HullApp.worker.process");
+      this._worker.process(queueName);
+      this.Hull.logger.info("connector.worker.process", { queueName });
     }
   }
 }

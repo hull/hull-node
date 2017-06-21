@@ -47,6 +47,20 @@ client.get(path, params).then(function(data) {
 The first parameter is the route, the second is the set of parameters you want
 to send with the request. They all return Promises so you can use the `.then()` syntax if you're more inclined.
 
+### options
+
+Every API client method `get`, `post`, `put` and `delete` accepts two options `timeout` and `retry`:
+
+```js
+client.get(path, {}, {
+  timeout: 10000,
+  retry: 5000
+});
+```
+
+* **timeout** - option controls if the client should retry the request if the client timeout error happens or if there is an error 503 returned serverside - the value of the option is applied for client side error
+* **retry** - controls the time between timeout or 503 error occurence and the next retry being done
+
 ## Instance Methods
 
 ### client.configuration()
@@ -98,7 +112,7 @@ app.use(function(req, res, next) {
 
 Reverse of Bring your own Users. When using Hull's Identity management, tells you who the current user is. Generates a middleware to add to your Connect/Express apps.
 
-## Impersonating a User - client.as()
+## Impersonating a User - client.asUser()
 
 One of the more frequent use case is to perform API calls with the identity of a given user. We provide several methods to do so.
 
@@ -582,6 +596,7 @@ import express from "express";
 import Hull from "hull";
 
 const app = express();
+
 const connector = new Hull.Connector({ hostSecret });
 // apply connector related features to the application
 connector.setupApp(app);
@@ -595,7 +610,7 @@ app.post("/fetch-all", (req, res) => {
     req.hull.enqueue("customJob", { users: [] });
 });
 connector.startApp(app, port);
-connector.startWorker();
+connector.startWorker(queueName = "queueApp");
 ```
 
 ## Infrastructure
@@ -684,6 +699,8 @@ The core part of the **Context Object** is described in [Hull Middleware documen
   + respond quickly in the express application actions (they just queue the work)
   + split the workload into smaller chunks (e.g. for extract parsing)
   + control the concurrency - most of the SERVICE APIs have rate limits
+
+  - **options.queueName** - when you start worker with a different queue name, you can explicitly set it here to queue specific jobs to that queue
 
   ```js
   req.hull.enqueue("jobName", { user: [] }, options = {});
@@ -962,7 +979,7 @@ app.use("/fetch-all", actionHandler((ctx, { query, body }) => {
   return serviceClient.getHistoricalData()
     .then(users => {
       users.map(u => {
-        client.as({ email: u.email }).traits({
+        client.asUser({ email: u.email }).traits({
           new_trait: u.custom_value
         });
       });

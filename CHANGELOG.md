@@ -1,3 +1,13 @@
+# 0.11.4
+* adds `queueName` as first argument to the `connector.startWorker` method
+* adds `queueName` as option to the `ctx.enqueue` method
+
+# 0.11.3
+* add `timeout` and `retry` to client api calls options; when defined thogether timeout specifies number of miliseconds after which the connection would be timeouted and retry specifies number of miliseconds when the retry will be done after the timeout
+* by default `client.get` method retries twice calls when error 503 is returned
+* fetching connector settings and segments are instrumented by above settings to timeout after 5000 miliseconds and retried after 1000 ms
+* fix dogapi calls to create events
+
 # 0.11.2
 * normalize the connector name in logs context
 * make the `batchHandler` respond as soon as it starts to download the extract payload

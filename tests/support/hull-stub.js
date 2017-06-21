@@ -7,7 +7,7 @@ export default class HullStub {
     this.logger = {
       info: console.log, //() {},
       debug: console.log, //() {}
-    }
+    };
   }
 
   get(id) { return Promise.resolve({ id }); }
@@ -24,3 +24,8 @@ export default class HullStub {
     };
   }
 }
+
+HullStub.logger = {
+  info: console.log, //() {},
+  debug: console.log, //() {}
+};
