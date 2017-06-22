@@ -1,7 +1,6 @@
 import { Router } from "express";
 import _ from "lodash";
 
-import { group } from "../trait";
 import requireHullMiddleware from "./require-hull-middleware";
 
 /**
@@ -26,7 +25,7 @@ export default function batchHandler(handler, { batchSize = 100, groupTraits = f
       handler: (users) => {
         const segmentId = req.query.segment_id || null;
         if (groupTraits) {
-          users = users.map(u => group(u));
+          users = users.map(u => client.utils.groupTraits(u));
         }
 
         const messages = users.map((u) => {

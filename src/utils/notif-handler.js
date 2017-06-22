@@ -4,7 +4,6 @@ import https from "https";
 import _ from "lodash";
 import requireHullMiddleware from "./require-hull-middleware";
 import Batcher from "../infra/batcher";
-import { group } from "../trait";
 
 function subscribeFactory(options) {
   return function subscribe(req, res, next) {
@@ -52,7 +51,7 @@ function processHandlersFactory(handlers, userHandlerOptions = {}) {
         if (message.Subject === "user_report:update") {
           // optionally group user traits
           if (notification.message && notification.message.user && userHandlerOptions.groupTraits) {
-            notification.message.user = group(notification.message.user);
+            notification.message.user = ctx.client.utils.groupTraits(notification.message.user);
           }
           // add `matchesFilter` boolean flag
           notification.message.matchesFilter = helpers.filterNotification(notification.message, userHandlerOptions.segmentFilterSetting || connectorConfig.segmentFilterSetting);
@@ -106,7 +105,7 @@ function handleExtractFactory({ handlers, userHandlerOptions }) {
       handler: (users) => {
         const segmentId = req.query.segment_id || null;
         if (userHandlerOptions.groupTraits) {
-          users = users.map(u => group(u));
+          users = users.map(u => client.utils.groupTraits(u));
         }
         const messages = users.map((user) => {
           const segmentIds = _.compact(_.uniq(_.concat(user.segment_ids || [], [segmentId])));
