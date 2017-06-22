@@ -129,6 +129,16 @@ const Client = function Client(config = {}) {
       });
     };
 
+    // Allow alias only for users
+    if (config.userClaim || config.accessToken) {
+      this.alias = (body) => {
+        return batch({
+          type: "alias",
+          body
+        });
+      };
+    }
+
     if (config.userClaim) {
       this.account = (accountClaim = {}) => {
         if (!accountClaim) {
