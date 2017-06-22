@@ -105,6 +105,9 @@ const Client = function Client(config = {}) {
         body = { ...traits };
       }
 
+      // mixin selected context properties into body
+      _.merge(body, _.pick(context, ["ip"]));
+
       if (context.sync === true) {
         return this.post("me/traits", body);
       }
