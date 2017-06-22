@@ -1,3 +1,8 @@
+# 0.11.5
+* adds `bull` queue adapter using [OptimalBits/bull](https://github.com/OptimalBits/bull) library
+* minor changes to the `queueUiRouter` to allow working with different adapters
+* adds `ip` and `time` context param to traits call
+
 # 0.11.4
 * adds `queueName` as first argument to the `connector.startWorker` method
 * adds `queueName` as option to the `ctx.enqueue` method

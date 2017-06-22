@@ -63,7 +63,8 @@ describe("HullConnector", () => {
     const queue = {
       contextMiddleware: () => (() => {}),
       adapter: {
-        process: () => {}
+        process: () => {},
+        clean: () => {}
       }
     };
     const processSpy = sinon.spy(queue.adapter, "process");
@@ -80,7 +81,8 @@ describe("HullConnector", () => {
     const queue = {
       contextMiddleware: () => (() => {}),
       adapter: {
-        process: () => {}
+        process: () => {},
+        clean: () => {}
       }
     };
     const processSpy = sinon.spy(queue.adapter, "process");

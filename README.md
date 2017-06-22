@@ -75,8 +75,8 @@ client.configuration();
   protocol: 'https',
   id: '58765f7de3aa14001999',
   secret: '12347asc855041674dc961af50fc1',
-  organization: 'fa4321.hullbeta.io',
-  version: '0.7.4' }
+  organization: 'fa4321.hullapp.io',
+  version: '0.11.3' }
 ```
 
 
@@ -501,13 +501,13 @@ import express from "express";
 import Hull from "hull";
 
 const app = express();
-const connector = new Hull.Connector({ hostSecret, port });
+const connector = new Hull.Connector({ hostSecret });
 
 connector.setupApp(app); // apply connector related features to the application
 app.post("/fetch-all", (req, res) => {
   res.end("ok");
 });
-connector.startApp(app); // internally calls app.listen
+connector.startApp(app, port); // internally calls app.listen
 ```
 
 ### setupApp(express app)
@@ -596,7 +596,8 @@ import express from "express";
 import Hull from "hull";
 
 const app = express();
-const connector = new Hull.Connector({ hostSecret, port });
+
+const connector = new Hull.Connector({ hostSecret });
 // apply connector related features to the application
 connector.setupApp(app);
 
@@ -608,7 +609,7 @@ connector.worker({
 app.post("/fetch-all", (req, res) => {
     req.hull.enqueue("customJob", { users: [] });
 });
-connector.startApp(app);
+connector.startApp(app, port);
 connector.startWorker(queueName = "queueApp");
 ```
 
