@@ -4,7 +4,6 @@ import JSONStream from "JSONStream";
 import requestClient from "request";
 import ps from "promise-streams";
 import BatchStream from "batch-stream";
-import URI from "urijs";
 import _ from "lodash";
 
 /**
@@ -15,8 +14,8 @@ import _ from "lodash";
  *
  * return handleExtract(req, 100, (users) => Promise.resolve())
  */
-export function handle({ body, batchSize, handler, onResponse, onError }) {
-  const { logger } = this;
+export default function handleExtract(ctx, { body, batchSize, handler, onResponse, onError }) {
+  const { logger } = ctx.client;
   const { url, format } = body;
   if (!url) return Promise.reject(new Error("Missing URL"));
   const decoder = format === "csv" ? CSVStream.createStream({ escapeChar: "\"", enclosedChar: "\"" }) : JSONStream.parse();
@@ -46,46 +45,4 @@ export function handle({ body, batchSize, handler, onResponse, onError }) {
     }))
     .promise()
     .then(() => true);
-}
-
-/**
- * Start an extract job and be notified with the url when complete.
- * @param  {Object} options
- * @return {Promise}
- */
-export function request({ hostname, segment = null, format = "json", path = "batch", fields = [], additionalQuery = {} }) {
-  const client = this;
-  const conf = client.configuration();
-  const search = _.merge({
-    ship: conf.id,
-    secret: conf.secret,
-    organization: conf.organization,
-    source: "connector"
-  }, additionalQuery);
-
-  if (segment) {
-    search.segment_id = segment.id;
-  }
-  const url = URI(`https://${hostname}`)
-    .path(path)
-    .search(search)
-    .toString();
-
-  return (() => {
-    if (segment == null) {
-      return Promise.resolve({
-        query: {}
-      });
-    }
-
-    if (segment.query) {
-      return Promise.resolve(segment);
-    }
-    return client.get(segment.id);
-  })()
-  .then(({ query }) => {
-    const params = { query, format, url, fields };
-    client.logger.debug("requestExtract", params);
-    return client.post("extract/user_reports", params);
-  });
 }

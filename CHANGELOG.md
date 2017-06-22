@@ -1,5 +1,7 @@
 # 0.12.0
 * replaces low level api client with a separate library
+* `client.utils.extract.handle` replaced by `ctx.helpers.handleExtract`
+* `client.utils.extract.request` replaced by `ctx.helpers.requestExtract`
 * renames all "*Handler" utilities to "\*Router" to be more direct with fact they are Express Routers
 * moves all functions from `utils` into `routers`, `middleware` and `helpers`
 * removes `serviceMiddleware` concept replacing it with option of adding custom middleware to Connector middleware stack (easier to understand)
