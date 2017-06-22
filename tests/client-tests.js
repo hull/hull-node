@@ -25,7 +25,7 @@ describe("Hull", () => {
   });
 
   describe("as", () => {
-    it("should return scoped client with traits and track methods", () => {
+    it("should return scoped client with traits, track and alias methods", () => {
       const hull = new Hull({ id: "562123b470df84b740000042", secret: "1234", organization: "test" });
 
       const scopedAccount = hull.asAccount({ domain: "hull.io" });
@@ -35,6 +35,7 @@ describe("Hull", () => {
         .that.is.an("function");
       expect(scopedAccount).to.has.property("track")
         .that.is.an("function");
+      expect(scopedAccount).not.to.have.property("alias");
 
       expect(scopedUser).to.has.property("traits")
         .that.is.an("function");

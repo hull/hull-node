@@ -112,11 +112,6 @@ const Client = function Client(config = {}) {
       return batch({ type: "traits", body });
     };
 
-    // TODO move to new hull-client-node
-    this.alias = (body) => {
-      return batch({ type: "alias", body });
-    };
-
     this.track = (event, properties = {}, context = {}) => {
       _.defaults(context, {
         event_id: uuidV4()
@@ -133,6 +128,17 @@ const Client = function Client(config = {}) {
         }
       });
     };
+
+    // Allow alias only for users
+    // TODO move to new hull-client-node
+    if (config.userClaim || config.accessToken) {
+      this.alias = (body) => {
+        return batch({
+          type: "alias",
+          body
+        });
+      };
+    }
 
     if (config.userClaim) {
       this.account = (accountClaim = {}) => {
