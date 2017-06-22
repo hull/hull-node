@@ -105,14 +105,16 @@ const Client = function Client(config = {}) {
         body = { ...traits };
       }
 
-      // mixin selected context properties into body
-      _.merge(body, _.pick(context, ["ip", "time"]));
-
       if (context.sync === true) {
         return this.post("me/traits", body);
       }
 
       return batch({ type: "traits", body });
+    };
+
+    // TODO move to new hull-client-node
+    this.alias = (body) => {
+      return batch({ type: "alias", body });
     };
 
     this.track = (event, properties = {}, context = {}) => {

@@ -238,16 +238,6 @@ user.traits({
 });
 ```
 
-To update `last_known_ip` on a selected user an `ip` param can be passed to the context:
-
-```js
-user.traits({
-  foo: "bar"
-}, {
-  ip: "192.168.0.1"
-})
-```
-
 ## Utils
 
 ### traits.group()

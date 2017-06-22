@@ -40,6 +40,8 @@ describe("Hull", () => {
         .that.is.an("function");
       expect(scopedUser).to.has.property("track")
         .that.is.an("function");
+      expect(scopedUser).to.has.property("alias")
+        .that.is.an("function");
     });
 
     it("should allow to pass create option", () => {
