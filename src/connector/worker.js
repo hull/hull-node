@@ -22,6 +22,8 @@ export default class Worker {
     this.use(instrumentation.contextMiddleware());
     // instrument jobs between 1 and 5 minutes
     setInterval(this.metricJobs.bind(this), _.random(60000, 300000));
+
+    setInterval(this.queueAdapter.clean.bind(this.queueAdapter), _.random(60000, 300000));
   }
 
   metricJobs() {
@@ -52,8 +54,8 @@ export default class Worker {
 
   dispatch(job) {
     const jobName = job.data.name;
-    const req = job.data.context;
-    const jobData = job.data.payload;
+    const req = _.cloneDeep(job.data.context);
+    const jobData = _.cloneDeep(job.data.payload);
     const res = {};
 
     const startTime = process.hrtime();

@@ -1,12 +1,5 @@
 import { Router } from "express";
 import basicAuth from "basic-auth";
-import ui from "kue-ui";
-
-ui.setup({
-  apiURL: "/kue/_api", // IMPORTANT: specify the api url
-  baseURL: "/kue", // IMPORTANT: specify the base url
-  updateInterval: 5000 // Optional: Fetches new data every 5000 ms
-});
 
 function auth(pass) {
   return (req, res, next) => {
@@ -21,13 +14,12 @@ function auth(pass) {
   };
 }
 
-export default function QueueUiRouter({ hostSecret, queueAgent, queue }) {
+export default function queueUiRouter({ hostSecret, queueAgent, queue }) {
   const router = Router();
 
   router.use(auth(hostSecret));
   // @deprecated queueAgent
-  router.use("/_api", (queueAgent || queue).adapter.app);
-  router.use("/", ui.app);
+  (queueAgent || queue).adapter.setupUiRouter(router);
 
   return router;
 }

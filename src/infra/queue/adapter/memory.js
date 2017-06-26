@@ -70,4 +70,6 @@ export default class MemoryAdapter {
   exit() {
     return Promise.resolve(this);
   }
+
+  clean() {} // eslint-disable-line class-methods-use-this
 }

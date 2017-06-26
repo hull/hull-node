@@ -130,6 +130,7 @@ const Client = function Client(config = {}) {
     };
 
     // Allow alias only for users
+    // TODO move to new hull-client-node
     if (config.userClaim || config.accessToken) {
       this.alias = (body) => {
         return batch({
