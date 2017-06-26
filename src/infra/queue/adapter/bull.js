@@ -12,7 +12,7 @@ export default class BullAdapter {
       console.error("queue.adapter.error", err);
     });
     this.queue.on("cleaned", (job, type) => {
-      console.log("Cleaned %s %s jobs", job.length, type);
+      console.log("queue.adapter.clean", { count: job.length, type });
     });
   }
 
@@ -35,7 +35,9 @@ export default class BullAdapter {
     const options = {
       priority,
       delay,
-      timeout: ttl
+      timeout: ttl,
+      attempts: 3,
+      removeOnComplete: true
     };
     return this.queue.add(jobName, jobPayload, options);
   }
@@ -76,9 +78,6 @@ export default class BullAdapter {
   }
 
   clean() {
-    // completed in more than 5 seconds
-    this.queue.clean(5000, "completed");
-
     // failed in more than 15 days
     this.queue.clean(1296000000, "failed");
   }
