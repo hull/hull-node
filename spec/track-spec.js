@@ -4,13 +4,15 @@ import Hull from "../src";
 import Minihull from "minihull";
 
 describe("track", function test() {
-  let client, minihull;
+  let client;
+  let minihull;
   this.timeout(10000);
   beforeEach(() => {
     minihull = new Minihull();
     minihull.listen(8000);
     client = new Hull({
       organization: "localhost:8000",
+      firehoseUrl: "http://localhost:8000/boom/firehose",
       id: "111111111111111111111111",
       secret: "rocks",
       protocol: "http",
@@ -45,14 +47,11 @@ describe("track", function test() {
   });
 
   it("shoud retry with the same event_id", (done) => {
-    const stub = minihull.stubPost("/api/v1/firehose")
+    const stub = minihull.stubPost("/boom/firehose")
       .onFirstCall()
-      .callsFake((req, res) => {
-      })
+      .callsFake((req, res) => {})
       .onSecondCall()
-      .callsFake((req, res) => {
-        res.end("ok");
-      });
+      .callsFake((req, res) => res.end("ok"));
 
     client.asUser("123").track("Foo")
       .then(() => {
@@ -63,5 +62,4 @@ describe("track", function test() {
         done();
       });
   });
-
 });
