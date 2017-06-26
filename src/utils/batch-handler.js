@@ -26,7 +26,7 @@ export default function batchHandler(handler, { batchSize = 100, groupTraits = f
       handler: (users) => {
         const segmentId = req.query.segment_id || null;
         if (groupTraits) {
-          users = users.map(u => client.utils.groupTraits(u));
+          users = users.map(u => group(u));
         }
 
         const messages = users.map((u) => {
