@@ -1,9 +1,9 @@
+import Minihull from "minihull";
 import { expect } from "chai";
+
 import Hull from "../src";
 
-import Minihull from "minihull";
-
-describe("track", function test() {
+describe("hull.track()", function test() {
   let client;
   let minihull;
   this.timeout(10000);
@@ -11,8 +11,9 @@ describe("track", function test() {
     minihull = new Minihull();
     minihull.listen(8000);
     client = new Hull({
-      organization: "localhost:8000",
-      firehoseUrl: "http://localhost:8000/boom/firehose",
+      organization: "127.0.0.1:8000",
+      firehoseUrl: "http://127.0.0.1:8000/boom/firehose",
+      domain: "hullapp.dev",
       id: "111111111111111111111111",
       secret: "rocks",
       protocol: "http",
