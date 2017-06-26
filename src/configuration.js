@@ -102,6 +102,12 @@ class Configuration {
       }
     });
 
+    if (this._state.organization) {
+      const [namespace, ...domain] = this._state.organization.split(".");
+      this._state.namespace = namespace;
+      this._state.domain = domain.join(".");
+    }
+
     this._state.version = pkg.version;
   }
 
