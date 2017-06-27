@@ -22,7 +22,7 @@ function perform(config = {}, method = "get", path, params = {}, options = {}) {
       ...DEFAULT_HEADERS,
       "Hull-App-Id": config.id,
       "Hull-Access-Token": config.token,
-      "Hull-Organization": config.organization,
+      "Hull-Organization": config.organization, // TODO: move to hull-client-node
       ...(params.headers || {})
     }
   };
@@ -104,7 +104,7 @@ module.exports = function restAPI(config, url, method, params, options = {}) {
     id: config.get("id"),
     secret: config.get("secret"),
     userId: config.get("userId"),
-    organization: config.get("organization")
+    organization: config.get("organization") // TODO: move to hull-client-node
   };
 
   const path = format(config, url);

@@ -36,7 +36,7 @@ const VALID_PROPS = {
   ...REQUIRED_PROPS,
   prefix: VALID.string,
   domain: VALID.string,
-  firehoseUrl: VALID.string,
+  firehoseUrl: VALID.string, // TODO: move to hull-client-node
   protocol: VALID.string,
   userClaim: VALID.object,
   accountClaim: VALID.object,
@@ -102,6 +102,7 @@ class Configuration {
       }
     });
 
+    // TODO: move to hull-client-node
     if (!this._state.domain && this._state.organization) {
       const [namespace, ...domain] = this._state.organization.split(".");
       this._state.namespace = namespace;
