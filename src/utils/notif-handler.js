@@ -112,7 +112,7 @@ function handleExtractFactory({ handlers, userHandlerOptions }) {
           const segmentIds = _.compact(_.uniq(_.concat(user.segment_ids || [], [segmentId])));
           return {
             user,
-            segments: segmentIds.map(id => _.find(req.hull.segments, { id }))
+            segments: _.compact(segmentIds.map(id => _.find(req.hull.segments, { id })))
           };
         });
 

@@ -1,5 +1,6 @@
 # 0.11.6
 * make the `bull` adapter try 3 times before failing a job and cleaning completed jobs
+* make sure we don't return any `undefined` in `segments` param while parsing batch request
 
 # 0.11.5
 * adds `bull` queue adapter using [OptimalBits/bull](https://github.com/OptimalBits/bull) library
