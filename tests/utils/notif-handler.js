@@ -154,4 +154,40 @@ describe("NotifHandler", () => {
         });
     });
   });
+
+  it("should handle empty segments information", (done) => {
+    const handler = sinon.spy();
+    const extractHandler = sinon.stub().callsFake((options) => {
+      options.handler([{
+        segment_ids: ["a", "b"]
+      }])
+    });
+    const app = express();
+    const body = { url: "http://localhost:9000/extract.json", format: "json" };
+
+    app.use(notifMiddleware());
+    app.use(mockHullMiddleware);
+    app.use((req, res, next) => {
+      req.hull.segments = [{ id: "b", name: "Foo" }];
+      req.hull.client.utils = {
+        extract: {
+          handle: extractHandler
+        }
+      };
+      next();
+    });
+    app.use("/notify", notifHandler({
+      handlers: {
+        "user:update": handler
+      }
+    }));
+    const server = app.listen(() => {
+      const port = server.address().port;
+      post({ port, body })
+        .then(() => {
+          expect(handler.firstCall.args[1][0].segments).to.be.eql([{ id: "b", name: "Foo" }]);
+          done();
+        });
+    });
+  });
 });

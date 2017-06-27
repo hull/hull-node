@@ -3,6 +3,7 @@
 * background firehose batcher respects `firehoseUrl` param, if not set defaults to `${protocol}://firehose.${domain}`
 * adds `Hull-Organization` header
 * make the `bull` adapter try 3 times before failing a job and cleaning completed jobs
+* make sure we don't return any `undefined` in `segments` param while parsing batch request
 
 # 0.11.5
 * adds `bull` queue adapter using [OptimalBits/bull](https://github.com/OptimalBits/bull) library
