@@ -1,3 +1,9 @@
+# 0.11.6
+* adds `firehoseUrl` option to the Hull API client
+* background firehose batcher respects `firehoseUrl` param, if not set defaults to `${protocol}://firehose.${domain}`
+* adds `Hull-Organization` header
+* make the `bull` adapter try 3 times before failing a job and cleaning completed jobs
+
 # 0.11.5
 * adds `bull` queue adapter using [OptimalBits/bull](https://github.com/OptimalBits/bull) library
 * minor changes to the `queueUiRouter` to allow working with different adapters

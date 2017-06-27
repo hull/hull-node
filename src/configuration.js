@@ -4,7 +4,6 @@ import crypto from "./lib/crypto";
 
 const GLOBALS = {
   prefix: "/api/v1",
-  domain: "hullapp.io",
   protocol: "https"
 };
 
@@ -37,6 +36,7 @@ const VALID_PROPS = {
   ...REQUIRED_PROPS,
   prefix: VALID.string,
   domain: VALID.string,
+  firehoseUrl: VALID.string, // TODO: move to hull-client-node
   protocol: VALID.string,
   userClaim: VALID.object,
   accountClaim: VALID.object,
@@ -101,6 +101,13 @@ class Configuration {
         this._state[key] = config[key];
       }
     });
+
+    // TODO: move to hull-client-node
+    if (!this._state.domain && this._state.organization) {
+      const [namespace, ...domain] = this._state.organization.split(".");
+      this._state.namespace = namespace;
+      this._state.domain = domain.join(".");
+    }
 
     this._state.version = pkg.version;
   }
