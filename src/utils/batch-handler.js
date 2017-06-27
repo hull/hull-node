@@ -33,7 +33,7 @@ export default function batchHandler(handler, { batchSize = 100, groupTraits = f
           const segmentIds = _.compact(_.uniq(_.concat(u.segment_ids || [], [segmentId])));
           return {
             user: u,
-            segments: segmentIds.map(id => _.find(segments, { id }))
+            segments: _.compact(segmentIds.map(id => _.find(segments, { id })))
           };
         });
 
