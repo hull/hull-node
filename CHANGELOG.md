@@ -2,6 +2,8 @@
 * adds `firehoseUrl` option to the Hull API client
 * background firehose batcher respects `firehoseUrl` param, if not set defaults to `${protocol}://firehose.${domain}`
 * adds `Hull-Organization` header to firehose calls
+* make `notifHandler` working with handlers returning promise rejected to undefined value
+* change notifications JSON bodyParser size limit to 200kb
 
 # 0.11.6
 * make the `bull` adapter try 3 times before failing a job and cleaning completed jobs
