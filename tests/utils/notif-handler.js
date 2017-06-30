@@ -190,4 +190,33 @@ describe("NotifHandler", () => {
         });
     });
   });
+
+  it("Should process handlers returning promise rejected to an empty value", (done) => {
+    const handlerSpy = sinon.spy(() => {
+      return Promise.reject();
+    });
+
+    const initializedHandler = notifHandler({
+      handlers: {
+        "ship:update": handlerSpy
+      }
+    });
+    const reqStub = {
+      url: "/",
+      hull: {
+        client: new HullStub,
+        ship: {},
+        message: shipUpdate,
+        notification: {
+          message: JSON.parse(shipUpdate.Message)
+        }
+      }
+    };
+    const resStub = { status: () => ({ send: () => {} }), send: () => {}, end: () => {} };
+    initializedHandler.handle(reqStub, resStub, () => {
+      console.log("stack end");
+
+      done();
+    });
+  });
 });
