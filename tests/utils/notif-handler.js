@@ -7,6 +7,7 @@ import Promise from "bluebird";
 
 import shipUpdate from "../fixtures/sns-messages/ship-update.json";
 import userUpdate from "../fixtures/sns-messages/user-report.json";
+import userUpdateBig from "../fixtures/sns-messages/user-report-big.json";
 import HullStub from "../support/hull-stub";
 
 import notifHandler from "../../src/utils/notif-handler";
@@ -127,11 +128,39 @@ describe("NotifHandler", () => {
     });
   });
 
-  it("should add segment infromation to the user", (done) => {
+  it("should add segment information to the user", (done) => {
     const handler = sinon.spy();
     const setUserSegments = sinon.spy();
     const filterNotification = sinon.spy();
     const body = userUpdate;
+    const app = express();
+
+    app.use(notifMiddleware());
+    app.use(mockHullMiddleware);
+    app.use((req, res, next) => {
+      req.hull.helpers = { filterNotification };
+      next();
+    });
+    app.use("/notify", notifHandler({
+      handlers: {
+        "user:update": handler
+      }
+    }));
+    const server = app.listen(() => {
+      const port = server.address().port;
+      post({ port, body })
+        .then(() => {
+          expect(filterNotification.calledOnce).to.be.true;
+          done();
+        });
+    });
+  });
+
+  it("should handle big payloads", (done) => {
+    const handler = sinon.spy();
+    const setUserSegments = sinon.spy();
+    const filterNotification = sinon.spy();
+    const body = userUpdateBig;
     const app = express();
 
     app.use(notifMiddleware());
@@ -188,6 +217,35 @@ describe("NotifHandler", () => {
           expect(handler.firstCall.args[1][0].segments).to.be.eql([{ id: "b", name: "Foo" }]);
           done();
         });
+    });
+  });
+
+  it("Should process handlers returning promise rejected to an empty value", (done) => {
+    const handlerSpy = sinon.spy(() => {
+      return Promise.reject();
+    });
+
+    const initializedHandler = notifHandler({
+      handlers: {
+        "ship:update": handlerSpy
+      }
+    });
+    const reqStub = {
+      url: "/",
+      hull: {
+        client: new HullStub,
+        ship: {},
+        message: shipUpdate,
+        notification: {
+          message: JSON.parse(shipUpdate.Message)
+        }
+      }
+    };
+    const resStub = { status: () => ({ send: () => {} }), send: () => {}, end: () => {} };
+    initializedHandler.handle(reqStub, resStub, () => {
+      console.log("stack end");
+
+      done();
     });
   });
 });

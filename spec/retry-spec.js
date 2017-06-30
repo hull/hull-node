@@ -1,10 +1,13 @@
+/* global it, describe */
+
 import { expect } from "chai";
 import Hull from "../src";
 
 import Minihull from "minihull";
 
 describe("client retrying", function test() {
-  let minihull, client;
+  let minihull,
+    client;
   beforeEach(() => {
     minihull = new Minihull();
     minihull.listen(8000);
@@ -27,7 +30,7 @@ describe("client retrying", function test() {
       });
 
     client.get("/testing")
-      .catch(err => {
+      .catch((err) => {
         expect(stub.callCount).to.be.eql(3);
         done();
       });
@@ -41,7 +44,7 @@ describe("client retrying", function test() {
       })
       .onSecondCall()
       .callsFake((req, res) => {
-        res.end("ok")
+        res.end("ok");
       });
 
     client.get("/testing")
@@ -57,7 +60,7 @@ describe("client retrying", function test() {
       .callsFake((req, res) => {});
 
     client.get("/testing", {}, { timeout: 20, retry: 10 })
-      .catch(err => {
+      .catch((err) => {
         expect(stub.callCount).to.be.eql(3);
         done();
       });
@@ -70,7 +73,7 @@ describe("client retrying", function test() {
       })
       .onSecondCall()
       .callsFake((req, res) => {
-        res.end("ok")
+        res.end("ok");
       });
 
     client.get("/testing", {}, { timeout: 20, retry: 10 })
