@@ -632,15 +632,15 @@ Above documentation shows the basic how to setup and run the `Hull.Connector` an
 The `Hull.Connector` architecture gives a developer 3 places to inject custom middleware:
 
 1. At the very beginning of the middleware stack - just after `const app = express();` - this is a good place to initialy modify the incoming request, e.g. set the `req.hull.token` from custom property
-2. After the [Context Object](context.md) is built - after calling `setupApp(app)` - all context object would be initiated, but `req.hull.client`, `req.hull.segments` and `req.hull.ship` will be present **only if** credentials are passed. To ensure the presence of these properties [requireHullMiddleware](connector-utils.md#requirehullmiddleware) can be used.
+2. After the [Context Object](#context) is built - after calling `setupApp(app)` - all context object would be initiated, but `req.hull.client`, `req.hull.segments` and `req.hull.ship` will be present **only if** credentials are passed. To ensure the presence of these properties [requireHullMiddleware](#requirehullmiddleware) can be used.
 3. Before the closing `startApp(app)` call which internally calls `app.listen()`
 
-> **NOTE:** every `Handler` provided by this library internally uses [requireHullMiddleware](connector-utils.md#requirehullmiddleware) and [responseMiddleware](connector-utils.md#responsemiddleware) to wrap the provided callback function. Have it in mind while adding custom middlewares at the app and router level.
+> **NOTE:** every `Handler` provided by this library internally uses [requireHullMiddleware](#requirehullmiddleware) and [responseMiddleware](#responsemiddleware) to wrap the provided callback function. Have it in mind while adding custom middlewares at the app and router level.
 
 ---
 
 # Context object
-[Hull.Connector]($hullconnector) and [Hull.Middleware](#hullmiddleware) applies multiple middlewares to the request handler.
+[Hull.Connector](#hullconnector) and [Hull.Middleware](#hullmiddleware) applies multiple middlewares to the request handler.
 The result is `req.hull` object which is the **Context Object** - a set of modules to work in the context of current organization and connector instance.
 
 The core part of the **Context Object** is described in [Hull Middleware documentation](#hullmiddleware).
