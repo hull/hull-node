@@ -80,7 +80,10 @@ function processHandlersFactory(handlers, userHandlerOptions = {}) {
         Promise.all(processing).then(() => {
           next();
         }, (err) => {
+          err = err || new Error("Error while processing notification");
+          err.eventName = eventName;
           err.status = err.status || 400;
+          ctx.client.logger.error("notifHandler.err", err.stack || err);
           return next(err);
         });
       }
