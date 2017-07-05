@@ -75,10 +75,22 @@ const Client = function Client(config = {}) {
     }
   };
 
-  const ctxe = _.mapKeys(
-    _.pick((this.configuration() || {}), ["organization", "id", "connectorName"]),
-    (value, key) => _.snakeCase(key)
-  );
+  const conf = this.configuration() || {};
+  const ctxKeys = _.pick(conf, ["organization", "id", "connectorName", "subjectType"]);
+  const ctxe = _.mapKeys(ctxKeys, (value, key) => _.snakeCase(key));
+
+  ["user", "account"].forEach((k) => {
+    const claim = conf[`${k}Claim`];
+    if (_.isString(claim)) {
+      ctxe[`${k}_id`] = claim;
+    } else if (_.isObject(claim)) {
+      _.each(claim, (value, key) => {
+        const ctxKey = _.snakeCase(`${k}_${key.toLowerCase()}`);
+        if (value) ctxe[ctxKey] = value.toString();
+      });
+    }
+  });
+
   const logFactory = level => (message, data) => logger[level](message, { context: ctxe, data });
   const logs = {};
   ["silly", "debug", "verbose", "info", "warn", "error"].map((level) => { logs[level] = logFactory(level); return level; });
