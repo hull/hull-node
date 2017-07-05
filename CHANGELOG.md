@@ -1,3 +1,6 @@
+# 0.11.8
+* adds identification claims mapping for logger. Since now we can use: `client.asUser({ id, email }).logger("incoming.user.success");`
+
 # 0.11.7
 * adds `firehoseUrl` option to the Hull API client
 * background firehose batcher respects `firehoseUrl` param, if not set defaults to `${protocol}://firehose.${domain}`

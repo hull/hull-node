@@ -407,6 +407,14 @@ Hull.logger.add(winstonSlacker,  { ... });
 
 ```
 
+You can also have a user or account scoped logger. Claims used in `asUser` and `asAccount` methods will be added to the log context.
+
+
+```js
+const user = client.asUser({ email: "john@coltrane.com" });
+user.logger.info("message", { hello: "world" });
+```
+
 
 ---
 
