@@ -80,7 +80,10 @@ function processHandlersFactory(handlers, userHandlerOptions = {}) {
         Promise.all(processing).then(() => {
           next();
         }, (err) => {
+          err = err || new Error("Error while processing notification");
+          err.eventName = eventName;
           err.status = err.status || 400;
+          ctx.client.logger.error("notifHandler.err", err.stack || err);
           return next(err);
         });
       }
@@ -113,7 +116,7 @@ function handleExtractFactory({ handlers, userHandlerOptions }) {
           const segmentIds = _.compact(_.uniq(_.concat(user.segment_ids || [], [segmentId])));
           return {
             user,
-            segments: segmentIds.map(id => _.find(req.hull.segments, { id }))
+            segments: _.compact(segmentIds.map(id => _.find(req.hull.segments, { id })))
           };
         });
 

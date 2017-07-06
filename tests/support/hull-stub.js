@@ -5,8 +5,9 @@ export default class HullStub {
   constructor() {
     this.id = _.uniqueId("ship-");
     this.logger = {
-      info: console.log, // () {},
-      debug: console.log, // () {}
+      info: console.log, //() {},
+      debug: console.log, //() {}
+      error: console.log
     };
   }
 

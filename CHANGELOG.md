@@ -3,9 +3,28 @@
 * `client.utils.extract.handle` replaced by `ctx.helpers.handleExtract`
 * `client.utils.extract.request` replaced by `ctx.helpers.requestExtract`
 
+# 0.11.8
+* adds identification claims mapping for logger. Since now we can use: `client.asUser({ id, email }).logger("incoming.user.success");`
+
+# 0.11.7
+* adds `firehoseUrl` option to the Hull API client
+* background firehose batcher respects `firehoseUrl` param, if not set defaults to `${protocol}://firehose.${domain}`
+* adds `Hull-Organization` header to firehose calls
+* make `notifHandler` working with handlers returning promise rejected to undefined value
+* change notifications JSON bodyParser size limit to 256kb (same as SNS message limit)
+
+# 0.11.6
+* make the `bull` adapter try 3 times before failing a job and cleaning completed jobs
+* make sure we don't return any `undefined` in `segments` param while parsing batch request
+>>>>>>> a14c612c9f37eab5f91014fa4b7661d11a8156e2
+
 # 0.11.5
 * adds `bull` queue adapter using [OptimalBits/bull](https://github.com/OptimalBits/bull) library
 * minor changes to the `queueUiRouter` to allow working with different adapters
+<<<<<<< HEAD
+=======
+* adds `ip` and `time` context param to traits call
+>>>>>>> a14c612c9f37eab5f91014fa4b7661d11a8156e2
 
 # 0.11.4
 * adds `queueName` as first argument to the `connector.startWorker` method

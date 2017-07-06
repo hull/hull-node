@@ -47,7 +47,7 @@ export default function notifMiddlewareFactory() {
     if (req.headers["x-amz-sns-message-type"]) {
       req.headers["content-type"] = "application/json;charset=UTF-8";
     }
-    bodyParser.json()(req, res, () => {
+    bodyParser.json({ limit: "256kb" })(req, res, () => {
       if (req.body && req.body.Message && req.body.Type) {
         req.hull.message = req.body;
       }
