@@ -21,7 +21,7 @@ export default class SQSAdapter {
   }
 
   exit() {  // eslint-disable-line class-methods-use-this
-    return "bye bye";
+    return this.consumer && this.consumer.stop();
   }
 
   setupUiRouter(router) { // eslint-disable-line class-methods-use-this
@@ -93,6 +93,8 @@ export default class SQSAdapter {
     });
 
     consumer.start();
+
+    this.consumer = consumer;
 
     return this;
   }
