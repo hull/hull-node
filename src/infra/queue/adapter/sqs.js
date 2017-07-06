@@ -74,7 +74,6 @@ export default class SQSAdapter {
         try {
           const id = message.MessageId;
           const data = JSON.parse(message.Body);
-          console.warn("Job message:", message);
           return jobCallback({ id, data })
           .then(() => done())
           .catch(done);
