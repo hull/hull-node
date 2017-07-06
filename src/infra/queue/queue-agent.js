@@ -1,6 +1,7 @@
 import enqueue from "./enqueue";
 import KueAdapter from "./adapter/kue";
 import BullAdapter from "./adapter/bull";
+import SqsAdapter from "./adapter/sqs";
 import MemoryAdapter from "./adapter/memory";
 
 export default class QueueAgent {
@@ -12,6 +13,9 @@ export default class QueueAgent {
         break;
       case "kue":
         this.adapter = new KueAdapter(options);
+        break;
+      case "sqs":
+        this.adapter = new SqsAdapter(options);
         break;
       case "memory":
       default:
