@@ -1,3 +1,6 @@
+# 0.11.8
+* adds identification claims mapping for logger. Since now we can use: `client.asUser({ id, email }).logger("incoming.user.success");`
+
 # 0.11.7
 * adds `firehoseUrl` option to the Hull API client
 * background firehose batcher respects `firehoseUrl` param, if not set defaults to `${protocol}://firehose.${domain}`
@@ -6,9 +9,6 @@
 * change notifications JSON bodyParser size limit to 256kb (same as SNS message limit)
 
 # 0.11.6
-* adds `firehoseUrl` option to the Hull API client
-* background firehose batcher respects `firehoseUrl` param, if not set defaults to `${protocol}://firehose.${domain}`
-* adds `Hull-Organization` header
 * make the `bull` adapter try 3 times before failing a job and cleaning completed jobs
 * make sure we don't return any `undefined` in `segments` param while parsing batch request
 
