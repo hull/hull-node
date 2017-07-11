@@ -50,6 +50,18 @@ const VALID_PROPS = {
 };
 
 /**
+ * All valid user claims, used for validation and filterind .asUser calls
+ * @type {Array}
+ */
+const USER_CLAIMS = ["id", "email", "external_id", "anonymous_id"];
+
+/**
+ * All valid accounts claims, used for validation and filtering .asAccount calls
+ * @type {Array}
+ */
+const ACCOUNT_CLAIMS = ["id", "external_id", "domain"];
+
+/**
  * make sure that provided "identity claim" is valid
  * @param  {String} type          "user" or "account"
  * @param  {String|Object} object identity claim
@@ -69,6 +81,12 @@ function assertClaimValidity(type, object, requiredFields) {
   }
 }
 
+function filterClaim(object, possibleFields) {
+  return _.isString(object)
+    ? object
+    : _.pick(object, possibleFields);
+}
+
 class Configuration {
   constructor(config) {
     if (!_.isObject(config) || !_.size(config)) {
@@ -76,11 +94,15 @@ class Configuration {
     }
 
     if (config.userClaim || config.accountClaim) {
-      assertClaimValidity("user", config.userClaim, ["id", "email", "external_id", "anonymous_id"]);
-      assertClaimValidity("account", config.accountClaim, ["id", "external_id", "domain"]);
+      assertClaimValidity("user", config.userClaim, USER_CLAIMS);
+      assertClaimValidity("account", config.accountClaim, ACCOUNT_CLAIMS);
+
+      const user = filterClaim(config.userClaim, USER_CLAIMS);
+      const account = filterClaim(config.accountClaim, ACCOUNT_CLAIMS);
+
       const accessToken = crypto.lookupToken(config, config.subjectType, {
-        user: config.userClaim,
-        account: config.accountClaim
+        user,
+        account
       }, config.additionalClaims);
       config = { ...config, accessToken };
     }

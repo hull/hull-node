@@ -147,5 +147,14 @@ describe("Hull", () => {
       expect(hull.asAccount.bind(null, { external_id: "1234" }))
         .to.not.throw(Error);
     });
+
+    it("should filter all non standard claims", () => {
+      const hull = new Hull({ id: "562123b470df84b740000042", secret: "1234", organization: "test" });
+
+      const scoped = hull.asUser({ email: "foo@bar.com", foo: "bar" });
+      const scopedJwtClaims = jwt.decode(scoped.configuration().accessToken, scoped.configuration().secret);
+      expect(scopedJwtClaims["io.hull.asUser"])
+        .to.eql({ email: "foo@bar.com" });
+    });
   });
 });
