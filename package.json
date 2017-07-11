@@ -1,6 +1,6 @@
 {
   "name": "hull",
-  "version": "0.11.9-beta.1",
+  "version": "0.11.9",
   "description": "A Node.js client for hull.io",
   "main": "lib",
   "repository": {
@@ -17,7 +17,7 @@
     "test": "npm run test:lint && npm run test:flow && npm run test:units",
     "test:lint": "eslint src",
     "test:modules": "npm outdated --depth=0",
-    "test:units": "NODE_ENV=test mocha --require babel-register -R spec ./tests/* ./tests/**/* ./spec/*",
+    "test:units": "NODE_ENV=test mocha --require babel-register -R spec ./tests/*.js ./tests/**/*.js ./spec/*.js",
     "test:flow": "flow check",
     "update": "updtr",
     "clean": "rimraf lib",

@@ -15,7 +15,7 @@ function isAbsolute(url = "") {
   return /http[s]?:\/\//.test(url);
 }
 
-function perform(config = {}, method = "get", path, params = {}, options = {}) {
+function perform(client, config = {}, method = "get", path, params = {}, options = {}) {
   // restler options
   const opts = {
     headers: {
@@ -65,6 +65,7 @@ function perform(config = {}, method = "get", path, params = {}, options = {}) {
     .on("error", actions.reject);
 
     query.on("fail", function handleError(body, response) {
+      client.logger.debug("client.fail", { statusCode: response.statusCode, retryCount, path, method });
       if (response.statusCode === 503 && options.timeout && retryCount < 2) {
         retryCount += 1;
         return this.retry(options.retry || 500);
@@ -74,6 +75,7 @@ function perform(config = {}, method = "get", path, params = {}, options = {}) {
 
     if (options.timeout) {
       query.on("timeout", function handleTimeout() {
+        client.logger.debug("client.timeout", { timeout: opts.timeout, retryCount, path, method });
         if (retryCount < 2) {
           retryCount += 1;
           return this.retry(options.retry || 500);
@@ -97,7 +99,7 @@ function format(config, url) {
   return `${config.get("protocol")}://${config.get("organization")}${config.get("prefix")}/${strip(url)}`;
 }
 
-module.exports = function restAPI(config, url, method, params, options = {}) {
+module.exports = function restAPI(client, config, url, method, params, options = {}) {
   const token = config.get("sudo") ? config.get("secret") : (config.get("accessToken") || config.get("secret"));
   const conf = {
     token,
@@ -108,5 +110,5 @@ module.exports = function restAPI(config, url, method, params, options = {}) {
   };
 
   const path = format(config, url);
-  return perform(conf, method.toLowerCase(), path, params, options);
+  return perform(client, conf, method.toLowerCase(), path, params, options);
 };

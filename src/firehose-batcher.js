@@ -1,15 +1,10 @@
 import _ from "lodash";
-import restAPI from "./rest-api";
 import Configuration from "./configuration";
 
 const BATCHERS = {};
 
 
 global.setImmediate = global.setImmediate || process.nextTick.bind(process);
-
-function defaultHandler(params, batcher) {
-  return restAPI(batcher.config, "firehose", "post", params);
-}
 
 class FirehoseBatcher {
 
@@ -28,7 +23,7 @@ class FirehoseBatcher {
   }
 
   constructor(config, handler) {
-    this.handler = handler || defaultHandler;
+    this.handler = handler;
     this.flushAt = Math.max(config.flushAt, 1) || 50;
     this.flushAfter = config.flushAfter || 1000;
     this.config = new Configuration(_.omit(config, "userId", "accessToken", "sudo"));

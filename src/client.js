@@ -37,21 +37,21 @@ const Client = function Client(config = {}) {
   const batch = FirehoseBatcher.getInstance(clientConfig.get(), (params, batcher) => {
     // TODO: move to hull-client-node
     const firehoseUrl = clientConfig.get("firehoseUrl") || `${clientConfig.get("protocol")}://firehose.${clientConfig.get("domain")}`;
-    return restAPI(batcher.config, firehoseUrl, "post", params, {
+    return restAPI(this, batcher.config, firehoseUrl, "post", params, {
       timeout: process.env.BATCH_TIMEOUT || 10000,
       retry: process.env.BATCH_RETRY || 5000
     });
   });
 
   this.api = function api(url, method, params, options = {}) {
-    return restAPI(clientConfig, url, method, params, options);
+    return restAPI(this, clientConfig, url, method, params, options);
   };
   _.each(PUBLIC_METHODS, (method) => {
     this[method] = (url, params, options = {}) => {
-      return restAPI(clientConfig, url, method, params, options);
+      return restAPI(this, clientConfig, url, method, params, options);
     };
     this.api[method] = (url, params, options = {}) => {
-      return restAPI(clientConfig, url, method, params, options);
+      return restAPI(this, clientConfig, url, method, params, options);
     };
   });
 
@@ -164,6 +164,11 @@ const Client = function Client(config = {}) {
       };
     }
   } else {
+    this.as = (userClaim, additionalClaims = {}) => {
+      this.logger.warn("client.deprecation - use client.asUser instead of client.as");
+      return this.asUser(userClaim, additionalClaims);
+    };
+
     this.asUser = (userClaim, additionalClaims = {}) => {
       if (!userClaim) {
         throw new Error("User Claims was not defined when calling hull.asUser()");
