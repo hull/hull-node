@@ -164,6 +164,11 @@ const Client = function Client(config = {}) {
       };
     }
   } else {
+    this.as = (userClaim, additionalClaims = {}) => {
+      this.logger.warn("client.deprecation - use client.asUser instead of client.as");
+      return this.asUser(userClaim, additionalClaims);
+    };
+
     this.asUser = (userClaim, additionalClaims = {}) => {
       if (!userClaim) {
         throw new Error("User Claims was not defined when calling hull.asUser()");
