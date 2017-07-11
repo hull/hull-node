@@ -105,5 +105,11 @@ export default function oauth({
       .catch(error => res.redirect(getURL(req, FAILURE_URL, { token: req.hull.token, error })));
   });
 
+  router.use((error, req, res, next) => { // eslint-disable-line no-unused-vars
+    const { client } = req.hull;
+    client.logger.error("connector.oauth.error", error);
+    return res.render(views.failure, { name, urls: getURLs(req), error: error.message || error.toString() || "" });
+  });
+
   return router;
 }
