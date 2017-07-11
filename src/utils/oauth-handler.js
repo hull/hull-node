@@ -106,9 +106,8 @@ export default function oauth({
   });
 
   router.use((error, req, res, next) => { // eslint-disable-line no-unused-vars
-    const { client, metric } = req.hull;
+    const { client } = req.hull;
     client.logger.error("connector.oauth.error", error);
-    metric.error(error);
     return res.render(views.failure, { name, urls: getURLs(req), error: error.message || error.toString() || "" });
   });
 

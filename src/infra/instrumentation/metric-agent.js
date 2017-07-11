@@ -5,7 +5,6 @@ export default class MetricAgent {
     this.metrics = instrumentationAgent.metrics;
     this.dogapi = instrumentationAgent.dogapi;
     this.manifest = instrumentationAgent.manifest;
-    this.raven = instrumentationAgent.raven;
     this.ctx = ctx;
   }
 
@@ -40,10 +39,6 @@ export default class MetricAgent {
     return this.dogapi.event.create(`${this.manifest.name}.${title}`, text, _.merge(properties, {
       tags: this.getMetricTags()
     }));
-  }
-
-  error(exception, extra = {}) {
-    return this.catchError(exception, extra, this.getMetricTags);
   }
 
   getMetricTags() {
