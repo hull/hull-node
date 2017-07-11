@@ -93,17 +93,17 @@ class Configuration {
       throw new Error("Configuration is invalid, it should be a non-empty object");
     }
 
-    if (config.userClaim) {
-      config.userClaim = filterClaim(config.userClaim, USER_CLAIMS);
-    }
-
-    if (config.accountClaim) {
-      config.accountClaim = filterClaim(config.accountClaim, ACCOUNT_CLAIMS);
-    }
-
     if (config.userClaim || config.accountClaim) {
       assertClaimValidity("user", config.userClaim, USER_CLAIMS);
       assertClaimValidity("account", config.accountClaim, ACCOUNT_CLAIMS);
+
+      if (config.userClaim) {
+        config.userClaim = filterClaim(config.userClaim, USER_CLAIMS);
+      }
+
+      if (config.accountClaim) {
+        config.accountClaim = filterClaim(config.accountClaim, ACCOUNT_CLAIMS);
+      }
 
       const accessToken = crypto.lookupToken(config, config.subjectType, {
         user: config.userClaim,
