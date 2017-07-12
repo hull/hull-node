@@ -10,21 +10,23 @@ describe("Instrumentation", () => {
     const instrumentation = new Instrumentation();
     expect(instrumentation).to.be.an("object");
     delete process.env.SENTRY_URL;
+    instrumentation.raven.uninstall();
   });
 
-  it.only("should handle uncought errors", (done) => {
+  it("should handle uncaught errors", (done) => {
     const originalExit = process.exit;
-    process.exit = (arg) => {
-      console.log("process.exit", arg)
+    process.exit = (code) => {
       process.exit = originalExit;
+      expect(code).to.equal(1);
       done();
+      instrumentation.raven.uninstall();
     };
     process.env.SENTRY_URL = "https://user:pass@sentry.io/138436";
-    const instrumentation = new Instrumentation();
+    const instrumentation = new Instrumentation({ exitOnError: true });
     expect(instrumentation).to.be.an("object");
     delete process.env.SENTRY_URL;
     new Promise((resolve, reject) => {
       reject();
-    })
+    });
   });
 });

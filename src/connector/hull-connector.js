@@ -101,6 +101,7 @@ export default class HullConnector {
   }
 
   startWorker(queueName = "queueApp") {
+    this.instrumentation.exitOnError = true;
     if (this._worker) {
       this._worker.process(queueName);
       this.Hull.logger.info("connector.worker.process", { queueName });

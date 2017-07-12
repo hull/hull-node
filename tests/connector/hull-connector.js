@@ -6,6 +6,11 @@ import HullConnector from "../../src/connector/hull-connector";
 import HullStub from "../support/hull-stub";
 
 describe("HullConnector", () => {
+
+  after(() => {
+    process.removeAllListeners("exit");
+  });
+
   it("should return an object of functions", () => {
     const connector = new HullConnector(HullStub);
     expect(connector).to.be.object;

@@ -7,7 +7,8 @@ import MetricAgent from "./metric-agent";
 
 export default class InstrumentationAgent {
 
-  constructor() {
+  constructor(options = {}) {
+    this.exitOnError = options.exitOnError || false;
     this.nr = null;
     this.raven = null;
     try {
@@ -38,7 +39,9 @@ export default class InstrumentationAgent {
         captureUnhandledRejections: true
       }).install((loggedInSentry, err = {}) => {
         console.error("connector.error", { loggedInSentry, err: err.stack || err });
-        process.exit(1);
+        if (this.exitOnError) {
+          process.exit(1);
+        }
       });
     }
 
