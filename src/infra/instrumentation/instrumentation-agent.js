@@ -2,6 +2,7 @@ import util from "util";
 import Raven from "raven";
 import metrics from "datadog-metrics";
 import dogapi from "dogapi";
+import url from "url";
 
 import MetricAgent from "./metric-agent";
 
@@ -97,6 +98,31 @@ export default class InstrumentationAgent {
     return (req, res, next) => {
       req.hull = req.hull || {};
       req.hull.metric = req.hull.metric || new MetricAgent(req.hull, this);
+      next();
+    };
+  }
+
+  ravenContextMiddleware() {
+    return (req, res, next) => {
+      const info = {
+        connector: "",
+        organization: ""
+      };
+      if (req.hull && req.hull.client) {
+        const config = req.hull.client.configuration();
+        info.connector = config.id;
+        info.organization = config.organization;
+      }
+      if (this.raven) {
+        Raven.mergeContext({
+          tags: {
+            method: req.method,
+            url: url(req.url).pathname,
+            organization: info.organization,
+            connector: info.connector
+          }
+        });
+      }
       next();
     };
   }

@@ -58,6 +58,7 @@ export default class HullConnector {
       next();
     });
     app.use(this.clientMiddleware());
+    app.use(this.instrumentation.ravenContextMiddleware());
     app.use(helpersMiddleware());
     app.use(segmentsMiddleware());
     app.use(serviceMiddleware(this.service));
