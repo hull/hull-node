@@ -36,8 +36,8 @@ export default class InstrumentationAgent {
       this.raven = Raven.config(process.env.SENTRY_URL, {
         release: this.manifest.version,
         captureUnhandledRejections: true
-      }).install((logged, err) => {
-        console.error(logged, err.stack || err);
+      }).install((loggedInSentry, err = {}) => {
+        console.error("connector.error", { loggedInSentry, err: err.stack || err });
         process.exit(1);
       });
     }
