@@ -15,4 +15,5 @@ export default function exitHandler(promise) {
 
   process.on("SIGINT", handleExit);
   process.on("SIGTERM", handleExit);
+  process.on("exit", handleExit);
 }

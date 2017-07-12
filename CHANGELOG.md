@@ -1,3 +1,8 @@
+# 0.11.12
+* don't exit on unhandled errors in by default, turn it on for workers
+* handle unhandled rejection which was rejected to an undefined value
+* add more context to the express app requests middleware stack
+
 # 0.11.9
 * sqs adapter
 * logging api timeouts and failures

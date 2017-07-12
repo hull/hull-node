@@ -2,12 +2,14 @@ import util from "util";
 import Raven from "raven";
 import metrics from "datadog-metrics";
 import dogapi from "dogapi";
+import url from "url";
 
 import MetricAgent from "./metric-agent";
 
 export default class InstrumentationAgent {
 
-  constructor() {
+  constructor(options = {}) {
+    this.exitOnError = options.exitOnError || false;
     this.nr = null;
     this.raven = null;
     try {
@@ -36,9 +38,11 @@ export default class InstrumentationAgent {
       this.raven = Raven.config(process.env.SENTRY_URL, {
         release: this.manifest.version,
         captureUnhandledRejections: true
-      }).install((logged, err) => {
-        console.error(logged, err.stack || err);
-        process.exit(1);
+      }).install((loggedInSentry, err = {}) => {
+        console.error("connector.error", { loggedInSentry, err: err.stack || err });
+        if (this.exitOnError) {
+          process.exit(1);
+        }
       });
     }
 
@@ -94,6 +98,35 @@ export default class InstrumentationAgent {
     return (req, res, next) => {
       req.hull = req.hull || {};
       req.hull.metric = req.hull.metric || new MetricAgent(req.hull, this);
+      next();
+    };
+  }
+
+  ravenContextMiddleware() {
+    return (req, res, next) => {
+      const info = {
+        connector: "",
+        organization: ""
+      };
+      if (req.hull && req.hull.client) {
+        const config = req.hull.client.configuration();
+        info.connector = config.id;
+        info.organization = config.organization;
+      }
+      if (this.raven) {
+        Raven.mergeContext({
+          tags: {
+            organization: info.organization,
+            connector: info.connector
+          },
+          extra: {
+            body: req.body,
+            query: req.query,
+            method: req.method,
+            url: url.parse(req.url).pathname,
+          }
+        });
+      }
       next();
     };
   }
