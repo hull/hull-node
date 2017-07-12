@@ -30,11 +30,13 @@ function mockHullMiddleware(req, res, next) {
       req.hull.ship = ship;
       next();
     });
+  req.hull.metric = {
+    error: () => {}
+  };
 }
 
 describe("OAuthHandler", () => {
   it("should handle oauth errors", (done) => {
-    const handler = sinon.spy();
     const app = express();
     app.engine("html", renderFile);
     app.set("views", `${process.cwd()}/tests/fixtures/`);

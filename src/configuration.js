@@ -97,12 +97,17 @@ class Configuration {
       assertClaimValidity("user", config.userClaim, USER_CLAIMS);
       assertClaimValidity("account", config.accountClaim, ACCOUNT_CLAIMS);
 
-      const user = filterClaim(config.userClaim, USER_CLAIMS);
-      const account = filterClaim(config.accountClaim, ACCOUNT_CLAIMS);
+      if (config.userClaim) {
+        config.userClaim = filterClaim(config.userClaim, USER_CLAIMS);
+      }
+
+      if (config.accountClaim) {
+        config.accountClaim = filterClaim(config.accountClaim, ACCOUNT_CLAIMS);
+      }
 
       const accessToken = crypto.lookupToken(config, config.subjectType, {
-        user,
-        account
+        user: config.userClaim,
+        account: config.accountClaim
       }, config.additionalClaims);
       config = { ...config, accessToken };
     }
