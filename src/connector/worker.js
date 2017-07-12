@@ -77,7 +77,8 @@ export default class Worker {
           }, (err) => {
             req.hull.metric.increment(`ship.job.${jobName}.error`);
             this.instrumentation.catchError(err, {
-              job_id: job.id
+              job_id: job.id,
+              job_payload: jobData
             }, {
               job_name: job.data.name,
               organization: _.get(job.data.context, "query.organization"),

@@ -116,10 +116,14 @@ export default class InstrumentationAgent {
       if (this.raven) {
         Raven.mergeContext({
           tags: {
-            method: req.method,
-            url: url(req.url).pathname,
             organization: info.organization,
             connector: info.connector
+          },
+          extra: {
+            body: req.body,
+            query: req.query,
+            method: req.method,
+            url: url(req.url).pathname,
           }
         });
       }
