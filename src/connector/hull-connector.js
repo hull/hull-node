@@ -58,6 +58,7 @@ export default class HullConnector {
       next();
     });
     app.use(this.clientMiddleware());
+    app.use(this.instrumentation.ravenContextMiddleware());
     app.use(helpersMiddleware());
     app.use(segmentsMiddleware());
     app.use(serviceMiddleware(this.service));
@@ -101,6 +102,7 @@ export default class HullConnector {
   }
 
   startWorker(queueName = "queueApp") {
+    this.instrumentation.exitOnError = true;
     if (this._worker) {
       this._worker.process(queueName);
       this.Hull.logger.info("connector.worker.process", { queueName });
