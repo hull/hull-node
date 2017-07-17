@@ -1,11 +1,7 @@
 import Queue from "bull";
 
 /**
-<<<<<<< HEAD
- * Byull Adapter for queue
-=======
  * Bull Adapter for queue
->>>>>>> a14c612c9f37eab5f91014fa4b7661d11a8156e2
  */
 export default class BullAdapter {
 

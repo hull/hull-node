@@ -26,15 +26,11 @@
 # 0.11.6
 * make the `bull` adapter try 3 times before failing a job and cleaning completed jobs
 * make sure we don't return any `undefined` in `segments` param while parsing batch request
->>>>>>> a14c612c9f37eab5f91014fa4b7661d11a8156e2
 
 # 0.11.5
 * adds `bull` queue adapter using [OptimalBits/bull](https://github.com/OptimalBits/bull) library
 * minor changes to the `queueUiRouter` to allow working with different adapters
-<<<<<<< HEAD
-=======
 * adds `ip` and `time` context param to traits call
->>>>>>> a14c612c9f37eab5f91014fa4b7661d11a8156e2
 
 # 0.11.4
 * adds `queueName` as first argument to the `connector.startWorker` method
