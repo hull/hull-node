@@ -3,6 +3,13 @@
 * `client.utils.extract.handle` replaced by `ctx.helpers.handleExtract`
 * `client.utils.extract.request` replaced by `ctx.helpers.requestExtract`
 
+# 0.11.9
+* sqs adapter
+* logging api timeouts and failures
+* filter out logged claims for users and accounts so one can pass `hull.asUser(user)`
+* add `client.as` alias and deprecation notice
+* add error handling for oAuth client
+
 # 0.11.8
 * adds identification claims mapping for logger. Since now we can use: `client.asUser({ id, email }).logger("incoming.user.success");`
 
