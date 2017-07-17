@@ -5,6 +5,7 @@
 * don't exit on unhandled errors in by default, turn it on for workers
 * handle unhandled rejection which was rejected to an undefined value
 * add more context to the express app requests middleware stack
+* adds logging to all oauth handler steps
 
 # 0.11.9
 * sqs adapter
