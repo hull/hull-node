@@ -39,7 +39,7 @@ export default function requestExtract(ctx, { segment = null, format = "json", p
   })()
   .then(({ query }) => {
     const params = { query, format, url, fields };
-    client.logger.debug("requestExtract", params);
+    client.logger.debug("connector.requestExtract.params", params);
     return client.post("extract/user_reports", params);
   });
 }

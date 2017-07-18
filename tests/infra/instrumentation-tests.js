@@ -11,16 +11,15 @@ describe("Instrumentation", () => {
     expect(instrumentation).to.be.an("object");
     delete process.env.SENTRY_URL;
     instrumentation.raven.uninstall();
+    process.removeAllListeners("gracefulExit");
   });
 
-  it("should handle uncaught errors", (done) => {
-    const originalExit = process.exit;
-    process.exit = (code) => {
-      process.exit = originalExit;
-      expect(code).to.equal(1);
+  it("should handle unhandled rejection with undefined rejection reason", (done) => {
+    process.on("gracefulExit", () => {
       done();
       instrumentation.raven.uninstall();
-    };
+      process.removeAllListeners("gracefulExit");
+    });
     process.env.SENTRY_URL = "https://user:pass@sentry.io/138436";
     const instrumentation = new Instrumentation({ exitOnError: true });
     expect(instrumentation).to.be.an("object");

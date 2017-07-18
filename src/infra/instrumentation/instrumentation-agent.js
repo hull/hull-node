@@ -1,4 +1,3 @@
-import util from "util";
 import Raven from "raven";
 import metrics from "datadog-metrics";
 import dogapi from "dogapi";
@@ -41,7 +40,11 @@ export default class InstrumentationAgent {
       }).install((loggedInSentry, err = {}) => {
         console.error("connector.error", { loggedInSentry, err: err.stack || err });
         if (this.exitOnError) {
-          process.exit(1);
+          if (process.listenerCount("gracefulExit") > 0) {
+            process.emit("gracefulExit");
+          } else {
+            process.exit(1);
+          }
         }
       });
     }
@@ -62,7 +65,7 @@ export default class InstrumentationAgent {
     }
   }
 
-  catchError(err, extra = {}, tags = {}) {
+  catchError(err = {}, extra = {}, tags = {}) {
     if (this.raven && err) {
       this.raven.captureException(err, {
         extra,
@@ -73,7 +76,7 @@ export default class InstrumentationAgent {
         ]
       });
     }
-    return console.error(util.inspect(err, { depth: 10 }));
+    return console.error("connector.error", JSON.stringify({ message: err.message, stack: err.stack, tags }));
   }
 
   startMiddleware() {

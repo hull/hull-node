@@ -65,6 +65,7 @@ module.exports = function hullClientMiddlewareFactory(Client, { hostSecret, clie
       const { organization, ship: id, secret } = config;
       if (organization && id && secret) {
         req.hull.client = new Client(_.merge({ id, secret, organization }, clientConfig));
+        req.hull.client.utils = req.hull.client.utils || {};
         req.hull.client.utils.extract = {
           handle: (options) => {
             return handleExtract(req.hull, options);

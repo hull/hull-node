@@ -82,7 +82,7 @@ function processHandlersFactory(handlers, userHandlerOptions = {}) {
           err = err || new Error("Error while processing notification");
           err.eventName = eventName;
           err.status = err.status || 400;
-          ctx.client.logger.error("notifHandler.err", err.stack || err);
+          ctx.client.logger.error("connector.notificationHandler.error", err.stack || err);
           return next(err);
         });
       }
@@ -134,7 +134,7 @@ function handleExtractFactory({ handlers, userHandlerOptions }) {
       res.end("ok");
     }, (err) => {
       res.end("err");
-      client.logger.error("notifHandler.batch.err", err.stack || err);
+      client.logger.error("connector.batch.error", err.stack || err);
     });
   };
 }

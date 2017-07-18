@@ -68,7 +68,7 @@ export default class HullConnector {
   startApp(app) {
     app.use(this.instrumentation.stopMiddleware());
     return app.listen(this.port, () => {
-      this.Hull.logger.info("HullApp.server.listen", this.port);
+      this.Hull.logger.info("connector.server.listen", { port: this.port });
     });
   }
 
