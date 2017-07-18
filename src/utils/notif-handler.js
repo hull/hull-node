@@ -2,7 +2,6 @@ import crypto from "crypto";
 import express from "express";
 import https from "https";
 import _ from "lodash";
-import { group } from "hull-client/lib/trait";
 import requireHullMiddleware from "./require-hull-middleware";
 import Batcher from "../infra/batcher";
 
@@ -41,7 +40,7 @@ function processHandlersFactory(handlers, userHandlerOptions = {}) {
   const ns = crypto.randomBytes(64).toString("hex");
   return function process(req, res, next) {
     try {
-      const { message, notification, helpers, connectorConfig = {} } = req.hull;
+      const { message, notification, client, helpers, connectorConfig = {} } = req.hull;
       const eventName = getHandlerName(message.Subject);
       const messageHandlers = handlers[eventName];
       const processing = [];
@@ -52,7 +51,7 @@ function processHandlersFactory(handlers, userHandlerOptions = {}) {
         if (message.Subject === "user_report:update") {
           // optionally group user traits
           if (notification.message && notification.message.user && userHandlerOptions.groupTraits) {
-            notification.message.user = group(notification.message.user);
+            notification.message.user = client.utils.traits.group(notification.message.user);
           }
           // add `matchesFilter` boolean flag
           notification.message.matchesFilter = helpers.filterNotification(notification.message, userHandlerOptions.segmentFilterSetting || connectorConfig.segmentFilterSetting);
@@ -104,13 +103,13 @@ function handleExtractFactory({ handlers, userHandlerOptions }) {
 
     const { client, helpers } = req.hull;
 
-    return client.utils.extract.handle({
+    return helpers.handleExtract({
       body: req.body,
       batchSize: userHandlerOptions.maxSize || 100,
       handler: (users) => {
         const segmentId = req.query.segment_id || null;
         if (userHandlerOptions.groupTraits) {
-          users = users.map(u => group(u));
+          users = users.map(u => client.utils.traits.group(u));
         }
         const messages = users.map((user) => {
           const segmentIds = _.compact(_.uniq(_.concat(user.segment_ids || [], [segmentId])));
