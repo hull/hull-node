@@ -6,7 +6,7 @@
 * **breaking**: removed `service` param on `Hull.Connector` in favor of custom middleware using `.use` method
 * **breaking**: `QueueAgent` instance now accepts `QueueAdapter` instance instead of it's name. Load you adapter now like this:
   ```js
-  import BullAdapter from ""hull/lib/infra/queue/adapter/bull";
+  import BullAdapter from "hull/lib/infra/queue/adapter/bull";
 
   const queueAdapter = new BullAdapter(options);
 
