@@ -106,6 +106,13 @@ function handleExtractFactory({ handlers, userHandlerOptions }) {
     return helpers.handleExtract({
       body: req.body,
       batchSize: userHandlerOptions.maxSize || 100,
+      onResponse: () => {
+        res.end("ok");
+      },
+      onError: (err) => {
+        client.logger.error("connector.batch.error", err.stack);
+        res.sendStatus(400);
+      },
       handler: (users) => {
         const segmentId = req.query.segment_id || null;
         if (userHandlerOptions.groupTraits) {
@@ -130,10 +137,7 @@ function handleExtractFactory({ handlers, userHandlerOptions }) {
         });
         return handlers["user:update"](req.hull, messages);
       }
-    }).then(() => {
-      res.end("ok");
-    }, (err) => {
-      res.end("err");
+    }).catch((err) => {
       client.logger.error("connector.batch.error", err.stack || err);
     });
   };
