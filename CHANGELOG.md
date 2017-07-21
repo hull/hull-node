@@ -4,6 +4,14 @@
 * **breaking**: `client.utils.extract.request` replaced by `ctx.helpers.requestExtract`
 * **breaking**: removed `lib/utils/batchHandler` in favour of `lib/utils/notifHandler`
 * **breaking**: removed `service` param on `Hull.Connector` in favor of custom middleware using `.use` method
+* **breaking**: `QueueAgent` instance now accepts `QueueAdapter` instance instead of it's name. Load you adapter now like this:
+  ```js
+  import BullAdapter from ""hull/lib/infra/queue/adapter/bull";
+
+  const queueAdapter = new BullAdapter(options);
+
+  const queue = new Queue(queueAdapter);
+  ```
 * don't exit on unhandled errors in by default, turn it on for workers
 * handle unhandled rejection which was rejected to an undefined value
 * add more context to the express app requests middleware stack
