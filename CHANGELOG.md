@@ -1,7 +1,9 @@
 # 0.12.0
 * replaces low level api client with a separate library
-* `client.utils.extract.handle` replaced by `ctx.helpers.handleExtract`
-* `client.utils.extract.request` replaced by `ctx.helpers.requestExtract`
+* **breaking**: `client.utils.extract.handle` replaced by `ctx.helpers.handleExtract`
+* **breaking**: `client.utils.extract.request` replaced by `ctx.helpers.requestExtract`
+* **breaking**: removed `lib/utils/batchHandler` in favour of `lib/utils/notifHandler`
+* **breaking**: removed `service` param on `Hull.Connector` in favor of custom middleware using `.use` method
 * don't exit on unhandled errors in by default, turn it on for workers
 * handle unhandled rejection which was rejected to an undefined value
 * add more context to the express app requests middleware stack
