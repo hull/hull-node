@@ -43,7 +43,7 @@
     "dogapi": "^2.6.0",
     "ejs": "^2.5.6",
     "express": "^4.14.0",
-    "hull-client": "^1.1.0",
+    "hull-client": "1.1.1",
     "jwt-simple": "^0.5.0",
     "kue": "^0.11.5",
     "kue-ui": "^0.1.0",
