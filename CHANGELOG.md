@@ -16,6 +16,7 @@
 * handle unhandled rejection which was rejected to an undefined value
 * add more context to the express app requests middleware stack
 * adds logging to all oauth handler steps
+* upgrade hull-client to v1.1.1 to add support for `scopes` claim in auth tokens
 
 # 0.11.12
 * when handling batch extract, `notifHandler` should respond as soon as we have started to download and process JSON file. Otherwise in case of big extract files in may lead to response timeout
