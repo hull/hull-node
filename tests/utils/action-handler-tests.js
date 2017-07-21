@@ -21,9 +21,6 @@ describe("actionHandler", () => {
     actionHandler(() => {
       return "done";
     }).handle(request, response, (err) => {
-      console.log("++++++++++++++++");
-      console.log(err);
-      console.log("----------------");
       expect(response.statusCode).to.equal(200);
       expect(response._isEndCalled()).to.be.ok;
       expect(response._getData()).to.equal("done");
