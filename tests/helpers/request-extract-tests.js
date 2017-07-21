@@ -3,9 +3,9 @@
 import { expect } from "chai";
 import sinon from "sinon";
 
-import HullStub from "./support/hull-stub";
+import HullStub from "../support/hull-stub";
 
-import { request } from "../src/extract";
+import requestExtract from "../../src/helpers/request-extract";
 
 describe("extract.request", () => {
   beforeEach(function beforeEachHandler() {
@@ -18,7 +18,7 @@ describe("extract.request", () => {
 
   it("should allow to perform `extract/user_reports` call", function test1(done) {
     const stub = new HullStub;
-    request.call(stub, { hostname: "localhost" })
+    requestExtract({ client: stub, hostname: "localhost" })
       .then(() => {
         expect(this.postStub.calledOnce).to.be.true;
         expect(this.postStub.calledWith("extract/user_reports", {
@@ -33,7 +33,7 @@ describe("extract.request", () => {
 
   it("should allow to pass additionalQuery", function test1(done) {
     const stub = new HullStub;
-    request.call(stub, { hostname: "localhost", additionalQuery: { foo: "bar" } })
+    requestExtract({ client: stub, hostname: "localhost" }, { additionalQuery: { foo: "bar" } })
       .then(() => {
         expect(this.postStub.calledOnce).to.be.true;
         expect(this.postStub.calledWith("extract/user_reports", {

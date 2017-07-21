@@ -68,7 +68,8 @@ export default function oauth({
   passport.use(strategy);
 
   router.get(HOME_URL, (req, res) => {
-    const { ship = {}, } = req.hull;
+    const { ship = {}, client } = req.hull;
+    client.logger.debug("connector.oauth.home");
     const data = { name, urls: getURLs(req), ship };
     isSetup(req)
       .then(
@@ -85,6 +86,8 @@ export default function oauth({
   }
 
   router.all(LOGIN_URL, (req, res, next) => {
+    const { client } = req.hull;
+    client.logger.debug("connector.oauth.login");
     onLogin(req)
       .then(() => next())
       .catch(() => next());
@@ -96,10 +99,21 @@ export default function oauth({
     next();
   }, authorize);
 
-  router.get(FAILURE_URL, function loginFailue(req, res) { return res.render(views.failure, { name, urls: getURLs(req) }); });
-  router.get(SUCCESS_URL, function login(req, res) { return res.render(views.success, { name, urls: getURLs(req) }); });
+  router.get(FAILURE_URL, function loginFailue(req, res) {
+    const { client } = req.hull;
+    client.logger.debug("connector.oauth.failure");
+    return res.render(views.failure, { name, urls: getURLs(req) });
+  });
+
+  router.get(SUCCESS_URL, function login(req, res) {
+    const { client } = req.hull;
+    client.logger.debug("connector.oauth.success");
+    return res.render(views.success, { name, urls: getURLs(req) });
+  });
 
   router.get(CALLBACK_URL, authorize, (req, res) => {
+    const { client } = req.hull;
+    client.logger.debug("connector.oauth.authorize");
     onAuthorize(req)
       .then(() => res.redirect(getURL(req, SUCCESS_URL)))
       .catch(error => res.redirect(getURL(req, FAILURE_URL, { token: req.hull.token, error })));

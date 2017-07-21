@@ -14,7 +14,7 @@ export default function responseMiddlewareFactory() {
         req: _.pick(req, "url", "method", "message")
       };
       try {
-        req.hull.client.logger.error("action.error", errorData);
+        req.hull.client.logger.error("connector.action.error", errorData);
       } catch (e) {
         console.error("action.error", errorData);
       }

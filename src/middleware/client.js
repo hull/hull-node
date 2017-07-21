@@ -1,5 +1,6 @@
 import _ from "lodash";
 import jwt from "jwt-simple";
+import { handleExtract, requestExtract } from "../helpers";
 
 function parseQueryString(query) {
   return ["organization", "ship", "secret"].reduce((cfg, k) => {
@@ -64,6 +65,15 @@ module.exports = function hullClientMiddlewareFactory(Client, { hostSecret, clie
       const { organization, ship: id, secret } = config;
       if (organization && id && secret) {
         req.hull.client = new Client(_.merge({ id, secret, organization }, clientConfig));
+        req.hull.client.utils = req.hull.client.utils || {};
+        req.hull.client.utils.extract = {
+          handle: (options) => {
+            return handleExtract(req.hull, options);
+          },
+          request: (options) => {
+            return requestExtract(req.hull, options);
+          }
+        };
 
         req.hull.token = jwt.encode(config, hostSecret);
 

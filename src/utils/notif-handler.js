@@ -4,7 +4,6 @@ import https from "https";
 import _ from "lodash";
 import requireHullMiddleware from "./require-hull-middleware";
 import Batcher from "../infra/batcher";
-import { group } from "../trait";
 
 function subscribeFactory(options) {
   return function subscribe(req, res, next) {
@@ -41,7 +40,7 @@ function processHandlersFactory(handlers, userHandlerOptions = {}) {
   const ns = crypto.randomBytes(64).toString("hex");
   return function process(req, res, next) {
     try {
-      const { message, notification, helpers, connectorConfig = {} } = req.hull;
+      const { message, notification, client, helpers, connectorConfig = {} } = req.hull;
       const eventName = getHandlerName(message.Subject);
       const messageHandlers = handlers[eventName];
       const processing = [];
@@ -52,7 +51,7 @@ function processHandlersFactory(handlers, userHandlerOptions = {}) {
         if (message.Subject === "user_report:update") {
           // optionally group user traits
           if (notification.message && notification.message.user && userHandlerOptions.groupTraits) {
-            notification.message.user = group(notification.message.user);
+            notification.message.user = client.utils.traits.group(notification.message.user);
           }
           // add `matchesFilter` boolean flag
           notification.message.matchesFilter = helpers.filterNotification(notification.message, userHandlerOptions.segmentFilterSetting || connectorConfig.segmentFilterSetting);
@@ -83,7 +82,7 @@ function processHandlersFactory(handlers, userHandlerOptions = {}) {
           err = err || new Error("Error while processing notification");
           err.eventName = eventName;
           err.status = err.status || 400;
-          ctx.client.logger.error("notifHandler.err", err.stack || err);
+          ctx.client.logger.error("connector.notificationHandler.error", err.stack || err);
           return next(err);
         });
       }
@@ -103,20 +102,21 @@ function handleExtractFactory({ handlers, userHandlerOptions }) {
     }
 
     const { client, helpers } = req.hull;
-    return client.utils.extract.handle({
+
+    return helpers.handleExtract({
       body: req.body,
       batchSize: userHandlerOptions.maxSize || 100,
       onResponse: () => {
         res.end("ok");
       },
       onError: (err) => {
-        client.logger.error("batch.error", err.stack);
+        client.logger.error("connector.batch.error", err.stack);
         res.sendStatus(400);
       },
       handler: (users) => {
         const segmentId = req.query.segment_id || null;
         if (userHandlerOptions.groupTraits) {
-          users = users.map(u => group(u));
+          users = users.map(u => client.utils.traits.group(u));
         }
         const messages = users.map((user) => {
           const segmentIds = _.compact(_.uniq(_.concat(user.segment_ids || [], [segmentId])));
@@ -138,7 +138,7 @@ function handleExtractFactory({ handlers, userHandlerOptions }) {
         return handlers["user:update"](req.hull, messages);
       }
     }).catch((err) => {
-      client.logger.error("notifHandler.batch.err", err.stack || err);
+      client.logger.error("connector.batch.error", err.stack || err);
     });
   };
 }

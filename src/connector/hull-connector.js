@@ -5,12 +5,12 @@ import _ from "lodash";
 import setupApp from "./setup-app";
 import Worker from "./worker";
 import { Instrumentation, Cache, Queue, Batcher } from "../infra";
-import { exitHandler, serviceMiddleware, segmentsMiddleware, requireHullMiddleware, helpersMiddleware } from "../utils";
+import { exitHandler, segmentsMiddleware, requireHullMiddleware, helpersMiddleware } from "../utils";
 
 
 export default class HullConnector {
   constructor(Hull, {
-    hostSecret, port, clientConfig = {}, instrumentation, cache, queue, service, connectorName, segmentFilterSetting
+    hostSecret, port, clientConfig = {}, instrumentation, cache, queue, connectorName, segmentFilterSetting
   } = {}) {
     this.Hull = Hull;
     this.instrumentation = instrumentation || new Instrumentation();
@@ -18,9 +18,9 @@ export default class HullConnector {
     this.queue = queue || new Queue();
     this.port = port;
     this.hostSecret = hostSecret;
-    this.service = service;
     this.clientConfig = clientConfig;
     this.connectorConfig = {};
+    this.middlewares = [];
 
     if (connectorName) {
       this.clientConfig.connectorName = connectorName;
@@ -58,21 +58,23 @@ export default class HullConnector {
       next();
     });
     app.use(this.clientMiddleware());
+    app.use(this.instrumentation.ravenContextMiddleware());
     app.use(helpersMiddleware());
     app.use(segmentsMiddleware());
-    app.use(serviceMiddleware(this.service));
+    this.middlewares.map(middleware => app.use(middleware));
+
     return app;
   }
 
   startApp(app) {
     app.use(this.instrumentation.stopMiddleware());
     return app.listen(this.port, () => {
-      this.Hull.logger.info("HullApp.server.listen", this.port);
+      this.Hull.logger.info("connector.server.listen", { port: this.port });
     });
   }
 
   worker(jobs) {
-    this._worker = new Worker({
+    this._worker = this._worker || new Worker({
       Hull: this.Hull,
       instrumentation: this.instrumentation,
       cache: this.cache,
@@ -87,9 +89,15 @@ export default class HullConnector {
     this._worker.use(requireHullMiddleware());
     this._worker.use(helpersMiddleware());
     this._worker.use(segmentsMiddleware());
-    this._worker.use(serviceMiddleware(this.service));
+    this.middlewares.map(middleware => this._worker.use(middleware));
+
     this._worker.setJobs(jobs);
     return this._worker;
+  }
+
+  use(middleware) {
+    this.middlewares.push(middleware);
+    return this;
   }
 
   clientMiddleware() {
@@ -101,6 +109,7 @@ export default class HullConnector {
   }
 
   startWorker(queueName = "queueApp") {
+    this.instrumentation.exitOnError = true;
     if (this._worker) {
       this._worker.process(queueName);
       this.Hull.logger.info("connector.worker.process", { queueName });

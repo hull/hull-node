@@ -105,10 +105,8 @@ describe("NotifHandler", () => {
     app.use(notifMiddleware());
     app.use(mockHullMiddleware);
     app.use((req, res, next) => {
-      req.hull.client.utils = {
-        extract: {
-          handle: extractHandler
-        }
+      req.hull.helpers = {
+        handleExtract: extractHandler
       };
       next();
     });
@@ -198,10 +196,8 @@ describe("NotifHandler", () => {
     app.use(mockHullMiddleware);
     app.use((req, res, next) => {
       req.hull.segments = [{ id: "b", name: "Foo" }];
-      req.hull.client.utils = {
-        extract: {
-          handle: extractHandler
-        }
+      req.hull.helpers = {
+        handleExtract: extractHandler
       };
       next();
     });

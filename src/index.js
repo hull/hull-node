@@ -1,4 +1,5 @@
-import Client from "./client";
+import Client from "hull-client";
+
 import clientMiddleware from "./middleware/client";
 import HullConnector from "./connector/hull-connector";
 

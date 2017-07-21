@@ -9,7 +9,6 @@ import request from "request";
 import userReport from "../tests/fixtures/sns-messages/user-report.json";
 
 describe("segmentFiltering", () => {
-
   it("should mark user not filtered in notification when he doesn't belong to any filtered segment", (done) => {
     const mockHull = express();
     mockHull.get("/api/v1/562123b470df84b740000042", (req, res) => {
