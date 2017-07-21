@@ -2709,9 +2709,9 @@ https-proxy-agent@^0.3.5:
     debug "2"
     extend "3"
 
-hull-client@^1.1.0:
-  version "1.1.0"
-  resolved "https://registry.yarnpkg.com/hull-client/-/hull-client-1.1.0.tgz#a69f5430fad7e5208d9e2d01138b47addb4bb81b"
+hull-client@1.1.1:
+  version "1.1.1"
+  resolved "https://registry.yarnpkg.com/hull-client/-/hull-client-1.1.1.tgz#389687940c3de355f93ac5a876c10c81670cc16f"
   dependencies:
     jwt-simple "^0.5.0"
     lodash "^4.13.1"
@@ -3073,6 +3073,7 @@ jade@^1.8.1:
     jstransformer "0.0.2"
     mkdirp "~0.5.0"
     transformers "2.1.0"
+    uglify-js "^2.4.19"
     void-elements "~2.0.1"
     with "~4.0.0"
 
