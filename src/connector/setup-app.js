@@ -1,7 +1,7 @@
 import { renderFile } from "ejs";
 import timeout from "connect-timeout";
 
-import { staticRouter, tokenMiddleware, notifMiddleware } from "../utils";
+import { staticRouter, tokenMiddleware, notifMiddleware, smartNotifierMiddleware } from "../utils";
 
 
 /**
@@ -10,6 +10,7 @@ import { staticRouter, tokenMiddleware, notifMiddleware } from "../utils";
 export default function setupApp({ instrumentation, queue, cache, app }) {
   app.use(tokenMiddleware());
   app.use(notifMiddleware());
+  app.use(smartNotifierMiddleware());
   app.use(instrumentation.startMiddleware());
 
   app.use(instrumentation.contextMiddleware());

@@ -654,6 +654,50 @@ app.use('/notify', handler);
 
 For example of the notifications payload [see details](./notifications.md)
 
+### smartNotificationHandler() `BETA`
+
+`smartNotificationHandler` is a next generation `notifHandler` cooperating with our internal notification tool. To mark connector as using the smartNotifier `smart-notifier` tag should be present in `manifest.json` file:
+
+```json
+{
+  "tags": ["smart-notifier"],
+  "subscriptions": [{
+    "url" : "/notify"
+  }]
+}
+```
+
+Here's how to use it.
+
+```js
+import { smartNotificationHandler } from "hull/lib/utils";
+const app = express();
+
+const handler = smartNotificationHandler({
+  handlers: {
+    "ship:update": function(ctx, messages = []) {},
+    "segment:update": function(ctx, messages = []) {},
+    "segment:delete": function(ctx, messages = []) {},
+    "user:update": function(ctx, messages = []) {
+      console.log("Event Handler here", ctx, messages);
+      // ctx: Context Object
+      // messages: [{
+      //   user: { id: '123', ... },
+      //   segments: [{}],
+      //   changes: {},
+      //   events: [{}, {}]
+      //   matchesFilter: true | false
+      // }]
+    }
+  }
+})
+
+connector.setupApp(app);
+app.use("/notify", handler);
+```
+
+For example of the notifications payload [see details](./notifications.md)
+
 **Extracts**
 
 In addition to event notifications Hull supports sending extracts of userbase. These extracts can be triggered via Dashboard manual user action or can be programiatically requested from Connector logic (see [requestExtract helper](./connector-helpers.md#requestextract-segment--null-path-fields---)). The Connector will receive manual batches if your ship's `manifest.json` exposes a `batch` tag in `tags`:

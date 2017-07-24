@@ -19,9 +19,9 @@
     "test:modules": "npm outdated --depth=0",
     "test:units": "NODE_ENV=test mocha --require babel-register -R spec ./tests/*.js ./tests/**/*.js ./spec/*.js",
     "test:flow": "flow check",
+    "test:coverage": "nyc --babel-cache --hook-run-in-context false npm run test:units",
     "update": "updtr",
     "clean": "rimraf lib",
-    "coverage": "gulp coverage",
     "build": "gulp build",
     "watch": "gulp watch",
     "prepublish": "npm run build"
@@ -49,6 +49,7 @@
     "kue-ui": "^0.1.0",
     "lodash": "^4.13.1",
     "newrelic": "^1.39.0",
+    "nyc": "^11.0.3",
     "passport": "^0.3.2",
     "promise-streams": "^1.0.1",
     "raven": "^1.1.2",
@@ -100,6 +101,11 @@
       "stub",
       "spy",
       "expect"
+    ]
+  },
+  "nyc": {
+    "include": [
+      "src"
     ]
   }
 }
