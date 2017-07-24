@@ -10,8 +10,8 @@ import userUpdate from "../fixtures/sns-messages/user-report.json";
 import userUpdateBig from "../fixtures/sns-messages/user-report-big.json";
 import HullStub from "../support/hull-stub";
 
-import notifHandler from "../../src/utils/notif-handler";
-import notifMiddleware from "../../src/utils/notif-middleware";
+import notifHandler from "../../../src/utils/notif-handler";
+import notifMiddleware from "../../../src/utils/notif-middleware";
 
 
 

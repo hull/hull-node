@@ -1,12 +1,12 @@
 /* global describe, it */
 /* eslint-disable no-unused-expressions */
 import { expect } from "chai";
-import Hull from "../src";
+import Hull from "../../src";
 import express from "express";
-import { notifHandler } from "../src/utils";
+import { notifHandler } from "../../src/utils";
 import request from "request";
 
-import userReport from "../tests/fixtures/sns-messages/user-report.json";
+import userReport from "../unit/fixtures/sns-messages/user-report.json";
 
 describe("segmentFiltering", () => {
   it("should mark user not filtered in notification when he doesn't belong to any filtered segment", (done) => {

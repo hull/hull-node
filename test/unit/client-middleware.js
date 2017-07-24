@@ -2,7 +2,7 @@
 import { expect, should } from "chai";
 import sinon from "sinon";
 
-import Middleware from "../src/middleware/client";
+import Middleware from "../../src/middleware/client";
 import HullStub from "./support/hull-stub";
 
 describe("Client Middleware", () => {

@@ -2,7 +2,7 @@
 import Promise from "bluebird";
 import { expect } from "chai";
 
-import Batcher from "../../src/infra/batcher";
+import Batcher from "../../../src/infra/batcher";
 
 const reqStub = {
   hull: {

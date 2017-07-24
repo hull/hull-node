@@ -2,7 +2,7 @@
 import { expect, should } from "chai";
 import sinon from "sinon";
 
-import responseMiddleware from "../../src/utils/response-middleware";
+import responseMiddleware from "../../../src/utils/response-middleware";
 
 const resMock = {
   status: () => {},

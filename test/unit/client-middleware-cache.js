@@ -4,8 +4,8 @@ import sinon from "sinon";
 import cacheManager from "cache-manager";
 import jwt from "jwt-simple";
 
-import Middleware from "../src/middleware/client";
-import { Cache } from "../src/infra";
+import Middleware from "../../src/middleware/client";
+import { Cache } from "../../src/infra";
 
 import HullStub from "./support/hull-stub";
 

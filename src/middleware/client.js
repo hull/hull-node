@@ -61,7 +61,7 @@ module.exports = function hullClientMiddlewareFactory(Client, { hostSecret, clie
         parseToken(req.hull.token, hostSecret) ||
         parseQueryString(req.query) ||
         {};
-      const { message, config } = req.hull;
+      const { message, notification, config } = req.hull;
       const { organization, ship: id, secret } = config;
       if (organization && id && secret) {
         req.hull.client = new Client(_.merge({ id, secret, organization }, clientConfig));
@@ -77,7 +77,8 @@ module.exports = function hullClientMiddlewareFactory(Client, { hostSecret, clie
 
         req.hull.token = jwt.encode(config, hostSecret);
 
-        const bust = (message && message.Subject === "ship:update");
+        const bust = (message && message.Subject === "ship:update")
+          || (notification && notification.channel === "ship:update");
         // Promise<ship>
         return getCurrentShip(id, req.hull.client, req.hull.cache, bust).then((ship = {}) => {
           req.hull.ship = ship;
