@@ -16,7 +16,7 @@ export default function segmentsMiddlewareFactory() {
 
     if (notification && notification.segments) {
       req.hull.segments = notification.segments;
-      next();
+      return next();
     }
 
     const bust = (message && (message.Subject === "users_segment:update" || message.Subject === "users_segment:delete"));
