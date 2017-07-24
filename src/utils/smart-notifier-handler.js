@@ -1,65 +1,60 @@
 import express from "express";
-import _ from "lodash";
 import requireHullMiddleware from "./require-hull-middleware";
 
-function processHandlersFactory(handlers) {
+function processHandlersFactory(handlers, userHandlerOptions, defaultFlowControl) {
   return function process(req, res, next) {
     try {
       const { notification, client } = req.hull;
+      if (!notification || !notification.notification_id) {
+        return next();
+      }
       client.logger.debug("connector.smartNotifierHandler.process", {
         notification_id: notification.notification_id,
         channel: notification.channel,
         messages_count: notification.messages.length
       });
       const eventName = notification.channel;
-      const messageHandlers = handlers[eventName];
-      const processing = [];
+      const messageHandler = handlers[eventName];
 
       const ctx = req.hull;
 
-      processing.push(Promise.all(messageHandlers.map((handler) => {
-        return handler(ctx, notification.messages);
-      })));
-
-      if (processing.length > 0) {
-        Promise.all(processing).then(() => {
-          next();
-        }, (err) => {
-          err = err || new Error("Error while processing notification");
-          err.eventName = eventName;
-          err.status = err.status || 400;
-          ctx.client.logger.error("connector.smartNotifierHandler.error", err.stack || err);
-          return next(err);
-        });
+      if (notification.channel === "user:update") {
+        // optionally group user traits
+        if (notification.messages && userHandlerOptions.groupTraits) {
+          notification.messages = notification.messages.map((message) => {
+            message.user = client.utils.traits.group(message.user);
+            return message;
+          });
+        }
       }
-      return next();
+
+      const promise = messageHandler(ctx, notification.messages);
+
+      return promise.then((flowControl) => {
+        if (!flowControl) {
+          flowControl = defaultFlowControl;
+        }
+        return res.json({
+          flow_control: flowControl
+        });
+      }, (err) => {
+        err = err || new Error("Error while processing notification");
+        err.eventName = eventName;
+        err.status = err.status || 400;
+        ctx.client.logger.error("connector.smartNotifierHandler.error", err.stack || err);
+        return res.status(err.status).end("error");
+      });
     } catch (err) {
       err.status = 400;
       console.error(err.stack || err);
-      return next(err);
+      return res.status(err.status).end("error");
     }
   };
 }
 
 
-module.exports = function smartNotifierHandler({ handlers = {} }) {
-  const _handlers = {};
+module.exports = function smartNotifierHandler({ handlers = {}, userHandlerOptions = {}, defaultFlowControl = {} }) {
   const app = express.Router();
-
-  function addEventHandler(eventName, fn) {
-    _handlers[eventName] = _handlers[eventName] || [];
-    _handlers[eventName].push(fn);
-    return this;
-  }
-
-  function addEventHandlers(eventsHash) {
-    _.map(eventsHash, (fn, eventName) => addEventHandler(eventName, fn));
-    return this;
-  }
-
-  if (handlers) {
-    addEventHandlers(handlers);
-  }
   app.use((req, res, next) => {
     if (!req.hull.message) {
       const e = new Error("Empty Message");
@@ -69,7 +64,6 @@ module.exports = function smartNotifierHandler({ handlers = {} }) {
     return next();
   });
   app.use(requireHullMiddleware());
-  app.use(processHandlersFactory(_handlers));
-  app.use((req, res) => { res.end("ok"); });
+  app.use(processHandlersFactory(handlers, userHandlerOptions, defaultFlowControl));
   return app;
 };
