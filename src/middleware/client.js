@@ -28,7 +28,11 @@ function parseToken(token, secret) {
 
 
 module.exports = function hullClientMiddlewareFactory(Client, { hostSecret, clientConfig = {} }) {
-  function getCurrentShip(id, client, cache, bust) {
+  function getCurrentShip(id, client, cache, bust, notification) {
+    if (notification && notification.connector) {
+      return Promise.resolve(notification.connector);
+    }
+
     return (() => {
       if (cache && bust) {
         return cache.del(id);
@@ -77,10 +81,10 @@ module.exports = function hullClientMiddlewareFactory(Client, { hostSecret, clie
 
         req.hull.token = jwt.encode(config, hostSecret);
 
-        const bust = (message && message.Subject === "ship:update")
-          || (notification && notification.channel === "ship:update");
+        const bust = (message && message.Subject === "ship:update");
+
         // Promise<ship>
-        return getCurrentShip(id, req.hull.client, req.hull.cache, bust).then((ship = {}) => {
+        return getCurrentShip(id, req.hull.client, req.hull.cache, bust, notification).then((ship = {}) => {
           req.hull.ship = ship;
           req.hull.hostname = req.hostname;
           req.hull.options = _.merge(req.query, req.body);
