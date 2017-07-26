@@ -688,15 +688,89 @@ const handler = smartNotificationHandler({
       //   events: [{}, {}]
       //   matchesFilter: true | false
       // }]
+      return Promise.resolve();
     }
+  },
+  userHandlerOptions: {
+    groupTraits: false
   }
-})
+});
 
 connector.setupApp(app);
 app.use("/notify", handler);
 ```
 
-For example of the notifications payload [see details](./notifications.md)
+When resolving the notification handler promise you may return a [FlowControl](#flowcontrol) object:
+
+```js
+import FlowControl from "hull/lib/utils";
+
+function userUpdateHandler(ctx, messages = []) {
+  return Promise.resolve(new FlowControl({
+    type: "next",
+    in: 1000
+  }));
+}
+```
+
+When rejecting the promise you may attach the [FlowControl](#flowcontrol) to the error object:
+
+```js
+import FlowControl from "hull/lib/utils";
+
+function userUpdateHandler(ctx, messages = []) {
+  const error = new Error("External API error");
+  error.flowControl = new FlowControl({
+    type: "next",
+    in: 1000
+  });
+  return Promise.reject(error);
+}
+```
+
+Default `smartNofitier` [FlowControl](#flowcontrol) are following:
+
+```js
+// for resolved, successful promise:
+{
+  type: "next",
+  size: 1,
+  in: 1000
+}
+
+// for rejected, errornous promise:
+{
+  type: "retry",
+  in: 1000
+}
+```
+
+### FlowControl
+
+FlowControl is a JS class instance which is returned for every `smartNotifier` request. It can be intialized in a following way:
+
+```js
+import FlowControl from "hull/lib/utils";
+
+new FlowControl({
+  type: "next", // `next` or `retry`, defines next flow action
+  size: 1000, // only for `next` - number of messages for next notification
+  in: 1000, // delay for next flow step in ms 
+  at: 1501062782 // time to trigger next flow step
+})
+```
+
+When the HTTP response is built the `FlowControl` is sent as a `flow_control` param:
+
+```js
+// response body:
+{
+  flow_control: {
+    type: "next",
+    in: 1000
+  }
+}
+```
 
 **Extracts**
 
