@@ -1,3 +1,7 @@
+# 0.13.0-beta.1
+* introduces `smartNotifierMiddleware` and `smartNotifierHandler`
+* introduces experimental `FlowControl` - this is a subject of possible changes
+
 # 0.12.0
 * replaces low level api client with a separate library
 * **breaking**: `client.utils.extract.handle` replaced by `ctx.helpers.handleExtract`
