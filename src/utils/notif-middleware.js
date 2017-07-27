@@ -46,12 +46,14 @@ export default function notifMiddlewareFactory() {
     req.hull = req.hull || {};
     if (req.headers["x-amz-sns-message-type"]) {
       req.headers["content-type"] = "application/json;charset=UTF-8";
+      bodyParser.json({ limit: "256kb" })(req, res, () => {
+        if (req.body && req.body.Message && req.body.Type) {
+          req.hull.message = req.body;
+        }
+        verify(req, res, next);
+      });
+    } else {
+      next();
     }
-    bodyParser.json({ limit: "256kb" })(req, res, () => {
-      if (req.body && req.body.Message && req.body.Type) {
-        req.hull.message = req.body;
-      }
-      verify(req, res, next);
-    });
   };
 }
