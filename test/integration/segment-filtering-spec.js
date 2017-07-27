@@ -48,6 +48,9 @@ describe("segmentFiltering", () => {
 
     request({
       uri: "http://localhost:8070/notif?ship=562123b470df84b740000042&organization=localhost:8071&secret=1234",
+      headers: {
+        "x-amz-sns-message-type": true
+      },
       method: "post",
       json: true,
       body: userReport
@@ -94,6 +97,9 @@ describe("segmentFiltering", () => {
 
     request({
       uri: "http://localhost:8070/notif?ship=562123b470df84b740000042&organization=localhost:8071&secret=1234",
+      headers: {
+        "x-amz-sns-message-type": true
+      },
       method: "post",
       json: true,
       body: userReport
@@ -139,6 +145,9 @@ describe("segmentFiltering", () => {
 
     request({
       uri: "http://localhost:8070/notif?ship=562123b470df84b740000042&organization=localhost:8071&secret=1234",
+      headers: {
+        "x-amz-sns-message-type": true
+      },
       method: "post",
       json: true,
       body: userReport
@@ -184,6 +193,9 @@ describe("segmentFiltering", () => {
 
     request({
       uri: "http://localhost:8070/notif?ship=562123b470df84b740000042&organization=localhost:8071&secret=1234",
+      headers: {
+        "x-amz-sns-message-type": true
+      },
       method: "post",
       json: true,
       body: userReport
