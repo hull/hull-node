@@ -15,4 +15,4 @@ export smartNotifierMiddleware from "./smart-notifier-middleware";
 export segmentsMiddleware from "./segments-middleware";
 export helpersMiddleware from "./helpers-middleware";
 
-export FlowControl from "./flow-control";
+export SmartNotifierResponse from "./smart-notifier-response";

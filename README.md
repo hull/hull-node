@@ -369,6 +369,16 @@ The core part of the **Context Object** is described in [Hull Middleware documen
   paload: { user: {} }
   ```
 
+* **smartNotifierResponse**
+  > Object where you can set FlowControl information using:
+  ```js
+  ctx.smartNotifierResponse.setFlowControl({
+    type: "next",
+    size: 100,
+    in: 5000
+  });
+  ```
+
 ## Context management convention
 The context object is treated by the `Hull.Connector` as a [dependency injection](https://en.wikipedia.org/wiki/Dependency_injection) container which carries on all required dependencies to be used in actions, jobs or custom methods.
 
@@ -700,31 +710,15 @@ connector.setupApp(app);
 app.use("/notify", handler);
 ```
 
-When resolving the notification handler promise you may return a [FlowControl](#flowcontrol) object:
+When performing operations on notification you can set FlowControl settings using `ctx.smartNotifierResponse` helper.
 
 ```js
-import FlowControl from "hull/lib/utils";
-
 function userUpdateHandler(ctx, messages = []) {
-  return Promise.resolve(new FlowControl({
-    type: "next",
-    in: 1000
-  }));
-}
-```
-
-When rejecting the promise you may attach the [FlowControl](#flowcontrol) to the error object:
-
-```js
-import FlowControl from "hull/lib/utils";
-
-function userUpdateHandler(ctx, messages = []) {
-  const error = new Error("External API error");
-  error.flowControl = new FlowControl({
+  ctx.smartNotifierResponse.setFlowControl({
     type: "next",
     in: 1000
   });
-  return Promise.reject(error);
+  return Promise.resolve();
 }
 ```
 
@@ -768,7 +762,8 @@ When the HTTP response is built the `FlowControl` is sent as a `flow_control` pa
   flow_control: {
     type: "next",
     in: 1000
-  }
+  },
+  metrics: []
 }
 ```
 

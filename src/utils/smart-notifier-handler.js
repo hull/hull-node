@@ -1,17 +1,16 @@
 import express from "express";
 import requireHullMiddleware from "./require-hull-middleware";
-import FlowControl from "./flow-control";
 
-const defaultSuccessFlowControl = new FlowControl({
+const defaultSuccessFlowControl = {
   type: "next",
   size: 1,
   in: 1000
-});
+};
 
-const defaultErrorFlowControl = new FlowControl({
+const defaultErrorFlowControl = {
   type: "retry",
   in: 1000
-});
+};
 
 function processHandlersFactory(handlers, userHandlerOptions) {
   return function process(req, res, next) {
@@ -26,6 +25,7 @@ function processHandlersFactory(handlers, userHandlerOptions) {
         messages_count: notification.messages.length
       });
       const eventName = notification.channel;
+      // TODO: check if messageHandler is available
       const messageHandler = handlers[eventName];
 
       const ctx = req.hull;
@@ -42,29 +42,26 @@ function processHandlersFactory(handlers, userHandlerOptions) {
 
       const promise = messageHandler(ctx, notification.messages);
 
-      return promise.then((resFlowControl) => {
-        let flowControl = defaultSuccessFlowControl;
-        if (resFlowControl instanceof FlowControl && resFlowControl.isValid()) {
-          flowControl = resFlowControl;
+      return promise.then(() => {
+        if (!req.hull.smartNotifierResponse.isValid()) {
+          req.hull.smartNotifierResponse.setFlowControl(defaultSuccessFlowControl);
         }
-        return res.json({
-          flow_control: flowControl
-        });
+        return res.json(req.hull.smartNotifierResponse.toJSON());
       }, (err) => {
         err = err || new Error("Error while processing notification");
         err.eventName = eventName;
         err.status = err.status || 400;
         ctx.client.logger.error("connector.smartNotifierHandler.error", err.stack || err);
-        let flowControl = defaultErrorFlowControl;
-        if (err.flowControl instanceof FlowControl && err.flowControl.isValid()) {
-          flowControl = err.flowControl;
+        if (!req.hull.smartNotifierResponse.isValid()) {
+          req.hull.smartNotifierResponse.setFlowControl(defaultErrorFlowControl);
         }
-        return res.status(err.status).json(flowControl);
+        return res.status(err.status).json(req.hull.smartNotifierResponse.toJSON());
       });
     } catch (err) {
       err.status = 500;
       console.error(err.stack || err);
-      return res.status(err.status).json(defaultErrorFlowControl);
+      req.hull.smartNotifierResponse.setFlowControl(defaultErrorFlowControl);
+      return res.status(err.status).json(req.hull.smartNotifierResponse.toJSON());
     }
   };
 }
