@@ -1,3 +1,6 @@
+# 0.12.2
+* adds option to get cache data via `req.hull.cache.get` 
+
 # 0.12.1
 * adds options to `req.hull.cache.wrap` and `req.hull.cache.set` methods to set custom TTL
 * adds `HULL_ENV` env variable to mark the environment passed to Sentry integration (default to production when not set)

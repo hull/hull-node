@@ -45,6 +45,16 @@ export default class ShipCache {
   }
 
   /**
+   * Returns cached information
+   * @param  {String} id
+   * @return {Promise}
+   */
+  get(id) {
+    const shipCacheKey = this.getShipKey(id);
+    return this.cache.get(shipCacheKey);
+  }
+
+  /**
    * Clears the ship cache. Since Redis stores doesn't return promise
    * for this method, it passes a callback to get a Promise
    * @param  {String} id
