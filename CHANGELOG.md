@@ -1,3 +1,8 @@
+# 0.12.1
+* adds options to `req.hull.cache.wrap` and `req.hull.cache.set` methods to set custom TTL
+* adds `HULL_ENV` env variable to mark the environment passed to Sentry integration (default to production when not set)
+* set default settings, including TTL for memory caching
+
 # 0.12.0
 * replaces low level api client with a separate library
 * **breaking**: `client.utils.extract.handle` replaced by `ctx.helpers.handleExtract`
