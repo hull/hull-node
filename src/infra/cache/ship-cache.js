@@ -28,9 +28,9 @@ export default class ShipCache {
    * @param {Function} cb callback which Promised result would be cached
    * @return {Promise}
    */
-  wrap(id, cb) {
+  wrap(id, cb, options) {
     const shipCacheKey = this.getShipKey(id);
-    return this.cache.wrap(shipCacheKey, cb);
+    return this.cache.wrap(shipCacheKey, cb, options);
   }
 
   /**
@@ -39,9 +39,9 @@ export default class ShipCache {
    * @param  {Object} ship
    * @return {Promise}
    */
-  set(id, ship) {
+  set(id, ship, options) {
     const shipCacheKey = this.getShipKey(id);
-    return this.cache.set(shipCacheKey, ship);
+    return this.cache.set(shipCacheKey, ship, options);
   }
 
   /**
