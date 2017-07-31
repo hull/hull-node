@@ -1,3 +1,4 @@
+import Client from "hull-client";
 import express from "express";
 import requireHullMiddleware from "./require-hull-middleware";
 
@@ -46,7 +47,9 @@ function processHandlersFactory(handlers, userHandlerOptions) {
         if (!req.hull.smartNotifierResponse.isValid()) {
           req.hull.smartNotifierResponse.setFlowControl(defaultSuccessFlowControl);
         }
-        return res.json(req.hull.smartNotifierResponse.toJSON());
+        const response = req.hull.smartNotifierResponse.toJSON();
+        ctx.client.logger.debug("connector.smartNotifierHandler.response", response);
+        return res.json(response);
       }, (err) => {
         err = err || new Error("Error while processing notification");
         err.eventName = eventName;
@@ -55,13 +58,17 @@ function processHandlersFactory(handlers, userHandlerOptions) {
         if (!req.hull.smartNotifierResponse.isValid()) {
           req.hull.smartNotifierResponse.setFlowControl(defaultErrorFlowControl);
         }
-        return res.status(err.status).json(req.hull.smartNotifierResponse.toJSON());
+        const response = req.hull.smartNotifierResponse.toJSON();
+        ctx.client.logger.debug("connector.smartNotifierHandler.response", response);
+        return res.status(err.status).json(response);
       });
     } catch (err) {
       err.status = 500;
       console.error(err.stack || err);
       req.hull.smartNotifierResponse.setFlowControl(defaultErrorFlowControl);
-      return res.status(err.status).json(req.hull.smartNotifierResponse.toJSON());
+      const response = req.hull.smartNotifierResponse.toJSON();
+      Client.logger.debug("connector.smartNotifierHandler.response", response);
+      return res.status(err.status).json(response);
     }
   };
 }

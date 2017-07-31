@@ -19,7 +19,15 @@ export default function smartNotifierMiddlewareFactory() {
     // TODO: add signature verification
     return bodyParser.json({ limit: "10mb" })(req, res, () => {
       Client.logger.debug("connector.smartNotifierHandler", _.omit(req.body, "messages"));
-      // TODO: check
+      if (!req.body) {
+        Client.logger.errror("connector.smartNotifierHandler.error", { message: "No notification payload" });
+        return res.status(400).end("Bad request");
+      }
+      if (!req.body.configuration) {
+        Client.logger.errror("connector.smartNotifierHandler.error", { message: "No configuration object" });
+        return res.status(400).end("Bad request");
+      }
+
       req.hull.notification = req.body;
       req.hull.config = req.hull.notification.configuration;
       // FIXME: we need to do that mapping since the middleware is expecting
@@ -27,7 +35,7 @@ export default function smartNotifierMiddlewareFactory() {
       req.hull.config.ship = _.get(req, "hull.notification.configuration.id");
 
       req.hull.smartNotifierResponse = new SmartNotifierResponse();
-      next();
+      return next();
     });
   };
 }
