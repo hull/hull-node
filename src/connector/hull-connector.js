@@ -10,7 +10,7 @@ import { exitHandler, segmentsMiddleware, requireHullMiddleware, helpersMiddlewa
 
 export default class HullConnector {
   constructor(Hull, {
-    hostSecret, port, clientConfig = {}, instrumentation, cache, queue, connectorName, segmentFilterSetting
+    hostSecret, port, clientConfig = {}, instrumentation, cache, queue, connectorName, segmentFilterSetting, skipSignatureValidation
   } = {}) {
     this.Hull = Hull;
     this.instrumentation = instrumentation || new Instrumentation();
@@ -37,6 +37,10 @@ export default class HullConnector {
       this.connectorConfig.segmentFilterSetting = segmentFilterSetting;
     }
 
+    if (skipSignatureValidation) {
+      this.connectorConfig.skipSignatureValidation = skipSignatureValidation;
+    }
+
     exitHandler(() => {
       return Promise.all([
         Batcher.exit(),
@@ -50,7 +54,8 @@ export default class HullConnector {
       app,
       instrumentation: this.instrumentation,
       cache: this.cache,
-      queue: this.queue
+      queue: this.queue,
+      connectorConfig: this.connectorConfig
     });
     app.use((req, res, next) => {
       req.hull = req.hull || {};

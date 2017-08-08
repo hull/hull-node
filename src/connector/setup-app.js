@@ -7,10 +7,10 @@ import { staticRouter, tokenMiddleware, notifMiddleware, smartNotifierMiddleware
 /**
  * Base Express app for Ships front part
  */
-export default function setupApp({ instrumentation, queue, cache, app }) {
+export default function setupApp({ instrumentation, queue, cache, app, connectorConfig }) {
   app.use(tokenMiddleware());
   app.use(notifMiddleware());
-  app.use(smartNotifierMiddleware());
+  app.use(smartNotifierMiddleware({ skipSignatureValidation: connectorConfig.skipSignatureValidation }));
   app.use(instrumentation.startMiddleware());
 
   app.use(instrumentation.contextMiddleware());
