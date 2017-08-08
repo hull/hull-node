@@ -37,7 +37,7 @@ export default class SmartNotifierValidator {
     return this.getCertificate()
       .then((certificate) => {
         try {
-          const decoded = jwt.verify(this.request.headers["x-hull-smart-notifier-signature"], certificate, { jwtid: this.request.notification_id });
+          const decoded = jwt.verify(this.request.headers["x-hull-smart-notifier-signature"], certificate, { algorithms: ["RS256"], jwtid: this.request.body.notification_id });
           if (decoded) {
             return Promise.resolve(true);
           }
