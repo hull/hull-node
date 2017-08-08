@@ -9,40 +9,35 @@ const certCache = {};
 
 export default class SmartNotifierValidator {
   request: Request;
-  error: String;
 
   setRequest(request: Request) {
     this.request = request;
     return this;
   }
 
-  getError() {
-    return this.error;
-  }
-
-  hasFlagHeader() {
+  hasFlagHeader(): boolean {
     return _.has(this.request.headers, "x-hull-smart-notifier");
   }
 
-  validatePayload() {
+  validatePayload(): boolean {
     if (!this.request.body) {
       return false;
     }
     return true;
   }
 
-  validateConfiguration() {
+  validateConfiguration(): boolean {
     if (!this.request.body.configuration) {
       return false;
     }
     return true;
   }
 
-  validateSignature() {
+  validateSignature(): Promise {
     return this.getCertificate()
       .then((certificate) => {
         try {
-          const decoded = jwt.verify(this.request.headers["x-hull-smart-notifier-signature"], certificate);
+          const decoded = jwt.verify(this.request.headers["x-hull-smart-notifier-signature"], certificate, { jwtid: this.request.notification_id });
           if (decoded) {
             return Promise.resolve(true);
           }
@@ -53,14 +48,14 @@ export default class SmartNotifierValidator {
       });
   }
 
-  getCertificate() {
+  getCertificate(): Promise {
     const certUrl = this.request.headers["x-hull-smart-notifier-signature-public-key-url"];
     const signature = this.request.headers["x-hull-smart-notifier-signature"];
     if (_.has(certCache, certUrl)) {
       return Promise.resolve(_.get(certCache, certUrl));
     }
     return new Promise((resolve, reject) => {
-      requestClient.post(certUrl, { form: signature }, (error, response, body) => {
+      requestClient.post(certUrl, { body: signature }, (error, response, body) => {
         if (error) {
           return reject(error);
         }
