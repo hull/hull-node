@@ -26,10 +26,18 @@ function processHandlersFactory(handlers, userHandlerOptions) {
         messages_count: notification.messages.length
       });
       const eventName = notification.channel;
-      // TODO: check if messageHandler is available
       const messageHandler = handlers[eventName];
 
       const ctx = req.hull;
+
+      if (!messageHandler) {
+        // FIXME: this is a notification the connector is apparently not interested in,
+        // for now we default to the "success" response to keep smart-notifier work smoothly
+        req.hull.smartNotifierResponse.setFlowControl(defaultSuccessFlowControl);
+        const response = req.hull.smartNotifierResponse.toJSON();
+        ctx.client.logger.debug("connector.smartNotifierHandler.response", response);
+        return res.status(400).json(response);
+      }
 
       if (notification.channel === "user:update") {
         // optionally group user traits
