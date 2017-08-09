@@ -24,7 +24,7 @@ export default function smartNotifierMiddlewareFactory({ skipSignatureValidation
     }
 
     return bodyParser.json({ limit: "10mb" })(req, res, () => {
-      Client.logger.debug("connector.smartNotifierHandler", _.omit(req.body, "messages"));
+      Client.logger.debug("connector.smartNotifierHandler", _.pick(req.body, "channel", "notification_id"));
 
       if (!smartNotifierValidator.validatePayload()) {
         Client.logger.error("connector.smartNotifierHandler.error", { error: "No notification payload" });
