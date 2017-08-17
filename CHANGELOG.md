@@ -1,3 +1,6 @@
+# 0.12.3
+* upgrades underlying hull-client which fixes the way timeouted or errored rest API events are rejected
+
 # 0.12.2
 * adds option to get cache data via `req.hull.cache.get` 
 
