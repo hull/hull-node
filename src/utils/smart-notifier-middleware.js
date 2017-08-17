@@ -12,11 +12,10 @@ import SmartNofifierValidator from "./smart-notifier-validator";
  * @param  {Function} next
  */
 export default function smartNotifierMiddlewareFactory({ skipSignatureValidation = false }) {
-  const smartNotifierValidator = new SmartNofifierValidator();
-
   return function notifMiddleware(req, res, next) {
     req.hull = req.hull || {};
 
+    const smartNotifierValidator = new SmartNofifierValidator();
     smartNotifierValidator.setRequest(req);
 
     if (!smartNotifierValidator.hasFlagHeader()) {
