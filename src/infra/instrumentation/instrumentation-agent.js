@@ -35,6 +35,7 @@ export default class InstrumentationAgent {
     if (process.env.SENTRY_URL) {
       console.log("starting raven");
       this.raven = Raven.config(process.env.SENTRY_URL, {
+        environment: process.env.HULL_ENV || "production",
         release: this.manifest.version,
         captureUnhandledRejections: true
       }).install((loggedInSentry, err = {}) => {
