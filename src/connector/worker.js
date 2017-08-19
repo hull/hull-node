@@ -53,6 +53,9 @@ export default class Worker {
   }
 
   dispatch(job) {
+    if (_.isEmpty(job.data)) {
+      return Promise.resolve();
+    }
     const jobName = job.data.name;
     const req = _.cloneDeep(job.data.context);
     const jobData = _.cloneDeep(job.data.payload);

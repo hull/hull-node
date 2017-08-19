@@ -1,3 +1,6 @@
+# 0.11.13
+* handle correctly jobs with empty data payload - they should be skipped
+
 # 0.11.12
 * when handling batch extract, `notifHandler` should respond as soon as we have started to download and process JSON file. Otherwise in case of big extract files in may lead to response timeout
 
