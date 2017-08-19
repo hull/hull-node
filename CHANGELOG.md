@@ -1,3 +1,6 @@
+# 0.12.4
+* handle properly empty jobs in background worker
+
 # 0.12.3
 * upgrades underlying hull-client which fixes the way timeouted or errored rest API events are rejected
 
