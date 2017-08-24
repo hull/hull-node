@@ -330,7 +330,7 @@ The core part of the **Context Object** is described in [Hull Middleware documen
 
 * **service**
   > A namespace reserved for connector developer to inject a custom logic. When the connector base code evolves, the best technique to keep it maintainable is to split it into a set of functions or classes. To make it even simpler and straightforward the connector toolkit uses [one convention](#context) to pass the context into the functions and classes.
-  The `service` namespace is reserved for the purpose and should be used together with `use` method on connector instance to apply custom middleware. That should be an object with custom structure adjusted to specifi connector needs and scale:
+  The `service` namespace is reserved for the purpose and should be used together with `use` method on connector instance to apply custom middleware. That should be an object with custom structure adjusted to specific connector needs and scale:
 
   > Example:
 
@@ -345,7 +345,7 @@ The core part of the **Context Object** is described in [Hull Middleware documen
 
   connector.setupApp(app);
 
-  app.get("/action", serviceMiddleware(service), (req, res) => {
+  app.get("/action", (req, res) => {
     const { service } = req.hull;
     service.customFunction(req.query.user_id);
     // or
@@ -741,12 +741,10 @@ Default `smartNofitier` [FlowControl](#flowcontrol) are following:
 
 ### FlowControl
 
-FlowControl is a JS class instance which is returned for every `smartNotifier` request. It can be intialized in a following way:
+FlowControl is an element of the `SmartNotifierResponse`
 
 ```js
-import FlowControl from "hull/lib/utils";
-
-new FlowControl({
+ctx.smartNotifierResponse.setFlowControl({
   type: "next", // `next` or `retry`, defines next flow action
   size: 1000, // only for `next` - number of messages for next notification
   in: 1000, // delay for next flow step in ms 
@@ -754,7 +752,7 @@ new FlowControl({
 })
 ```
 
-When the HTTP response is built the `FlowControl` is sent as a `flow_control` param:
+When the HTTP response is built it has the following structure
 
 ```js
 // response body:

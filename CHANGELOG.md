@@ -1,6 +1,9 @@
 # 0.13.0
-* introduces `smartNotifierMiddleware` and `smartNotifierHandler`
-* introduces experimental `FlowControl` - this is a subject of possible changes
+* introduces `smartNotifierMiddleware` and `smartNotifierHandler` utils
+* introduces `ctx.smartNotifierResponse` context object to build flow response
+* added `skipSignatureValidation` `Hull.Connector` options to skip smartNotifier signature validation
+* **breaking**: removed `serviceMiddleware` and `service` param on `Hull.Connector`, new way of applying service related objects to the Context Object is the `use` method on the Connector instance and initialize the service objects directly on the `req.hull.service` namespace
+* restructurized tests folders and files
 
 # 0.12.3
 * upgrades underlying hull-client which fixes the way timeouted or errored rest API events are rejected
@@ -12,7 +15,6 @@
 * adds options to `req.hull.cache.wrap` and `req.hull.cache.set` methods to set custom TTL
 * adds `HULL_ENV` env variable to mark the environment passed to Sentry integration (default to production when not set)
 * set default settings, including TTL for memory caching
->>>>>>> 10e9349b0ed1bffc917b477c4d94ab48421cd08b
 
 # 0.12.0
 * replaces low level api client with a separate library
