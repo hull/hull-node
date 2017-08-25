@@ -1,3 +1,7 @@
+# 0.12.5
+* upgrades hull-client to 1.1.3
+* update documentation about initialization of `QueueAdapter`
+
 # 0.12.4
 * handle properly empty jobs in background worker
 
