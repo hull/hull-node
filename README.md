@@ -463,18 +463,22 @@ const connector = new Hull.Connector({ instrumentation, cache, queue });
 ```
 
 ### Queue
-By default it's initiated inside `Hull.Connector` as a very simplistic in-memory queue, but in case of production grade needs, it comes with a [Kue](https://github.com/Automattic/kue) adapter which you can initiate in a following way:
+By default it's initiated inside `Hull.Connector` as a very simplistic in-memory queue, but in case of production grade needs, it comes with a [Kue](https://github.com/Automattic/kue) or [Bull](https://github.com/OptimalBits/bull) adapters which you can initiate in a following way:
 
 ```js
 import { Queue } from "hull/lib/infra";
+import BullAdapter from "hull/lib/infra/queue/adapter/bull"; // or KueAdapter
 
-const queue = new Queue("kue", { options });
+const queueAdapter = new BullAdapter(options);
+const queue = new Queue(queueAdapter);
 
 const connector = new Hull.Connector({ queue });
 ```
 
-`Options` from the constructor of the `Queue` are passed directly to the `kue.createQueue()` method and can be set with following parameters:
+`Options` from the constructor of the `BullAdapter` or `KueAdapter` are passed directly to the internal init method and can be set with following parameters:
+
 https://github.com/Automattic/kue#redis-connection-settings
+https://github.com/OptimalBits/bull/blob/master/REFERENCE.md#queue
 
 The `queue` instance has a `contextMiddleware` method which adds `req.hull.enqueue` method to queue jobs - this is done automatically by `Hull.Connector().setupApp(app)`:
 

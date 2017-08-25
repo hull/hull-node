@@ -5,6 +5,13 @@
 * **breaking**: removed `serviceMiddleware` and `service` param on `Hull.Connector`, new way of applying service related objects to the Context Object is the `use` method on the Connector instance and initialize the service objects directly on the `req.hull.service` namespace
 * restructurized tests folders and files
 
+# 0.12.5
+* upgrades hull-client to 1.1.3
+* update documentation about initialization of `QueueAdapter`
+
+# 0.12.4
+* handle properly empty jobs in background worker
+
 # 0.12.3
 * upgrades underlying hull-client which fixes the way timeouted or errored rest API events are rejected
 
