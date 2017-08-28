@@ -2709,9 +2709,9 @@ https-proxy-agent@^0.3.5:
     debug "2"
     extend "3"
 
-hull-client@1.1.1:
-  version "1.1.1"
-  resolved "https://registry.yarnpkg.com/hull-client/-/hull-client-1.1.1.tgz#389687940c3de355f93ac5a876c10c81670cc16f"
+hull-client@1.1.3:
+  version "1.1.3"
+  resolved "https://registry.yarnpkg.com/hull-client/-/hull-client-1.1.3.tgz#8ea45749bfbcbf51067f80414e4febebef2cc76f"
   dependencies:
     jwt-simple "^0.5.0"
     lodash "^4.13.1"
@@ -5140,7 +5140,7 @@ typedarray@^0.0.6:
   version "0.0.6"
   resolved "https://registry.yarnpkg.com/typedarray/-/typedarray-0.0.6.tgz#867ac74e3864187b1d3d47d996a78ec5c8830777"
 
-uglify-js@^2.6, uglify-js@^2.6.1:
+uglify-js@^2.4.19, uglify-js@^2.6, uglify-js@^2.6.1:
   version "2.8.29"
   resolved "https://registry.yarnpkg.com/uglify-js/-/uglify-js-2.8.29.tgz#29c5733148057bb4e1f75df35b7a9cb72e6a59dd"
   dependencies:
