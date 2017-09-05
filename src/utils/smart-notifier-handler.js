@@ -27,8 +27,13 @@ function processHandlersFactory(handlers, userHandlerOptions) {
       });
       const eventName = notification.channel;
       const messageHandler = handlers[eventName];
-
       const ctx = req.hull;
+
+      // if we are dealing with `ship:update` notification
+      // we clean the underlying cache
+      if (notification.channel === "ship:update") {
+        req.hull.cache.del(req.hull.ship.id);
+      }
 
       if (!messageHandler) {
         // FIXME: this is a notification the connector is apparently not interested in,

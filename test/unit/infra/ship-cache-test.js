@@ -3,7 +3,7 @@ import { expect } from "chai";
 import sinon from "sinon";
 import HullStub from "../support/hull-stub";
 
-import ShipCache from "../../src/infra/cache/ship-cache";
+import ShipCache from "../../../src/infra/cache/ship-cache";
 
 describe("Enqueue", () => {
   it("should expose set, wrap, get and del methods", () => {
