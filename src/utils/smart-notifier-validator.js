@@ -1,14 +1,23 @@
 // @flow
-import { Request } from "express";
+import {
+  Request
+} from "express";
 import Promise from "bluebird";
 import requestClient from "request";
 import _ from "lodash";
 import jwt from "jsonwebtoken";
 
 const certCache = {};
-
+const supportedSignaturesVersions = ['v1'];
+let httpClient = requestClient;
 export default class SmartNotifierValidator {
   request: Request;
+
+  constructor(http = null) {
+    if (http) {
+      httpClient = http;
+    }
+  }
 
   setRequest(request: Request) {
     this.request = request;
@@ -26,6 +35,18 @@ export default class SmartNotifierValidator {
     return true;
   }
 
+  validateSignatureVersion(): boolean {
+    return _.has(this.request.headers, "x-hull-smart-notifier-signature-version") &&
+      _.indexOf(supportedSignaturesVersions, this.request.headers["x-hull-smart-notifier-signature-version"]) >= 0;
+  }
+
+  validateSignatureHeaders(): boolean {
+    return ['x-hull-smart-notifier-signature',
+      'x-hull-smart-notifier-signature-version',
+      'x-hull-smart-notifier-signature-public-key-url'
+    ].every(h => _.has(this.request.headers, h));
+  }
+
   validateConfiguration(): boolean {
     if (!this.request.body.configuration) {
       return false;
@@ -37,7 +58,11 @@ export default class SmartNotifierValidator {
     return this.getCertificate()
       .then((certificate) => {
         try {
-          const decoded = jwt.verify(this.request.headers["x-hull-smart-notifier-signature"], certificate, { algorithms: ["RS256"], jwtid: this.request.body.notification_id });
+          const decoded = jwt.verify(this.request.headers["x-hull-smart-notifier-signature"], certificate, {
+            algorithms: ["RS256"],
+            jwtid: this.request.body.notification_id
+          });
+
           if (decoded) {
             return Promise.resolve(true);
           }
@@ -55,7 +80,10 @@ export default class SmartNotifierValidator {
       return Promise.resolve(_.get(certCache, certUrl));
     }
     return new Promise((resolve, reject) => {
-      requestClient.post(certUrl, { body: signature }, (error, response, body) => {
+      httpClient.post(certUrl, {
+        body: signature
+      }, (error, response, body) => {
+
         if (error) {
           return reject(error);
         }
