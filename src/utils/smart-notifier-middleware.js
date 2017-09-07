@@ -5,21 +5,33 @@ import Promise from "bluebird";
 
 import SmartNotifierResponse from "./smart-notifier-response";
 import SmartNofifierValidator from "./smart-notifier-validator";
+import { SmartNotifierError } from "./smart-notifier-response";
 
 /**
  * @param  {Object}   req
  * @param  {Object}   res
  * @param  {Function} next
  */
-export default function smartNotifierMiddlewareFactory({ skipSignatureValidation = false }) {
+export default function smartNotifierMiddlewareFactory({ skipSignatureValidation = false, httpClient = null }) {
   return function notifMiddleware(req, res, next) {
     req.hull = req.hull || {};
 
-    const smartNotifierValidator = new SmartNofifierValidator();
+    const smartNotifierValidator = new SmartNofifierValidator(httpClient);
     smartNotifierValidator.setRequest(req);
 
+
     if (!smartNotifierValidator.hasFlagHeader()) {
-      return next();
+      return next(new SmartNotifierError("MISSING_FLAG_HEADER", "Missing X-Hull-Smart-Notifier header"));
+    }
+
+    if (!skipSignatureValidation) {
+      if(!smartNotifierValidator.validateSignatureVersion()) {
+        return next(new SmartNotifierError("UNSUPPORTED_SIGNATURE_VERSION", "Unsupported signature version"));
+      }
+
+      if(!smartNotifierValidator.validateSignatureHeaders()) {
+        return next(new SmartNotifierError("MISSING_SIGNATURE_HEADERS", "Missing signature header(s)"));
+      }
     }
 
     return bodyParser.json({ limit: "10mb" })(req, res, () => {
@@ -27,12 +39,12 @@ export default function smartNotifierMiddlewareFactory({ skipSignatureValidation
 
       if (!smartNotifierValidator.validatePayload()) {
         Client.logger.error("connector.smartNotifierHandler.error", { error: "No notification payload" });
-        return res.status(400).end("Bad request");
+        return next(new SmartNotifierError("MISSING_NOTIFICATION", "No notification in payload"));
       }
 
       if (!smartNotifierValidator.validateConfiguration()) {
         Client.logger.error("connector.smartNotifierHandler.error", { error: "No configuration object" });
-        return res.status(400).end("Bad request");
+        return next(new SmartNotifierError("MISSING_CONFIGURATION", "No configuration in payload"));
       }
 
       return (() => {
@@ -52,7 +64,7 @@ export default function smartNotifierMiddlewareFactory({ skipSignatureValidation
           return next();
         }, () => {
           Client.logger.error("connector.smartNotifierHandler.error", { error: "No valid signature" });
-          return res.status(400).end("Bad request");
+          return next(new SmartNotifierError("INVALID_SIGNATURE", "Invalid signature"));
         });
     });
   };
