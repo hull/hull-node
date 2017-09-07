@@ -59,11 +59,6 @@ describe("SmartNotifierHandler", () => {
   const app = express();
   const handler = sinon.spy();
 
-  it("should return an express router function", () => {
-    const testInstance = new smartNotifierHandler({});
-    expect(typeof testInstance).to.equal("function");
-  });
-
   it("should return a next flow control", (done) => {
     let notification = {
       notification_id: '0123456789',

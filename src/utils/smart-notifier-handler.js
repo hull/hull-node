@@ -1,8 +1,9 @@
 import Client from "hull-client";
 import express from "express";
 import requireHullMiddleware from "./require-hull-middleware";
+import { SmartNotifierError } from "./smart-notifier-response";
 
-const flowControls = require("./smart-notifier-flow-controls")
+import { defaultSuccessFlowControl, defaultErrorFlowControl } from "./smart-notifier-flow-controls";
 
 function processHandlersFactory(handlers, userHandlerOptions) {
   return function process(req, res, next) {
@@ -29,7 +30,7 @@ function processHandlersFactory(handlers, userHandlerOptions) {
       if (!messageHandler) {
         // FIXME: this is a notification the connector is apparently not interested in,
         // for now we default to the "success" response to keep smart-notifier work smoothly
-        req.hull.smartNotifierResponse.setFlowControl(flowControls.defaultSuccessFlowControl);
+        req.hull.smartNotifierResponse.setFlowControl(defaultSuccessFlowControl);
         const response = req.hull.smartNotifierResponse.toJSON();
         ctx.client.logger.debug("connector.smartNotifierHandler.response", response);
         return next(new SmartNotifierError("CHANNEL_NOT_SUPPORTED", `Channel ${eventName} is not supported`));
@@ -48,7 +49,7 @@ function processHandlersFactory(handlers, userHandlerOptions) {
       const promise = messageHandler(ctx, notification.messages);
       return promise.then(() => {
         if (!req.hull.smartNotifierResponse.isValid()) {
-          req.hull.smartNotifierResponse.setFlowControl(flowControls.defaultSuccessFlowControl);
+          req.hull.smartNotifierResponse.setFlowControl(defaultSuccessFlowControl);
         }
         const response = req.hull.smartNotifierResponse.toJSON();
         ctx.client.logger.debug("connector.smartNotifierHandler.response", response);
@@ -59,7 +60,7 @@ function processHandlersFactory(handlers, userHandlerOptions) {
         err.status = err.status || 500;
         ctx.client.logger.error("connector.smartNotifierHandler.error", err.stack || err);
         if (!req.hull.smartNotifierResponse.isValid()) {
-          req.hull.smartNotifierResponse.setFlowControl(flowControls.defaultErrorFlowControl);
+          req.hull.smartNotifierResponse.setFlowControl(defaultErrorFlowControl);
         }
         const response = req.hull.smartNotifierResponse.toJSON();
         ctx.client.logger.debug("connector.smartNotifierHandler.response", response);
@@ -68,7 +69,7 @@ function processHandlersFactory(handlers, userHandlerOptions) {
     } catch (err) {
       err.status = 500;
       console.error(err.stack || err);
-      req.hull.smartNotifierResponse.setFlowControl(flowControls.defaultErrorFlowControl);
+      req.hull.smartNotifierResponse.setFlowControl(defaultErrorFlowControl);
       const response = req.hull.smartNotifierResponse.toJSON();
       Client.logger.debug("connector.smartNotifierHandler.response", response);
       return res.status(err.status).json(response);

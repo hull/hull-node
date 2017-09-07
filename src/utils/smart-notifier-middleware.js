@@ -3,9 +3,8 @@ import bodyParser from "body-parser";
 import Client from "hull-client";
 import Promise from "bluebird";
 
-import SmartNotifierResponse from "./smart-notifier-response";
+import { SmartNotifierResponse, SmartNotifierError } from "./smart-notifier-response";
 import SmartNofifierValidator from "./smart-notifier-validator";
-import { SmartNotifierError } from "./smart-notifier-response";
 
 /**
  * @param  {Object}   req
@@ -15,21 +14,23 @@ import { SmartNotifierError } from "./smart-notifier-response";
 export default function smartNotifierMiddlewareFactory({ skipSignatureValidation = false, httpClient = null }) {
   return function notifMiddleware(req, res, next) {
     req.hull = req.hull || {};
-
     const smartNotifierValidator = new SmartNofifierValidator(httpClient);
     smartNotifierValidator.setRequest(req);
 
+    if (req.hull.notification) {
+      return next();
+    }
 
     if (!smartNotifierValidator.hasFlagHeader()) {
       return next(new SmartNotifierError("MISSING_FLAG_HEADER", "Missing X-Hull-Smart-Notifier header"));
     }
 
     if (!skipSignatureValidation) {
-      if(!smartNotifierValidator.validateSignatureVersion()) {
+      if (!smartNotifierValidator.validateSignatureVersion()) {
         return next(new SmartNotifierError("UNSUPPORTED_SIGNATURE_VERSION", "Unsupported signature version"));
       }
 
-      if(!smartNotifierValidator.validateSignatureHeaders()) {
+      if (!smartNotifierValidator.validateSignatureHeaders()) {
         return next(new SmartNotifierError("MISSING_SIGNATURE_HEADERS", "Missing signature header(s)"));
       }
     }

@@ -1,5 +1,11 @@
 // @flow
-export class FlowControl {
+
+import { defaultErrorFlowControl } from "./smart-notifier-flow-controls";
+
+/**
+ * FlowControl is a part of SmartNotifierResponse
+ */
+export class SmartNotifierFlowControl {
   type: String;
   size: Number;
   in: Number;
@@ -27,7 +33,7 @@ export class FlowControl {
   }
 }
 
-export class Metric {
+export class SmartNotifierMetric {
   name: String;
 
   constructor(metric: Object) {
@@ -43,22 +49,29 @@ export class SmartNotifierError extends Error {
   code: String;
   reason: String;
   flowControl: Object;
-  // TODO this is a hack to make instanceof work
-  isSmartNotifierError: boolean;
+  constructor: Function;
+  __proto__: Object;
 
-  constructor(code: String, reason: String, flowControl = require("./smart-notifier-flow-controls").defaultErrorFlowControl) {
+  constructor(code: String, reason: String, flowControl: Object = defaultErrorFlowControl) {
     super(reason);
+
+    // https://github.com/babel/babel/issues/3083
+    this.constructor = SmartNotifierError;
+    this.__proto__ = SmartNotifierError.prototype; // eslint-disable-line no-proto
     this.code = code;
     this.reason = reason;
     this.flowControl = flowControl;
-    this.isSmartNotifierError = true;
+  }
+
+  toJSON() {
+    return { code: this.code, reason: this.reason };
   }
 
 }
 // @flow
-export default class SmartNotifierResponse {
-  flowControl: FlowControl;
-  metrics: Array<Metric>;
+export class SmartNotifierResponse {
+  flowControl: SmartNotifierFlowControl;
+  metrics: Array<SmartNotifierMetric>;
   errors: Array<SmartNotifierError>;
 
   constructor() {
@@ -67,16 +80,16 @@ export default class SmartNotifierResponse {
   }
 
   setFlowControl(flowControl: Object) {
-    this.flowControl = new FlowControl(flowControl);
+    this.flowControl = new SmartNotifierFlowControl(flowControl);
     return this;
   }
 
   addMetric(metric: Object) {
-    this.metrics.push(new Metric(metric));
+    this.metrics.push(new SmartNotifierMetric(metric));
     return this;
   }
 
-  addError(error: Object) {
+  addError(error: SmartNotifierError) {
     this.errors.push(error);
     return this;
   }
@@ -89,7 +102,7 @@ export default class SmartNotifierResponse {
     return {
       flow_control: this.flowControl.toJSON(),
       metrics: this.metrics.map(m => m.toJSON()),
-      errors: this.errors.map(err => { return { code: err.code, reason: err.reason }; })
+      errors: this.errors.map(err => err.toJSON())
     };
   }
 }

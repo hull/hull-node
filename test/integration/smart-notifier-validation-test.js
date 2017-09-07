@@ -41,14 +41,6 @@ const server = app.listen();
 
 describe("SmartNotifierHandler validation", () => {
 
-  const app = express();
-  const handler = sinon.spy();
-
-  it("should return an express router function", () => {
-    const testInstance = new smartNotifierHandler({});
-    expect(typeof testInstance).to.equal("function");
-  });
-
   it("should fail with missing smart notifier header", (done) => {
     chai.request(server)
       .post('/notify')

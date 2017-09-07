@@ -8,14 +8,17 @@ import _ from "lodash";
 import jwt from "jsonwebtoken";
 
 const certCache = {};
-const supportedSignaturesVersions = ['v1'];
-let httpClient = requestClient;
+const supportedSignaturesVersions = ["v1"];
+
 export default class SmartNotifierValidator {
   request: Request;
+  httpClient: requestClient;
 
-  constructor(http = null) {
-    if (http) {
-      httpClient = http;
+  constructor(http: requestClient = null) {
+    if (!http) {
+      this.httpClient = requestClient;
+    } else {
+      this.httpClient = http;
     }
   }
 
@@ -41,9 +44,9 @@ export default class SmartNotifierValidator {
   }
 
   validateSignatureHeaders(): boolean {
-    return ['x-hull-smart-notifier-signature',
-      'x-hull-smart-notifier-signature-version',
-      'x-hull-smart-notifier-signature-public-key-url'
+    return ["x-hull-smart-notifier-signature",
+      "x-hull-smart-notifier-signature-version",
+      "x-hull-smart-notifier-signature-public-key-url"
     ].every(h => _.has(this.request.headers, h));
   }
 
@@ -80,10 +83,9 @@ export default class SmartNotifierValidator {
       return Promise.resolve(_.get(certCache, certUrl));
     }
     return new Promise((resolve, reject) => {
-      httpClient.post(certUrl, {
+      this.httpClient.post(certUrl, {
         body: signature
       }, (error, response, body) => {
-
         if (error) {
           return reject(error);
         }
