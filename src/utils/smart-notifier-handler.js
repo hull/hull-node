@@ -2,16 +2,7 @@ import Client from "hull-client";
 import express from "express";
 import requireHullMiddleware from "./require-hull-middleware";
 
-const defaultSuccessFlowControl = {
-  type: "next",
-  size: 1,
-  in: 1000
-};
-
-const defaultErrorFlowControl = {
-  type: "retry",
-  in: 1000
-};
+const flowControls = require("./smart-notifier-flow-controls")
 
 function processHandlersFactory(handlers, userHandlerOptions) {
   return function process(req, res, next) {
@@ -38,10 +29,10 @@ function processHandlersFactory(handlers, userHandlerOptions) {
       if (!messageHandler) {
         // FIXME: this is a notification the connector is apparently not interested in,
         // for now we default to the "success" response to keep smart-notifier work smoothly
-        req.hull.smartNotifierResponse.setFlowControl(defaultSuccessFlowControl);
+        req.hull.smartNotifierResponse.setFlowControl(flowControls.defaultSuccessFlowControl);
         const response = req.hull.smartNotifierResponse.toJSON();
         ctx.client.logger.debug("connector.smartNotifierHandler.response", response);
-        return res.status(400).json(response);
+        return next(new SmartNotifierError("CHANNEL_NOT_SUPPORTED", `Channel ${eventName} is not supported`));
       }
 
       if (notification.channel === "user:update") {
@@ -55,10 +46,9 @@ function processHandlersFactory(handlers, userHandlerOptions) {
       }
 
       const promise = messageHandler(ctx, notification.messages);
-
       return promise.then(() => {
         if (!req.hull.smartNotifierResponse.isValid()) {
-          req.hull.smartNotifierResponse.setFlowControl(defaultSuccessFlowControl);
+          req.hull.smartNotifierResponse.setFlowControl(flowControls.defaultSuccessFlowControl);
         }
         const response = req.hull.smartNotifierResponse.toJSON();
         ctx.client.logger.debug("connector.smartNotifierHandler.response", response);
@@ -66,10 +56,10 @@ function processHandlersFactory(handlers, userHandlerOptions) {
       }, (err) => {
         err = err || new Error("Error while processing notification");
         err.eventName = eventName;
-        err.status = err.status || 400;
+        err.status = err.status || 500;
         ctx.client.logger.error("connector.smartNotifierHandler.error", err.stack || err);
         if (!req.hull.smartNotifierResponse.isValid()) {
-          req.hull.smartNotifierResponse.setFlowControl(defaultErrorFlowControl);
+          req.hull.smartNotifierResponse.setFlowControl(flowControls.defaultErrorFlowControl);
         }
         const response = req.hull.smartNotifierResponse.toJSON();
         ctx.client.logger.debug("connector.smartNotifierHandler.response", response);
@@ -78,7 +68,7 @@ function processHandlersFactory(handlers, userHandlerOptions) {
     } catch (err) {
       err.status = 500;
       console.error(err.stack || err);
-      req.hull.smartNotifierResponse.setFlowControl(defaultErrorFlowControl);
+      req.hull.smartNotifierResponse.setFlowControl(flowControls.defaultErrorFlowControl);
       const response = req.hull.smartNotifierResponse.toJSON();
       Client.logger.debug("connector.smartNotifierHandler.response", response);
       return res.status(err.status).json(response);
@@ -91,13 +81,12 @@ module.exports = function smartNotifierHandler({ handlers = {}, userHandlerOptio
   const app = express.Router();
   app.use((req, res, next) => {
     if (!req.hull.notification) {
-      const e = new Error("Empty Notification");
-      e.status = 400;
-      return next(e);
+      return next(new SmartNotifierError("MISSING_CONFIGURATION", "Missing configuration object"));
     }
     return next();
   });
   app.use(requireHullMiddleware());
   app.use(processHandlersFactory(handlers, userHandlerOptions));
+
   return app;
 };
