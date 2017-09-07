@@ -1,7 +1,7 @@
 import { renderFile } from "ejs";
 import timeout from "connect-timeout";
 
-import { staticRouter, tokenMiddleware, notifMiddleware, smartNotifierMiddleware } from "../utils";
+import { staticRouter, tokenMiddleware, notifMiddleware, smartNotifierMiddleware, smartNotifierErrorMiddleware } from "../utils";
 
 
 /**
@@ -26,6 +26,9 @@ export default function setupApp({ instrumentation, queue, cache, app, connector
   app.set("view engine", "ejs");
 
   app.use("/", staticRouter());
+
+  app.use(smartNotifierErrorMiddleware());
+
 
   return app;
 }
