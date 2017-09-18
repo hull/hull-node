@@ -81,7 +81,7 @@ function processHandlersFactory(handlers, userHandlerOptions) {
 module.exports = function smartNotifierHandler({ handlers = {}, userHandlerOptions = {} }) {
   const app = express.Router();
   app.use((req, res, next) => {
-    if (!req.hull.notification) {
+    if (!req.hull.notification.config) {
       return next(new SmartNotifierError("MISSING_CONFIGURATION", "Missing configuration object"));
     }
     return next();

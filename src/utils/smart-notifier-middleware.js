@@ -22,7 +22,7 @@ export default function smartNotifierMiddlewareFactory({ skipSignatureValidation
     }
 
     if (!smartNotifierValidator.hasFlagHeader()) {
-      return next(new SmartNotifierError("MISSING_FLAG_HEADER", "Missing X-Hull-Smart-Notifier header"));
+      return next();
     }
 
     if (!skipSignatureValidation) {
