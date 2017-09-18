@@ -1,5 +1,7 @@
 import _ from "lodash";
 import jwt from "jwt-simple";
+
+import { PromiseReuser } from "../utils";
 import { handleExtract, requestExtract } from "../helpers";
 
 function parseQueryString(query) {
@@ -28,6 +30,7 @@ function parseToken(token, secret) {
 
 
 module.exports = function hullClientMiddlewareFactory(Client, { hostSecret, clientConfig = {} }) {
+  const promiseReuser = new PromiseReuser();
   function getCurrentShip(id, client, cache, bust) {
     return (() => {
       if (cache && bust) {
@@ -36,15 +39,16 @@ module.exports = function hullClientMiddlewareFactory(Client, { hostSecret, clie
       return Promise.resolve();
     })()
     .then(() => {
+      const reusableGet = promiseReuser.reusePromise(client.get);
       if (cache) {
         return cache.wrap(id, () => {
-          return client.get(id, {}, {
+          return reusableGet(id, {}, {
             timeout: 5000,
             retry: 1000
           });
         });
       }
-      return client.get(id, {}, {
+      return reusableGet(id, {}, {
         timeout: 5000,
         retry: 1000
       });

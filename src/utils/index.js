@@ -12,3 +12,4 @@ export responseMiddleware from "./response-middleware";
 export notifMiddleware from "./notif-middleware";
 export segmentsMiddleware from "./segments-middleware";
 export helpersMiddleware from "./helpers-middleware";
+export PromiseReuser from "./promise-reuser";
