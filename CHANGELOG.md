@@ -1,3 +1,6 @@
+# 0.12.6
+* adds `PromiseReuser` class which allows us to handle in memory longer running promises and reuse them in case the same function is called multiple times with the same input
+
 # 0.12.5
 * upgrades hull-client to 1.1.3
 * update documentation about initialization of `QueueAdapter`
