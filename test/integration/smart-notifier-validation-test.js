@@ -41,24 +41,24 @@ const server = app.listen();
 
 describe("SmartNotifierHandler validation", () => {
 
-  it("should fail with missing smart notifier header", (done) => {
-    chai.request(server)
-      .post('/notify')
-      .send(valid_notification)
-      // missing header: X-Hull-Smart-Notifier', 'true'
-      .set('X-Hull-Smart-Notifier-Signature', 'jwt_secret')
-      .set('X-Hull-Smart-Notifier-Signature-Version', 'v1')
-      .set('X-Hull-Smart-Notifier-Signature-Public-Key-Url', 'none')
-      .end((err, res) => {
-        expect(res.status).to.equal(400);
-        expect(res.headers['content-type']).to.have.string('application/json');
-        expect(res.body.errors).to.be.an('array');
-        expect(res.body.errors).to.be.not.empty;
-        expect(res.body.errors).to.have.lengthOf(1);
-        expect(res.body.errors[0].code).to.be.equal('MISSING_FLAG_HEADER');
-        done();
-      });
-  });
+  // it("should fail with missing smart notifier header", (done) => {
+  //   chai.request(server)
+  //     .post('/notify')
+  //     .send(valid_notification)
+  //     // missing header: X-Hull-Smart-Notifier', 'true'
+  //     .set('X-Hull-Smart-Notifier-Signature', 'jwt_secret')
+  //     .set('X-Hull-Smart-Notifier-Signature-Version', 'v1')
+  //     .set('X-Hull-Smart-Notifier-Signature-Public-Key-Url', 'none')
+  //     .end((err, res) => {
+  //       expect(res.status).to.equal(400);
+  //       expect(res.headers['content-type']).to.have.string('application/json');
+  //       expect(res.body.errors).to.be.an('array');
+  //       expect(res.body.errors).to.be.not.empty;
+  //       expect(res.body.errors).to.have.lengthOf(1);
+  //       expect(res.body.errors[0].code).to.be.equal('MISSING_FLAG_HEADER');
+  //       done();
+  //     });
+  // });
 
   it("should fail with unknown signature version", (done) => {
     chai.request(server)
