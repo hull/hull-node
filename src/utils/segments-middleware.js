@@ -1,11 +1,14 @@
 import _ from "lodash";
 
+import { PromiseReuser } from ".";
+
 /**
  * @param  {Object}   req
  * @param  {Object}   res
  * @param  {Function} next
  */
 export default function segmentsMiddlewareFactory() {
+  const promiseReuser = new PromiseReuser();
   return function segmentsMiddleware(req, res, next) {
     req.hull = req.hull || {};
 
@@ -16,6 +19,7 @@ export default function segmentsMiddlewareFactory() {
     const { cache, message, connectorConfig } = req.hull;
     const bust = (message
       && (message.Subject === "users_segment:update" || message.Subject === "users_segment:delete"));
+    const reusableGet = promiseReuser.reusePromise(req.hull.client.get);
 
     return (() => {
       if (bust) {
@@ -24,7 +28,7 @@ export default function segmentsMiddlewareFactory() {
       return Promise.resolve();
     })().then(() => {
       return cache.wrap("segments", () => {
-        return req.hull.client.get("/segments", {}, {
+        return reusableGet("/segments", {}, {
           timeout: 5000,
           retry: 1000
         });
