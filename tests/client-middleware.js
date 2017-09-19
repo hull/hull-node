@@ -2,6 +2,7 @@
 import { expect, should } from "chai";
 import sinon from "sinon";
 import Promise from "bluebird";
+import _ from "lodash";
 
 import Middleware from "../src/middleware/client";
 import HullStub from "./support/hull-stub";
@@ -123,6 +124,25 @@ describe("Client Middleware", () => {
     instance(this.reqStub, {}, () => {});
     instance(this.reqStub, {}, () => {
       expect(this.getStub.calledOnce).to.be.true;
+      done();
+    });
+  });
+
+  it("should call the API only once even for multiple concurrent inits, one call per ship id", function (done) {
+    const instance = Middleware(HullStub, { hostSecret: "secret" });
+    this.getStub.restore();
+    const reqStub2 = _.cloneDeep(this.reqStub);
+    reqStub2.query.ship = "ship_id2";
+    this.getStub = sinon.stub(HullStub.prototype, "get");
+    this.getStub.returns(Promise.resolve());
+    instance(this.reqStub, {}, () => {});
+    instance(reqStub2, {}, () => {});
+    instance(this.reqStub, {}, () => {});
+    instance(reqStub2, {}, () => {});
+    instance(this.reqStub, {}, () => {
+      expect(this.getStub.calledTwice).to.be.true;
+      expect(this.getStub.getCall(0).args[0]).to.equal("ship_id");
+      expect(this.getStub.getCall(1).args[0]).to.equal("ship_id2");
       done();
     });
   });
