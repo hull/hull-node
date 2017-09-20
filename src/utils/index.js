@@ -12,6 +12,7 @@ export requireHullMiddleware from "./require-hull-middleware";
 export responseMiddleware from "./response-middleware";
 export notifMiddleware from "./notif-middleware";
 export smartNotifierMiddleware from "./smart-notifier-middleware";
+export smartNotifierErrorMiddleware from "./smart-notifier-error-middleware";
 export segmentsMiddleware from "./segments-middleware";
 export helpersMiddleware from "./helpers-middleware";
 
