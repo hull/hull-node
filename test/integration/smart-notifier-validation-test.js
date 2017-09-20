@@ -41,6 +41,9 @@ const server = app.listen();
 
 describe("SmartNotifierHandler validation", () => {
 
+  // disabled for now due to current architecture which requires us to have
+  // both SNS notif middleware and smart-notifier handler applied to application
+  // and we need to be able to suport both formats
   // it("should fail with missing smart notifier header", (done) => {
   //   chai.request(server)
   //     .post('/notify')
