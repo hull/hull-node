@@ -668,9 +668,9 @@ app.use('/notify', handler);
 
 For example of the notifications payload [see details](./notifications.md)
 
-### smartNotificationHandler() `BETA`
+### smartNotifierHandler() `BETA`
 
-`smartNotificationHandler` is a next generation `notifHandler` cooperating with our internal notification tool. To mark connector as using the smartNotifier `smart-notifier` tag should be present in `manifest.json` file:
+`smartNotifierHandler` is a next generation `notifHandler` cooperating with our internal notification tool. To mark connector as using the smartNotifier `smart-notifier` tag should be present in `manifest.json` file:
 
 ```json
 {
@@ -684,10 +684,10 @@ For example of the notifications payload [see details](./notifications.md)
 Here's how to use it.
 
 ```js
-import { smartNotificationHandler } from "hull/lib/utils";
+import { smartNotifierHandler } from "hull/lib/utils";
 const app = express();
 
-const handler = smartNotificationHandler({
+const handler = smartNotifierHandler({
   handlers: {
     "ship:update": function(ctx, messages = []) {},
     "segment:update": function(ctx, messages = []) {},
@@ -702,6 +702,7 @@ const handler = smartNotificationHandler({
       //   events: [{}, {}]
       //   matchesFilter: true | false
       // }]
+      // documentation how to setup flowControl response below
       return Promise.resolve();
     }
   },
