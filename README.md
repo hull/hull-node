@@ -702,7 +702,12 @@ const handler = smartNotifierHandler({
       //   events: [{}, {}]
       //   matchesFilter: true | false
       // }]
-      // documentation how to setup flowControl response below
+      // more about `smartNotifierResponse` below
+      ctx.smartNotifierResponse.setFlowControl({
+        type: "next",
+        size: 100,
+        in: 5000
+      });
       return Promise.resolve();
     }
   },
