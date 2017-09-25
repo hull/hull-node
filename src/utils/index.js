@@ -15,5 +15,6 @@ export smartNotifierMiddleware from "./smart-notifier-middleware";
 export smartNotifierErrorMiddleware from "./smart-notifier-error-middleware";
 export segmentsMiddleware from "./segments-middleware";
 export helpersMiddleware from "./helpers-middleware";
-
 export SmartNotifierResponse from "./smart-notifier-response";
+export PromiseReuser from "./promise-reuser";
+

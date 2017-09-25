@@ -5,6 +5,9 @@
 * **breaking**: removed `serviceMiddleware` and `service` param on `Hull.Connector`, new way of applying service related objects to the Context Object is the `use` method on the Connector instance and initialize the service objects directly on the `req.hull.service` namespace
 * restructurized tests folders and files
 
+# 0.12.6
+* adds `PromiseReuser` class which allows us to handle in memory longer running promises and reuse them in case the same function is called multiple times with the same input
+
 # 0.12.5
 * upgrades hull-client to 1.1.3
 * update documentation about initialization of `QueueAdapter`
