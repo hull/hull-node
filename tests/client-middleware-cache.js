@@ -3,6 +3,7 @@ import { expect, should } from "chai";
 import sinon from "sinon";
 import cacheManager from "cache-manager";
 import jwt from "jwt-simple";
+import _ from "lodash";
 
 import Middleware from "../src/middleware/client";
 import { Cache } from "../src/infra";
@@ -77,6 +78,43 @@ describe("Client Middleware", () => {
         expect(this.getStub.calledTwice).to.be.true;
         done();
       });
+    });
+  });
+
+  it("should call the API only once even for multiple concurrent inits", function (done) {
+    const cache = new Cache({ store: "memory", max: 100, ttl: 1/*seconds*/ });
+    cache.contextMiddleware()(reqStub, {}, () => {});
+    const instance = Middleware(HullStub, { hostSecret: "secret" });
+    this.getStub.restore();
+    this.getStub = sinon.stub(HullStub.prototype, "get");
+    this.getStub.returns(Promise.resolve());
+    instance(reqStub, {}, () => {});
+    instance(reqStub, {}, () => {});
+    instance(reqStub, {}, () => {
+      console.log(this.getStub.callCount);
+      expect(this.getStub.calledOnce).to.be.true;
+      done();
+    });
+  });
+
+  it("should call the API only once even for multiple concurrent inits, one call per ship id", function (done) {
+    const cache = new Cache({ store: "memory", max: 100, ttl: 1/*seconds*/ });
+    cache.contextMiddleware()(reqStub, {}, () => {});
+    const instance = Middleware(HullStub, { hostSecret: "secret" });
+    this.getStub.restore();
+    const reqStub2 = _.cloneDeep(reqStub);
+    reqStub2.query.ship = "ship_id2";
+    this.getStub = sinon.stub(HullStub.prototype, "get");
+    this.getStub.returns(Promise.resolve());
+    instance(reqStub, {}, () => {});
+    instance(reqStub2, {}, () => {});
+    instance(reqStub, {}, () => {});
+    instance(reqStub2, {}, () => {});
+    instance(reqStub, {}, () => {
+      expect(this.getStub.calledTwice).to.be.true;
+      expect(this.getStub.getCall(0).args[0]).to.equal("ship_id");
+      expect(this.getStub.getCall(1).args[0]).to.equal("ship_id2");
+      done();
     });
   });
 });

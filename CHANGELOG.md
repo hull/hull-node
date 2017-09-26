@@ -1,3 +1,6 @@
+# 0.12.7
+* makes `PromiseReuser` reuse the whole `cache.wrap`, not `client.get` only
+
 # 0.12.6
 * adds `PromiseReuser` class which allows us to handle in memory longer running promises and reuse them in case the same function is called multiple times with the same input
 
