@@ -38,7 +38,6 @@ export default class PromiseReuser {
       const forgetPromise = () => delete self.promiseMapsByArgs[key];
 
       const origPromise = origFn.apply(this, args);
-
       const promise = origPromise.then((value) => {
         forgetPromise();
         return value;

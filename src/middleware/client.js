@@ -39,19 +39,24 @@ module.exports = function hullClientMiddlewareFactory(Client, { hostSecret, clie
       return Promise.resolve();
     })()
     .then(() => {
-      const reusableGet = promiseReuser.reusePromise(client.get);
       if (cache) {
-        return cache.wrap(id, () => {
-          return reusableGet(id, {}, {
-            timeout: 5000,
-            retry: 1000
+        const reusableGet = promiseReuser.reusePromise((shipId) => {
+          return cache.wrap(shipId, () => {
+            return client.get(shipId, {}, {
+              timeout: 5000,
+              retry: 1000
+            });
           });
         });
+        return reusableGet(id);
       }
-      return reusableGet(id, {}, {
-        timeout: 5000,
-        retry: 1000
+      const reusableGet = promiseReuser.reusePromise((shipId) => {
+        return client.get(shipId, {}, {
+          timeout: 5000,
+          retry: 1000
+        });
       });
+      return reusableGet(id);
     });
   }
 
