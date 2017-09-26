@@ -1,14 +1,11 @@
 import _ from "lodash";
 
-import { PromiseReuser } from ".";
-
 /**
  * @param  {Object}   req
  * @param  {Object}   res
  * @param  {Function} next
  */
 export default function segmentsMiddlewareFactory() {
-  const promiseReuser = new PromiseReuser();
   return function segmentsMiddleware(req, res, next) {
     req.hull = req.hull || {};
 
@@ -31,15 +28,12 @@ export default function segmentsMiddlewareFactory() {
       }
       return Promise.resolve();
     })().then(() => {
-      const reusableGet = promiseReuser.reusePromise((shipId) => { // eslint-disable-line no-unused-vars
-        return cache.wrap("segments", () => {
-          return req.hull.client.get("/segments", {}, {
-            timeout: 5000,
-            retry: 1000
-          });
+      return cache.wrap("segments", () => {
+        return req.hull.client.get("/segments", {}, {
+          timeout: 5000,
+          retry: 1000
         });
       });
-      return reusableGet(req.hull.ship.id);
     }).then((segments) => {
       req.hull.segments = _.map(segments, (s) => {
         const fieldName = connectorConfig.segmentFilterSetting;
