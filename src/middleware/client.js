@@ -29,7 +29,6 @@ function parseToken(token, secret) {
 
 
 module.exports = function hullClientMiddlewareFactory(Client, { hostSecret, clientConfig = {} }) {
-  const promiseReuser = new PromiseReuser();
   function getCurrentShip(id, client, cache, bust, notification) {
     if (notification && notification.connector) {
       return Promise.resolve(notification.connector);

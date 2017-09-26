@@ -8,7 +8,7 @@ import _ from "lodash";
 import Middleware from "../../src/middleware/client";
 import { Cache } from "../../src/infra";
 
-import HullStub from "./support/hull-stub";
+import HullStub from "../unit/support/hull-stub";
 
 let reqStub;
 
