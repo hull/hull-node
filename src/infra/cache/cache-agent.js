@@ -1,6 +1,7 @@
 import cacheManager from "cache-manager";
 import _ from "lodash";
 import ShipCache from "./ship-cache";
+import PromiseReuser from "../../utils/promise-reuser";
 
 /**
  * This is a wrapper over https://github.com/BryanDonovan/node-cache-manager
@@ -20,6 +21,7 @@ export default class Cache {
     });
     this.cache = cacheManager.caching(options);
     this.contextMiddleware = this.contextMiddleware.bind(this);
+    this.promiseReuser = new PromiseReuser();
   }
 
   /**
@@ -28,7 +30,7 @@ export default class Cache {
   contextMiddleware() { // eslint-disable-line class-methods-use-this
     return (req, res, next) => {
       req.hull = req.hull || {};
-      req.hull.cache = req.hull.cache || new ShipCache(req.hull, this.cache);
+      req.hull.cache = req.hull.cache || new ShipCache(req.hull, this.cache, this.promiseReuser);
       next();
     };
   }
