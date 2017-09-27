@@ -10,7 +10,7 @@ import { renderFile } from "ejs";
 
 import HullStub from "../support/hull-stub";
 
-import oauthHandler from "../../src/utils/oauth-handler";
+import oauthHandler from "../../../src/utils/oauth-handler";
 
 class StrategyStub extends passport.Strategy {
   constructor() {
@@ -39,7 +39,7 @@ describe("OAuthHandler", () => {
   it("should handle oauth errors", (done) => {
     const app = express();
     app.engine("html", renderFile);
-    app.set("views", `${process.cwd()}/tests/fixtures/`);
+    app.set("views", `${process.cwd()}/test/unit/fixtures/`);
     app.set("view engine", "ejs");
 
     app.use(mockHullMiddleware);

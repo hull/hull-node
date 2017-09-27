@@ -2,7 +2,7 @@
 import { expect } from "chai";
 import sinon from "sinon";
 
-import HullConnector from "../../src/connector/hull-connector";
+import HullConnector from "../../../src/connector/hull-connector";
 import HullStub from "../support/hull-stub";
 
 describe("HullConnector", () => {

@@ -3,7 +3,7 @@ import { expect } from "chai";
 import sinon from "sinon";
 import HullStub from "../support/hull-stub";
 
-import enqueue from "../../src/infra/queue/enqueue";
+import enqueue from "../../../src/infra/queue/enqueue";
 
 describe("Enqueue", () => {
   it("should allow custom queue name", () => {

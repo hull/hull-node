@@ -12,8 +12,13 @@ export default function segmentsMiddlewareFactory() {
     if (!req.hull.client) {
       return next();
     }
+    const { cache, message, notification, connectorConfig } = req.hull;
 
-    const { cache, message, connectorConfig } = req.hull;
+    if (notification && notification.segments) {
+      req.hull.segments = notification.segments;
+      return next();
+    }
+
     const bust = (message
       && (message.Subject === "users_segment:update" || message.Subject === "users_segment:delete"));
 

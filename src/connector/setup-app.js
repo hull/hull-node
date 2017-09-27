@@ -1,15 +1,16 @@
 import { renderFile } from "ejs";
 import timeout from "connect-timeout";
 
-import { staticRouter, tokenMiddleware, notifMiddleware } from "../utils";
+import { staticRouter, tokenMiddleware, notifMiddleware, smartNotifierMiddleware, smartNotifierErrorMiddleware } from "../utils";
 
 
 /**
  * Base Express app for Ships front part
  */
-export default function setupApp({ instrumentation, queue, cache, app }) {
+export default function setupApp({ instrumentation, queue, cache, app, connectorConfig }) {
   app.use(tokenMiddleware());
   app.use(notifMiddleware());
+  app.use(smartNotifierMiddleware({ skipSignatureValidation: connectorConfig.skipSignatureValidation }));
   app.use(instrumentation.startMiddleware());
 
   app.use(instrumentation.contextMiddleware());
@@ -25,6 +26,9 @@ export default function setupApp({ instrumentation, queue, cache, app }) {
   app.set("view engine", "ejs");
 
   app.use("/", staticRouter());
+
+  app.use(smartNotifierErrorMiddleware());
+
 
   return app;
 }

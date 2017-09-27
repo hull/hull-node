@@ -5,7 +5,7 @@ import sinon from "sinon";
 
 import HullStub from "../support/hull-stub";
 
-import requestExtract from "../../src/helpers/request-extract";
+import requestExtract from "../../../src/helpers/request-extract";
 
 describe("extract.request", () => {
   beforeEach(function beforeEachHandler() {

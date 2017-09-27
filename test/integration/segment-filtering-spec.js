@@ -1,12 +1,12 @@
 /* global describe, it */
 /* eslint-disable no-unused-expressions */
 import { expect } from "chai";
-import Hull from "../src";
+import Hull from "../../src";
 import express from "express";
-import { notifHandler } from "../src/utils";
+import { notifHandler } from "../../src/utils";
 import request from "request";
 
-import userReport from "../tests/fixtures/sns-messages/user-report.json";
+import userReport from "../unit/fixtures/sns-messages/user-report.json";
 
 describe("segmentFiltering", () => {
   it("should mark user not filtered in notification when he doesn't belong to any filtered segment", (done) => {
@@ -48,6 +48,9 @@ describe("segmentFiltering", () => {
 
     request({
       uri: "http://localhost:8070/notif?ship=562123b470df84b740000042&organization=localhost:8071&secret=1234",
+      headers: {
+        "x-amz-sns-message-type": true
+      },
       method: "post",
       json: true,
       body: userReport
@@ -94,6 +97,9 @@ describe("segmentFiltering", () => {
 
     request({
       uri: "http://localhost:8070/notif?ship=562123b470df84b740000042&organization=localhost:8071&secret=1234",
+      headers: {
+        "x-amz-sns-message-type": true
+      },
       method: "post",
       json: true,
       body: userReport
@@ -139,6 +145,9 @@ describe("segmentFiltering", () => {
 
     request({
       uri: "http://localhost:8070/notif?ship=562123b470df84b740000042&organization=localhost:8071&secret=1234",
+      headers: {
+        "x-amz-sns-message-type": true
+      },
       method: "post",
       json: true,
       body: userReport
@@ -184,6 +193,9 @@ describe("segmentFiltering", () => {
 
     request({
       uri: "http://localhost:8070/notif?ship=562123b470df84b740000042&organization=localhost:8071&secret=1234",
+      headers: {
+        "x-amz-sns-message-type": true
+      },
       method: "post",
       json: true,
       body: userReport

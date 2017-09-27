@@ -1,5 +1,13 @@
+# 0.13.0
+* introduces `smartNotifierMiddleware` and `smartNotifierHandler` utils
+* introduces `ctx.smartNotifierResponse` context object to build flow response
+* added `skipSignatureValidation` `Hull.Connector` options to skip smartNotifier signature validation
+* **breaking**: removed `serviceMiddleware` and `service` param on `Hull.Connector`, new way of applying service related objects to the Context Object is the `use` method on the Connector instance and initialize the service objects directly on the `req.hull.service` namespace
+* restructurized tests folders and files
+
 # 0.12.7
 * makes `PromiseReuser` reuse the whole `cache.wrap`, not `client.get` only
+
 
 # 0.12.6
 * adds `PromiseReuser` class which allows us to handle in memory longer running promises and reuse them in case the same function is called multiple times with the same input
@@ -15,7 +23,7 @@
 * upgrades underlying hull-client which fixes the way timeouted or errored rest API events are rejected
 
 # 0.12.2
-* adds option to get cache data via `req.hull.cache.get` 
+* adds option to get cache data via `req.hull.cache.get`
 
 # 0.12.1
 * adds options to `req.hull.cache.wrap` and `req.hull.cache.set` methods to set custom TTL

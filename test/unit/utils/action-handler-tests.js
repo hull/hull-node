@@ -5,7 +5,7 @@ import httpMocks from "node-mocks-http";
 import Promise from "bluebird";
 import hullStub from "../support/hull-stub";
 
-import actionHandler from "../../src/utils/action-handler";
+import actionHandler from "../../../src/utils/action-handler";
 
 
 describe("actionHandler", () => {
