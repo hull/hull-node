@@ -23,7 +23,7 @@
 * upgrades underlying hull-client which fixes the way timeouted or errored rest API events are rejected
 
 # 0.12.2
-* adds option to get cache data via `req.hull.cache.get` 
+* adds option to get cache data via `req.hull.cache.get`
 
 # 0.12.1
 * adds options to `req.hull.cache.wrap` and `req.hull.cache.set` methods to set custom TTL
