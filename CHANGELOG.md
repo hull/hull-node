@@ -1,6 +1,7 @@
 # 0.13.1
 * adds error handler and segment filtering to `smartNotifierHandler`
 * properly map account object from batch extract to notification format
+* fetch 200 segments for segments middleware
 
 # 0.13.0
 * introduces `smartNotifierMiddleware` and `smartNotifierHandler` utils
@@ -11,7 +12,6 @@
 
 # 0.12.7
 * makes `PromiseReuser` reuse the whole `cache.wrap`, not `client.get` only
-
 
 # 0.12.6
 * adds `PromiseReuser` class which allows us to handle in memory longer running promises and reuse them in case the same function is called multiple times with the same input
