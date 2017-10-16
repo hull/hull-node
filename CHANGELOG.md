@@ -1,5 +1,6 @@
 # 0.13.1
 * adds error handler and segment filtering to `smartNotifierHandler`
+* properly map account object from batch extract to notification format
 
 # 0.13.0
 * introduces `smartNotifierMiddleware` and `smartNotifierHandler` utils
