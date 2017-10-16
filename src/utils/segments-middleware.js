@@ -24,7 +24,7 @@ export default function segmentsMiddlewareFactory() {
       return Promise.resolve();
     })().then(() => {
       return cache.wrap("segments", () => {
-        return req.hull.client.get("/segments", {}, {
+        return req.hull.client.get("/segments", { per_page: 200 }, {
           timeout: 5000,
           retry: 1000
         });
