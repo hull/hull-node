@@ -5,8 +5,7 @@ import _ from "lodash";
 import setupApp from "./setup-app";
 import Worker from "./worker";
 import { Instrumentation, Cache, Queue, Batcher } from "../infra";
-import { exitHandler, segmentsMiddleware, requireHullMiddleware, helpersMiddleware } from "../utils";
-
+import { exitHandler, segmentsMiddleware, requireHullMiddleware, helpersMiddleware, smartNotifierErrorMiddleware } from "../utils";
 
 export default class HullConnector {
   constructor(Hull, {
@@ -68,11 +67,14 @@ export default class HullConnector {
     app.use(segmentsMiddleware());
     this.middlewares.map(middleware => app.use(middleware));
 
+
     return app;
   }
 
   startApp(app) {
     app.use(this.instrumentation.stopMiddleware());
+    app.use(smartNotifierErrorMiddleware());
+
     return app.listen(this.port, () => {
       this.Hull.logger.info("connector.server.listen", { port: this.port });
     });

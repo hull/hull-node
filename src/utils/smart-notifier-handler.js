@@ -8,7 +8,7 @@ import { defaultSuccessFlowControl, defaultErrorFlowControl } from "./smart-noti
 function processHandlersFactory(handlers, userHandlerOptions) {
   return function process(req, res, next) {
     try {
-      const { notification, client } = req.hull;
+      const { notification, client, helpers } = req.hull;
       if (!notification || !notification.notification_id) {
         return next();
       }
@@ -33,7 +33,7 @@ function processHandlersFactory(handlers, userHandlerOptions) {
         req.hull.smartNotifierResponse.setFlowControl(defaultSuccessFlowControl);
         const response = req.hull.smartNotifierResponse.toJSON();
         ctx.client.logger.debug("connector.smartNotifierHandler.response", response);
-        return next(new SmartNotifierError("CHANNEL_NOT_SUPPORTED", `Channel ${eventName} is not supported`));
+        return next(new SmartNotifierError("CHANNEL_NOT_SUPPORTED", `Channel ${eventName} is not supported`, defaultSuccessFlowControl));
       }
 
       if (notification.channel === "user:update") {
@@ -46,6 +46,16 @@ function processHandlersFactory(handlers, userHandlerOptions) {
         }
       }
 
+      // add `matchesFilter` boolean flag
+      notification.messages.map((m) => {
+        if (req.query.source === "connector") {
+          m.matchesFilter = helpers.filterNotification(m, userHandlerOptions.segmentFilterSetting || req.hull.connectorConfig.segmentFilterSetting);
+        } else {
+          m.matchesFilter = true;
+        }
+        return m;
+      });
+
       const promise = messageHandler(ctx, notification.messages);
       return promise.then(() => {
         if (!req.hull.smartNotifierResponse.isValid()) {
@@ -55,16 +65,17 @@ function processHandlersFactory(handlers, userHandlerOptions) {
         ctx.client.logger.debug("connector.smartNotifierHandler.response", response);
         return res.json(response);
       }, (err) => {
-        err = err || new Error("Error while processing notification");
-        err.eventName = eventName;
-        err.status = err.status || 500;
-        ctx.client.logger.error("connector.smartNotifierHandler.error", err.stack || err);
+        // we enrich the response with the underlying error
+        req.hull.smartNotifierResponse.addError(new SmartNotifierError("N/A", err.message));
+
         if (!req.hull.smartNotifierResponse.isValid()) {
           req.hull.smartNotifierResponse.setFlowControl(defaultErrorFlowControl);
         }
         const response = req.hull.smartNotifierResponse.toJSON();
+        err = err || new Error("Error while processing notification");
+        ctx.client.logger.error("connector.smartNotifierHandler.error", err.stack || err);
         ctx.client.logger.debug("connector.smartNotifierHandler.response", response);
-        return res.status(err.status).json(response);
+        return res.status(err.status || 500).json(response);
       });
     } catch (err) {
       err.status = 500;

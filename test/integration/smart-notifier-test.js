@@ -24,7 +24,7 @@ const handler = function(ctx, messages) {
     if (messages[0].outcome === "SUCCESS") {
       fulfill({});
     } else if (messages[0].outcome === "FAILURE") {
-      reject({});
+      reject(new Error("FAILED"));
     } else {
       throw new Error("Simulating error in connector code");
     }
@@ -50,7 +50,7 @@ app.use("/notify", smartNotifierHandler({
     "user:update": handler
   }
 }));
-app.use(smartNotifierErrorMiddleware);
+app.use(smartNotifierErrorMiddleware());
 
 const server = app.listen();
 
@@ -103,7 +103,8 @@ describe("SmartNotifierHandler", () => {
         expect(res.status).to.equal(500);
         expect(res.headers['content-type']).to.have.string('application/json');
         expect(res.body.errors).to.be.an('array');
-        expect(res.body.errors).to.be.empty;
+        expect(res.body.errors.length).to.be.equal(1);
+        expect(res.body.errors[0].reason).to.be.equal("FAILED");
         expect(res.body.flow_control).to.be.an('object');
         expect(res.body.flow_control.type).to.be.equal('retry');
         expect(res.body.flow_control).to.deep.equal(flowControls.defaultErrorFlowControl);
@@ -129,7 +130,8 @@ describe("SmartNotifierHandler", () => {
         expect(res.status).to.equal(500);
         expect(res.headers['content-type']).to.have.string('application/json');
         expect(res.body.errors).to.be.an('array');
-        expect(res.body.errors).to.be.empty;
+        expect(res.body.errors.length).to.be.equal(1);
+        expect(res.body.errors[0].reason).to.be.equal("Simulating error in connector code");
         expect(res.body.flow_control).to.be.an('object');
         expect(res.body.flow_control.type).to.be.equal('retry');
         expect(res.body.flow_control).to.deep.equal(flowControls.defaultErrorFlowControl);
@@ -137,5 +139,31 @@ describe("SmartNotifierHandler", () => {
       });
   });
 
+  it("should return a next flow control when channel is not supported", (done) => {
+    let notification = {
+      notification_id: '0123456789',
+      channel: 'unknown:update',
+      configuration: {},
+      messages: [{
+        outcome: "FAILURE_WITHOUT_REJECT"
+      }]
+    };
+
+    chai.request(server)
+      .post('/notify')
+      .send(notification)
+      .set('X-Hull-Smart-Notifier', 'true')
+      .end((err, res) => {
+        expect(res.status).to.equal(400);
+        expect(res.headers['content-type']).to.have.string('application/json');
+        expect(res.body.errors).to.be.an('array');
+        expect(res.body.errors.length).to.be.equal(1);
+        expect(res.body.flow_control).to.be.an('object');
+        expect(res.body.flow_control.type).to.be.equal('next');
+        expect(res.body.errors[0].code).to.be.equal('CHANNEL_NOT_SUPPORTED');
+        expect(res.body.flow_control).to.deep.equal(flowControls.defaultSuccessFlowControl);
+        done();
+      });
+  });
 
 });
