@@ -1,3 +1,6 @@
+# 0.13.1
+* adds error handler and segment filtering to `smartNotifierHandler`
+
 # 0.13.0
 * introduces `smartNotifierMiddleware` and `smartNotifierHandler` utils
 * introduces `ctx.smartNotifierResponse` context object to build flow response
