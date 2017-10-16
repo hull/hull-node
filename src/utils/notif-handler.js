@@ -120,9 +120,11 @@ function handleExtractFactory({ handlers, userHandlerOptions }) {
         }
         const messages = users.map((user) => {
           const segmentIds = _.compact(_.uniq(_.concat(user.segment_ids || [], [segmentId])));
+          const account = user.account || {};
           return {
             user,
-            segments: _.compact(segmentIds.map(id => _.find(req.hull.segments, { id })))
+            segments: _.compact(segmentIds.map(id => _.find(req.hull.segments, { id }))),
+            account
           };
         });
 
