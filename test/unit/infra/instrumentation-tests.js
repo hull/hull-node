@@ -2,7 +2,7 @@
 import Promise from "bluebird";
 import { expect } from "chai";
 
-import Instrumentation from "../../src/infra/instrumentation";
+import Instrumentation from "../../../src/infra/instrumentation";
 
 describe("Instrumentation", () => {
   it("should start raven", () => {

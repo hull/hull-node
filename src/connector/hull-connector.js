@@ -5,12 +5,11 @@ import _ from "lodash";
 import setupApp from "./setup-app";
 import Worker from "./worker";
 import { Instrumentation, Cache, Queue, Batcher } from "../infra";
-import { exitHandler, segmentsMiddleware, requireHullMiddleware, helpersMiddleware } from "../utils";
-
+import { exitHandler, segmentsMiddleware, requireHullMiddleware, helpersMiddleware, smartNotifierErrorMiddleware } from "../utils";
 
 export default class HullConnector {
   constructor(Hull, {
-    hostSecret, port, clientConfig = {}, instrumentation, cache, queue, connectorName, segmentFilterSetting
+    hostSecret, port, clientConfig = {}, instrumentation, cache, queue, connectorName, segmentFilterSetting, skipSignatureValidation
   } = {}) {
     this.Hull = Hull;
     this.instrumentation = instrumentation || new Instrumentation();
@@ -37,6 +36,10 @@ export default class HullConnector {
       this.connectorConfig.segmentFilterSetting = segmentFilterSetting;
     }
 
+    if (skipSignatureValidation) {
+      this.connectorConfig.skipSignatureValidation = skipSignatureValidation;
+    }
+
     exitHandler(() => {
       return Promise.all([
         Batcher.exit(),
@@ -50,7 +53,8 @@ export default class HullConnector {
       app,
       instrumentation: this.instrumentation,
       cache: this.cache,
-      queue: this.queue
+      queue: this.queue,
+      connectorConfig: this.connectorConfig
     });
     app.use((req, res, next) => {
       req.hull = req.hull || {};
@@ -63,11 +67,14 @@ export default class HullConnector {
     app.use(segmentsMiddleware());
     this.middlewares.map(middleware => app.use(middleware));
 
+
     return app;
   }
 
   startApp(app) {
     app.use(this.instrumentation.stopMiddleware());
+    app.use(smartNotifierErrorMiddleware());
+
     return app.listen(this.port, () => {
       this.Hull.logger.info("connector.server.listen", { port: this.port });
     });

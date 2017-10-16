@@ -330,7 +330,7 @@ The core part of the **Context Object** is described in [Hull Middleware documen
 
 * **service**
   > A namespace reserved for connector developer to inject a custom logic. When the connector base code evolves, the best technique to keep it maintainable is to split it into a set of functions or classes. To make it even simpler and straightforward the connector toolkit uses [one convention](#context) to pass the context into the functions and classes.
-  The `service` namespace is reserved for the purpose and should be used together with `use` method on connector instance to apply custom middleware. That should be an object with custom structure adjusted to specifi connector needs and scale:
+  The `service` namespace is reserved for the purpose and should be used together with `use` method on connector instance to apply custom middleware. That should be an object with custom structure adjusted to specific connector needs and scale:
 
   > Example:
 
@@ -345,7 +345,7 @@ The core part of the **Context Object** is described in [Hull Middleware documen
 
   connector.setupApp(app);
 
-  app.get("/action", serviceMiddleware(service), (req, res) => {
+  app.get("/action", (req, res) => {
     const { service } = req.hull;
     service.customFunction(req.query.user_id);
     // or
@@ -367,6 +367,16 @@ The core part of the **Context Object** is described in [Hull Middleware documen
   subject: "user_report:update",
   timestamp: new Date(message.Timestamp),
   paload: { user: {} }
+  ```
+
+* **smartNotifierResponse**
+  > Object where you can set FlowControl information using:
+  ```js
+  ctx.smartNotifierResponse.setFlowControl({
+    type: "next",
+    size: 100,
+    in: 5000
+  });
   ```
 
 ## Context management convention
@@ -453,18 +463,22 @@ const connector = new Hull.Connector({ instrumentation, cache, queue });
 ```
 
 ### Queue
-By default it's initiated inside `Hull.Connector` as a very simplistic in-memory queue, but in case of production grade needs, it comes with a [Kue](https://github.com/Automattic/kue) adapter which you can initiate in a following way:
+By default it's initiated inside `Hull.Connector` as a very simplistic in-memory queue, but in case of production grade needs, it comes with a [Kue](https://github.com/Automattic/kue) or [Bull](https://github.com/OptimalBits/bull) adapters which you can initiate in a following way:
 
 ```js
 import { Queue } from "hull/lib/infra";
+import BullAdapter from "hull/lib/infra/queue/adapter/bull"; // or KueAdapter
 
-const queue = new Queue("kue", { options });
+const queueAdapter = new BullAdapter(options);
+const queue = new Queue(queueAdapter);
 
 const connector = new Hull.Connector({ queue });
 ```
 
-`Options` from the constructor of the `Queue` are passed directly to the `kue.createQueue()` method and can be set with following parameters:
+`Options` from the constructor of the `BullAdapter` or `KueAdapter` are passed directly to the internal init method and can be set with following parameters:
+
 https://github.com/Automattic/kue#redis-connection-settings
+https://github.com/OptimalBits/bull/blob/master/REFERENCE.md#queue
 
 The `queue` instance has a `contextMiddleware` method which adds `req.hull.enqueue` method to queue jobs - this is done automatically by `Hull.Connector().setupApp(app)`:
 
@@ -653,6 +667,113 @@ app.use('/notify', handler);
 ```
 
 For example of the notifications payload [see details](./notifications.md)
+
+### smartNotifierHandler() `BETA`
+
+`smartNotifierHandler` is a next generation `notifHandler` cooperating with our internal notification tool. To mark connector as using the smartNotifier `smart-notifier` tag should be present in `manifest.json` file:
+
+```json
+{
+  "tags": ["smart-notifier"],
+  "subscriptions": [{
+    "url" : "/notify"
+  }]
+}
+```
+
+Here's how to use it.
+
+```js
+import { smartNotifierHandler } from "hull/lib/utils";
+const app = express();
+
+const handler = smartNotifierHandler({
+  handlers: {
+    "ship:update": function(ctx, messages = []) {},
+    "segment:update": function(ctx, messages = []) {},
+    "segment:delete": function(ctx, messages = []) {},
+    "user:update": function(ctx, messages = []) {
+      console.log("Event Handler here", ctx, messages);
+      // ctx: Context Object
+      // messages: [{
+      //   user: { id: '123', ... },
+      //   segments: [{}],
+      //   changes: {},
+      //   events: [{}, {}]
+      //   matchesFilter: true | false
+      // }]
+      // more about `smartNotifierResponse` below
+      ctx.smartNotifierResponse.setFlowControl({
+        type: "next",
+        size: 100,
+        in: 5000
+      });
+      return Promise.resolve();
+    }
+  },
+  userHandlerOptions: {
+    groupTraits: false
+  }
+});
+
+connector.setupApp(app);
+app.use("/notify", handler);
+```
+
+When performing operations on notification you can set FlowControl settings using `ctx.smartNotifierResponse` helper.
+
+```js
+function userUpdateHandler(ctx, messages = []) {
+  ctx.smartNotifierResponse.setFlowControl({
+    type: "next",
+    in: 1000
+  });
+  return Promise.resolve();
+}
+```
+
+Default `smartNofitier` [FlowControl](#flowcontrol) are following:
+
+```js
+// for resolved, successful promise:
+{
+  type: "next",
+  size: 1,
+  in: 1000
+}
+
+// for rejected, errornous promise:
+{
+  type: "retry",
+  in: 1000
+}
+```
+
+### FlowControl
+
+FlowControl is an element of the `SmartNotifierResponse`
+
+```js
+ctx.smartNotifierResponse.setFlowControl({
+  type: "next", // `next` or `retry`, defines next flow action
+  size: 1000, // only for `next` - number of messages for next notification
+  in: 1000, // delay for next flow step in ms 
+  at: 1501062782 // time to trigger next flow step
+})
+```
+
+When the HTTP response is built it has the following structure
+
+```js
+// response body:
+{
+  flow_control: {
+    type: "next",
+    in: 1000
+  },
+  metrics: []
+}
+```
 
 **Extracts**
 

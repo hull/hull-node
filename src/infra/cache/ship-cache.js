@@ -6,9 +6,10 @@ export default class ShipCache {
   /**
    * @param {Object} options passed to node-cache-manager
    */
-  constructor(ctx, cache) {
+  constructor(ctx, cache, promiseReuser) {
     this.ctx = ctx;
     this.cache = cache;
+    this.promiseReuser = promiseReuser;
   }
 
   /**
@@ -30,7 +31,10 @@ export default class ShipCache {
    */
   wrap(id, cb, options) {
     const shipCacheKey = this.getShipKey(id);
-    return this.cache.wrap(shipCacheKey, cb, options);
+    const reuseWrap = this.promiseReuser.reusePromise((wrappedShipCacheKey) => {
+      return this.cache.wrap(wrappedShipCacheKey, cb, options);
+    });
+    return reuseWrap(shipCacheKey);
   }
 
   /**

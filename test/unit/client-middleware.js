@@ -1,8 +1,10 @@
 /* global describe, it */
 import { expect, should } from "chai";
 import sinon from "sinon";
+import Promise from "bluebird";
+import _ from "lodash";
 
-import Middleware from "../src/middleware/client";
+import Middleware from "../../src/middleware/client";
 import HullStub from "./support/hull-stub";
 
 describe("Client Middleware", () => {

@@ -3,7 +3,7 @@ import { expect } from "chai";
 import sinon from "sinon";
 import Promise from "bluebird";
 
-import { updateSettings } from "../../src/helpers";
+import { updateSettings } from "../../../src/helpers";
 
 describe("updateSettings", () => {
   it("should call utils.settings.update in the background", (done) => {

@@ -2,7 +2,7 @@
 /* eslint-disable no-unused-expressions */
 import { expect } from "chai";
 
-import { filterNotification } from "../../src/helpers";
+import { filterNotification } from "../../../src/helpers";
 
 import mockSettings from "../support/mock-settings";
 
