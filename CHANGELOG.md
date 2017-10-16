@@ -1,3 +1,6 @@
+# 0.12.8
+* properly map account object from batch extract to notification format
+
 # 0.12.7
 * makes `PromiseReuser` reuse the whole `cache.wrap`, not `client.get` only
 
