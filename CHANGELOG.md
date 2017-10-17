@@ -13,6 +13,10 @@
 * **breaking**: removed `serviceMiddleware` and `service` param on `Hull.Connector`, new way of applying service related objects to the Context Object is the `use` method on the Connector instance and initialize the service objects directly on the `req.hull.service` namespace
 * restructurized tests folders and files
 
+# 0.12.8
+* properly map account object from batch extract to notification format
+* fetch 200 segments for segments middleware
+
 # 0.12.7
 * makes `PromiseReuser` reuse the whole `cache.wrap`, not `client.get` only
 
@@ -30,7 +34,7 @@
 * upgrades underlying hull-client which fixes the way timeouted or errored rest API events are rejected
 
 # 0.12.2
-* adds option to get cache data via `req.hull.cache.get` 
+* adds option to get cache data via `req.hull.cache.get`
 
 # 0.12.1
 * adds options to `req.hull.cache.wrap` and `req.hull.cache.set` methods to set custom TTL
