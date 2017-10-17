@@ -71,7 +71,7 @@ export default class SmartNotifierValidator {
           }
           return Promise.reject(new Error("Signature invalid"));
         } catch (err) {
-          return Promise.reject(new Error("Signature invalid"));
+          return Promise.reject(err);
         }
       });
   }
@@ -88,6 +88,9 @@ export default class SmartNotifierValidator {
       }, (error, response, body) => {
         if (error) {
           return reject(error);
+        }
+        if (!body.match("-----BEGIN PUBLIC KEY-----")) {
+          return reject(new Error("Invalid certificate"));
         }
         certCache[certUrl] = body;
         return resolve(body);

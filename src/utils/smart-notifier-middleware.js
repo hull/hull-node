@@ -63,8 +63,8 @@ export default function smartNotifierMiddlewareFactory({ skipSignatureValidation
 
           req.hull.smartNotifierResponse = new SmartNotifierResponse();
           return next();
-        }, () => {
-          Client.logger.error("connector.smartNotifierHandler.error", { error: "No valid signature" });
+        }, (error) => {
+          Client.logger.error("connector.smartNotifierHandler.error", { error: "No valid signature", error_message: error.message || error });
           return next(new SmartNotifierError("INVALID_SIGNATURE", "Invalid signature"));
         });
     });

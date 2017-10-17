@@ -1,3 +1,6 @@
+# 0.13.2
+* pass original error information from `SmartNotifierValidator`
+
 # 0.13.1
 * adds error handler and segment filtering to `smartNotifierHandler`
 * properly map account object from batch extract to notification format
