@@ -14,10 +14,11 @@ export default function smartNotifierErrorMiddlewareFactory() {
   return function handleError(err, req, res, next) { // eslint-disable-line no-unused-vars
     // only handle SmartNotifierResponse object
     if (err instanceof SmartNotifierError) {
+      const statusCode = err.statusCode || 400;
       const response = new SmartNotifierResponse();
       response.setFlowControl(err.flowControl);
       response.addError(err);
-      res.status(400).json(response.toJSON());
+      res.status(statusCode).json(response.toJSON());
     } else {
       res.status(500).json({
         error: err.message

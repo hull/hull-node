@@ -47,18 +47,20 @@ export class SmartNotifierMetric {
 
 export class SmartNotifierError extends Error {
   code: String;
+  statusCode: number;
   reason: String;
   flowControl: Object;
   constructor: Function;
   __proto__: Object;
 
-  constructor(code: String, reason: String, flowControl: Object = defaultErrorFlowControl) {
+  constructor(code: String, reason: String, statusCode: number = 400, flowControl: Object = defaultErrorFlowControl) {
     super(reason);
 
     // https://github.com/babel/babel/issues/3083
     this.constructor = SmartNotifierError;
     this.__proto__ = SmartNotifierError.prototype; // eslint-disable-line no-proto
     this.code = code;
+    this.statusCode = statusCode;
     this.reason = reason;
     this.flowControl = flowControl;
   }

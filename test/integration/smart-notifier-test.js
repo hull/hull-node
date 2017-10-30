@@ -154,7 +154,7 @@ describe("SmartNotifierHandler", () => {
       .send(notification)
       .set('X-Hull-Smart-Notifier', 'true')
       .end((err, res) => {
-        expect(res.status).to.equal(400);
+        expect(res.status).to.equal(200);
         expect(res.headers['content-type']).to.have.string('application/json');
         expect(res.body.errors).to.be.an('array');
         expect(res.body.errors.length).to.be.equal(1);

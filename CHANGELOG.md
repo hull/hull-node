@@ -1,3 +1,6 @@
+# 0.13.3
+* adjust error logging from `SmartNotifier`
+
 # 0.13.2
 * pass original error information from `SmartNotifierValidator`
 

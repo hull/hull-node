@@ -33,7 +33,7 @@ function processHandlersFactory(handlers, userHandlerOptions) {
         req.hull.smartNotifierResponse.setFlowControl(defaultSuccessFlowControl);
         const response = req.hull.smartNotifierResponse.toJSON();
         ctx.client.logger.debug("connector.smartNotifierHandler.response", response);
-        return next(new SmartNotifierError("CHANNEL_NOT_SUPPORTED", `Channel ${eventName} is not supported`, defaultSuccessFlowControl));
+        return next(new SmartNotifierError("CHANNEL_NOT_SUPPORTED", `Channel ${eventName} is not supported`, 200, defaultSuccessFlowControl));
       }
 
       if (notification.channel === "user:update") {

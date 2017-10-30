@@ -4,8 +4,8 @@ import sinon from "sinon";
 import _ from "lodash";
 import Promise from "bluebird";
 
-import { Cache } from "../../src/infra";
-import segmentsMiddleware from "../../src/utils/segments-middleware";
+import { Cache } from "../../../src/infra";
+import segmentsMiddleware from "../../../src/utils/segments-middleware";
 
 describe("segmentMiddleware", () => {
   it("should reuse the internal call when done multiple times", (done) => {
