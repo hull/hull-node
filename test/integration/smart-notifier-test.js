@@ -158,6 +158,7 @@ describe("SmartNotifierHandler", () => {
         expect(res.headers['content-type']).to.have.string('application/json');
         expect(res.body.flow_control).to.be.an('object');
         expect(res.body.flow_control.type).to.be.equal('next');
+        expect(res.body.flow_control.size).to.be.equal(100);
         expect(res.body.flow_control).to.deep.equal(flowControls.unsupportedChannelFlowControl);
         done();
       });

@@ -1,3 +1,6 @@
+# 0.13.4
+* adjust `unsupportedChannelFlowControl` size param
+
 # 0.13.3
 * adjust handling unsupported channel in `smartNotifierHandler`
 

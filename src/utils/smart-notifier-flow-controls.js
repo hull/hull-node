@@ -16,7 +16,7 @@ module.exports = {
 
   unsupportedChannelFlowControl: {
     type: "next",
-    size: 1000,
+    size: 100,
     in: 1
   }
 };
