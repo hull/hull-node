@@ -72,8 +72,8 @@ export default class HullConnector {
   }
 
   startApp(app) {
-    app.use(smartNotifierErrorMiddleware());
     app.use(this.instrumentation.stopMiddleware());
+    app.use(smartNotifierErrorMiddleware());
 
     return app.listen(this.port, () => {
       this.Hull.logger.info("connector.server.listen", { port: this.port });

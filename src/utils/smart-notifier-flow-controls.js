@@ -12,5 +12,11 @@ module.exports = {
   defaultErrorFlowControl: {
     type: "retry",
     in: 1000
+  },
+
+  unsupportedChannelFlowControl: {
+    type: "next",
+    size: 1000,
+    in: 1
   }
 };

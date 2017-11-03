@@ -272,6 +272,7 @@ The core part of the **Context Object** is described in [Hull Middleware documen
   service: {},
   message: {},
   notification: {}
+  smartNotifierResponse: {}
 }
 ```
 
