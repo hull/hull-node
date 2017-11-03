@@ -3,7 +3,7 @@ import express from "express";
 import requireHullMiddleware from "./require-hull-middleware";
 import { SmartNotifierError } from "./smart-notifier-response";
 
-import { defaultSuccessFlowControl, defaultErrorFlowControl } from "./smart-notifier-flow-controls";
+import { defaultSuccessFlowControl, defaultErrorFlowControl, unsupportedChannelFlowControl } from "./smart-notifier-flow-controls";
 
 function processHandlersFactory(handlers, userHandlerOptions) {
   return function process(req, res, next) {
@@ -30,10 +30,10 @@ function processHandlersFactory(handlers, userHandlerOptions) {
       if (!messageHandler) {
         // FIXME: this is a notification the connector is apparently not interested in,
         // for now we default to the "success" response to keep smart-notifier work smoothly
-        req.hull.smartNotifierResponse.setFlowControl(defaultSuccessFlowControl);
+        req.hull.smartNotifierResponse.setFlowControl(unsupportedChannelFlowControl);
         const response = req.hull.smartNotifierResponse.toJSON();
         ctx.client.logger.debug("connector.smartNotifierHandler.response", response);
-        return next(new SmartNotifierError("CHANNEL_NOT_SUPPORTED", `Channel ${eventName} is not supported`, defaultSuccessFlowControl));
+        return res.json(response);
       }
 
       if (notification.channel === "user:update") {

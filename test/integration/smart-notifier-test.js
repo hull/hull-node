@@ -154,14 +154,11 @@ describe("SmartNotifierHandler", () => {
       .send(notification)
       .set('X-Hull-Smart-Notifier', 'true')
       .end((err, res) => {
-        expect(res.status).to.equal(400);
+        expect(res.status).to.equal(200);
         expect(res.headers['content-type']).to.have.string('application/json');
-        expect(res.body.errors).to.be.an('array');
-        expect(res.body.errors.length).to.be.equal(1);
         expect(res.body.flow_control).to.be.an('object');
         expect(res.body.flow_control.type).to.be.equal('next');
-        expect(res.body.errors[0].code).to.be.equal('CHANNEL_NOT_SUPPORTED');
-        expect(res.body.flow_control).to.deep.equal(flowControls.defaultSuccessFlowControl);
+        expect(res.body.flow_control).to.deep.equal(flowControls.unsupportedChannelFlowControl);
         done();
       });
   });

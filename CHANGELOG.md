@@ -1,3 +1,6 @@
+# 0.13.3
+* adjust handling unsupported channel in `smartNotifierHandler`
+
 # 0.13.2
 * pass original error information from `SmartNotifierValidator`
 
