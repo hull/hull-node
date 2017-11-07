@@ -1,6 +1,7 @@
 export HullAccountType from "./hull-account";
 export HullConnectorType from "./hull-connector";
 export HullEventType from "./hull-event";
+export HullObjectType from "./hull-object";
 export HullReqContextType from "./hull-req-context";
 export HullSegmentType from "./hull-segment";
 export HullSegmentsChangesType from "./hull-segments-changes";
