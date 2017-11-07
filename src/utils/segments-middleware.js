@@ -1,4 +1,6 @@
+// @flow
 import _ from "lodash";
+import { Request, Response } from "express";
 
 /**
  * @param  {Object}   req
@@ -6,7 +8,7 @@ import _ from "lodash";
  * @param  {Function} next
  */
 export default function segmentsMiddlewareFactory() {
-  return function segmentsMiddleware(req, res, next) {
+  return function segmentsMiddleware(req: Request, res: Response, next: Function) {
     req.hull = req.hull || {};
 
     if (!req.hull.client) {
