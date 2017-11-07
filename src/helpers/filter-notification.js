@@ -1,6 +1,8 @@
 // @flow
 import _ from "lodash";
 
+import { HullReqContextType, HullUserMessageType } from "../types";
+
 /**
  * Returns information if provided notification should be sent in an outgoing sync.
  * By default it uses a setting called `synchronized_segments`. If the user belongs
@@ -14,7 +16,7 @@ import _ from "lodash";
  * @param  {String} fieldName the name of settings name
  * @return {Boolean}
  */
-export default function filterNotification(ctx: Object, notification: Object, fieldName: ?string): boolean {
+export default function filterNotification(ctx: HullReqContextType, notification: HullUserMessageType, fieldName: ?string): boolean {
   fieldName = fieldName || _.get(ctx, "connectorConfig.segmentFilterSetting");
   if (!_.has(ctx.ship.private_settings, fieldName)) {
     return true;

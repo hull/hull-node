@@ -1,24 +1,37 @@
+// @flow
 import jwt from "jwt-simple";
 import Promise from "bluebird";
 
-export default class ShipCache {
+import { HullReqContext } from "../../types";
+
+export default class ConnectorCache {
+  ctx: HullReqContext;
+  cache: Object;
+  promiseReuser: Object;
 
   /**
    * @param {Object} options passed to node-cache-manager
    */
-  constructor(ctx, cache, promiseReuser) {
+  constructor(ctx: HullReqContext, cache: Object, promiseReuser: Object) {
     this.ctx = ctx;
     this.cache = cache;
     this.promiseReuser = promiseReuser;
   }
 
   /**
+   * @deprecated
+   */
+  getShipKey(key: string): string {
+    return this.getCacheKey(key);
+  }
+
+  /**
    * @param {String} id the ship id
    * @return {String}
    */
-  getShipKey(id) {
+  getCacheKey(key: string): string {
     const { secret, organization } = this.ctx.client.configuration();
-    return jwt.encode({ sub: id, iss: organization }, secret);
+    return jwt.encode({ sub: key, iss: organization }, secret);
   }
 
   /**
@@ -29,8 +42,8 @@ export default class ShipCache {
    * @param {Function} cb callback which Promised result would be cached
    * @return {Promise}
    */
-  wrap(id, cb, options) {
-    const shipCacheKey = this.getShipKey(id);
+  wrap(key: string, cb: Function, options: ?Object): Promise<any> {
+    const shipCacheKey = this.getCacheKey(key);
     const reuseWrap = this.promiseReuser.reusePromise((wrappedShipCacheKey) => {
       return this.cache.wrap(wrappedShipCacheKey, cb, options);
     });
@@ -43,9 +56,9 @@ export default class ShipCache {
    * @param  {Object} ship
    * @return {Promise}
    */
-  set(id, ship, options) {
-    const shipCacheKey = this.getShipKey(id);
-    return this.cache.set(shipCacheKey, ship, options);
+  set(key: string, value: any, options: ?Object) {
+    const shipCacheKey = this.getCacheKey(key);
+    return this.cache.set(shipCacheKey, value, options);
   }
 
   /**
@@ -53,8 +66,8 @@ export default class ShipCache {
    * @param  {String} id
    * @return {Promise}
    */
-  get(id) {
-    const shipCacheKey = this.getShipKey(id);
+  get(key: string) {
+    const shipCacheKey = this.getCacheKey(key);
     return this.cache.get(shipCacheKey);
   }
 
@@ -64,8 +77,8 @@ export default class ShipCache {
    * @param  {String} id
    * @return Promise
    */
-  del(id) {
-    const shipCacheKey = this.getShipKey(id);
+  del(key: string) {
+    const shipCacheKey = this.getCacheKey(key);
     return new Promise((resolve, reject) => {
       this.cache.del(shipCacheKey, (error) => {
         if (error) {
