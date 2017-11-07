@@ -2,17 +2,17 @@
 import jwt from "jwt-simple";
 import Promise from "bluebird";
 
-import { HullReqContext } from "../../types";
+import { HullReqContextType } from "../../types";
 
 export default class ConnectorCache {
-  ctx: HullReqContext;
+  ctx: HullReqContextType;
   cache: Object;
   promiseReuser: Object;
 
   /**
    * @param {Object} options passed to node-cache-manager
    */
-  constructor(ctx: HullReqContext, cache: Object, promiseReuser: Object) {
+  constructor(ctx: HullReqContextType, cache: Object, promiseReuser: Object) {
     this.ctx = ctx;
     this.cache = cache;
     this.promiseReuser = promiseReuser;
