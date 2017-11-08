@@ -1,3 +1,7 @@
+# 0.13.5
+* added set of flow types which can be imported from "hull/lib/types"
+* reduced logging from Batcher utility
+
 # 0.13.4
 * adjust `unsupportedChannelFlowControl` size param
 

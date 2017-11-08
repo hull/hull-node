@@ -37,7 +37,6 @@ export default class Batcher {
 
   addMessage(message) {
     this.messages.push(message);
-    this.logger.debug("batcher.added", this.messages.length);
     const { maxSize } = this.options;
     if (this.messages.length >= maxSize) {
       this.flush();
@@ -49,14 +48,11 @@ export default class Batcher {
 
   flush() {
     const messages = this.messages;
-    this.logger.debug("batcher.flush", messages.length);
     this.messages = [];
     return Promise.resolve(this.callback(messages))
-      .then(() => {
-        this.logger.debug("batcher.flush.sucess", true);
-      }, (err) => {
+      .catch((err) => {
         console.error(err);
-        this.logger.error("batcher.flush.error", err);
+        this.logger.debug("batcher.flush.error", err);
       });
   }
 }
