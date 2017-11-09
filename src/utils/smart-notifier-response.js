@@ -1,5 +1,3 @@
-// @flow
-
 import { defaultErrorFlowControl } from "./smart-notifier-flow-controls";
 
 /**

@@ -2,7 +2,7 @@
 import jwt from "jwt-simple";
 import Promise from "bluebird";
 
-import { HullReqContextType } from "../../types";
+import type { HullReqContextType } from "hull"; // eslint-disable-line
 
 export default class ConnectorCache {
   ctx: HullReqContextType;
