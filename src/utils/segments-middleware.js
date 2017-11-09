@@ -1,3 +1,4 @@
+// @flow
 import _ from "lodash";
 import { Request, Response } from "express";
 
