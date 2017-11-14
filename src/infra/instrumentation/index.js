@@ -1,1 +1,1 @@
-export default from "./instrumentation-agent";
+module.exports = require("./instrumentation-agent");

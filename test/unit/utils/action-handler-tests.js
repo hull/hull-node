@@ -1,11 +1,11 @@
 /* global describe, it */
-import { expect, should } from "chai";
-import sinon from "sinon";
-import httpMocks from "node-mocks-http";
-import Promise from "bluebird";
-import hullStub from "../support/hull-stub";
+const { expect, should } = require("chai");
+const sinon = require("sinon");
+const httpMocks = require("node-mocks-http");
+const Promise = require("bluebird");
+const hullStub = require("../support/hull-stub");
 
-import actionHandler from "../../../src/utils/action-handler";
+const actionHandler = require("../../../src/utils/action-handler");
 
 
 describe("actionHandler", () => {

@@ -1,11 +1,11 @@
-// @flow
+/* @flow */
 
-import { HullTraitNameType, HullTraitValueType } from "./";
+import type { THullAttributeName, THullAttributeValue } from "./";
 
 /**
  * Account object with id and traits
  */
-export type HullAccountType = {
+export type THullAccount = {
   id: string;
-  [HullTraitNameType]: HullTraitValueType;
+  [THullAttributeName]: THullAttributeValue;
 }

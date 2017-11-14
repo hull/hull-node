@@ -1,4 +1,4 @@
-import _ from "lodash";
+const _ = require("lodash");
 
 /**
  * @example
@@ -6,7 +6,7 @@ import _ from "lodash";
  *   promiseBasedFn.then(next, next);
  * }, responseMiddleware())
  */
-export default function responseMiddlewareFactory() {
+module.exports = function responseMiddlewareFactory() {
   return function responseMiddleware(result, req, res, next) {
     if (_.isError(result)) {
       const errorData = {
@@ -31,4 +31,4 @@ export default function responseMiddlewareFactory() {
     res.end(result);
     next();
   };
-}
+};

@@ -1,7 +1,7 @@
-import Client from "hull-client";
+const Client = require("hull-client");
 
-import clientMiddleware from "./middleware/client";
-import HullConnector from "./connector/hull-connector";
+const clientMiddleware = require("./middleware/client");
+const HullConnector = require("./connector/hull-connector");
 
 Client.Middleware = clientMiddleware.bind(undefined, Client);
 Client.Connector = HullConnector.bind(undefined, Client);

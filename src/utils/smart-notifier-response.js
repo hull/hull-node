@@ -1,11 +1,10 @@
-// @flow
-
-import { defaultErrorFlowControl } from "./smart-notifier-flow-controls";
+/* @flow */
+const { defaultErrorFlowControl } = require("./smart-notifier-flow-controls");
 
 /**
  * FlowControl is a part of SmartNotifierResponse
  */
-export class SmartNotifierFlowControl {
+class SmartNotifierFlowControl {
   type: String;
   size: Number;
   in: Number;
@@ -33,7 +32,7 @@ export class SmartNotifierFlowControl {
   }
 }
 
-export class SmartNotifierMetric {
+class SmartNotifierMetric {
   name: String;
 
   constructor(metric: Object) {
@@ -45,18 +44,18 @@ export class SmartNotifierMetric {
   }
 }
 
-export class SmartNotifierError extends Error {
+class SmartNotifierError extends Error {
   code: String;
   statusCode: number;
   reason: String;
   flowControl: Object;
-  constructor: Function;
   __proto__: Object;
 
   constructor(code: String, reason: String, statusCode: number = 400, flowControl: Object = defaultErrorFlowControl) {
     super(reason);
 
     // https://github.com/babel/babel/issues/3083
+    // $FlowFixMe
     this.constructor = SmartNotifierError;
     this.__proto__ = SmartNotifierError.prototype; // eslint-disable-line no-proto
     this.code = code;
@@ -70,8 +69,8 @@ export class SmartNotifierError extends Error {
   }
 
 }
-// @flow
-export class SmartNotifierResponse {
+
+class SmartNotifierResponse {
   flowControl: SmartNotifierFlowControl;
   metrics: Array<SmartNotifierMetric>;
   errors: Array<SmartNotifierError>;
@@ -108,3 +107,10 @@ export class SmartNotifierResponse {
     };
   }
 }
+
+module.exports = {
+  SmartNotifierFlowControl,
+  SmartNotifierMetric,
+  SmartNotifierError,
+  SmartNotifierResponse
+};

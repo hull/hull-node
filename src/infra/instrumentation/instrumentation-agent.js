@@ -1,11 +1,11 @@
-import Raven from "raven";
-import metrics from "datadog-metrics";
-import dogapi from "dogapi";
-import url from "url";
+const Raven = require("raven");
+const metrics = require("datadog-metrics");
+const dogapi = require("dogapi");
+const url = require("url");
 
-import MetricAgent from "./metric-agent";
+const MetricAgent = require("./metric-agent");
 
-export default class InstrumentationAgent {
+class InstrumentationAgent {
 
   constructor(options = {}) {
     this.exitOnError = options.exitOnError || false;
@@ -139,3 +139,6 @@ export default class InstrumentationAgent {
     return (new MetricAgent({}, this)).value(metric, value);
   }
 }
+
+
+module.exports = InstrumentationAgent;

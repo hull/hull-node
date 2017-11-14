@@ -1,9 +1,9 @@
 /* global describe, it */
-import { expect } from "chai";
-import sinon from "sinon";
-import HullStub from "../support/hull-stub";
+const { expect } = require("chai");
+const sinon = require("sinon");
+const HullStub = require("../support/hull-stub");
 
-import enqueue from "../../../src/infra/queue/enqueue";
+const enqueue = require("../../../src/infra/queue/enqueue");
 
 describe("Enqueue", () => {
   it("should allow custom queue name", () => {

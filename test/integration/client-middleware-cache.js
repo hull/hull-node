@@ -1,14 +1,14 @@
 /* global describe, it */
-import { expect, should } from "chai";
-import sinon from "sinon";
-import cacheManager from "cache-manager";
-import jwt from "jwt-simple";
-import _ from "lodash";
+const { expect, should } = require("chai");
+const sinon = require("sinon");
+const cacheManager = require("cache-manager");
+const jwt = require("jwt-simple");
+const _ = require("lodash");
 
-import Middleware from "../../src/middleware/client";
-import { Cache } from "../../src/infra";
+const Middleware = require("../../src/middleware/client");
+const { Cache } = require("../../src/infra");
 
-import HullStub from "../unit/support/hull-stub";
+const HullStub = require("../unit/support/hull-stub");
 
 let reqStub;
 

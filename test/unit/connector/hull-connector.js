@@ -1,9 +1,9 @@
 /* global describe, it */
-import { expect } from "chai";
-import sinon from "sinon";
+const { expect } = require("chai");
+const sinon = require("sinon");
 
-import HullConnector from "../../../src/connector/hull-connector";
-import HullStub from "../support/hull-stub";
+const HullConnector = require("../../../src/connector/hull-connector");
+const HullStub = require("../support/hull-stub");
 
 describe("HullConnector", () => {
 

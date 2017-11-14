@@ -1,4 +1,4 @@
-export default function enqueue(queueAdapter, ctx, jobName, jobPayload, options = {}) {
+module.exports = function enqueue(queueAdapter, ctx, jobName, jobPayload, options = {}) {
   const { id, secret, organization } = ctx.client.configuration();
   const context = {
     hostname: ctx.hostname,
@@ -15,4 +15,4 @@ export default function enqueue(queueAdapter, ctx, jobName, jobPayload, options 
     payload: jobPayload,
     context
   }, options);
-}
+};

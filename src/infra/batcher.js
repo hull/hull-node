@@ -1,9 +1,9 @@
-import _ from "lodash";
-import Promise from "bluebird";
+const _ = require("lodash");
+const Promise = require("bluebird");
 
 const HANDLERS = {};
 
-export default class Batcher {
+class Batcher {
 
   static exit() {
     console.log("batcher.exit");
@@ -56,3 +56,5 @@ export default class Batcher {
       });
   }
 }
+
+module.exports = Batcher;

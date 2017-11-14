@@ -1,13 +1,15 @@
-import { renderFile } from "ejs";
-import timeout from "connect-timeout";
+const { renderFile } = require("ejs");
+const timeout = require("connect-timeout");
 
-import { staticRouter, tokenMiddleware, notifMiddleware, smartNotifierMiddleware, smartNotifierErrorMiddleware } from "../utils";
+const {
+  staticRouter, tokenMiddleware, notifMiddleware, smartNotifierMiddleware, smartNotifierErrorMiddleware
+} = require("../utils");
 
 
 /**
  * Base Express app for Ships front part
  */
-export default function setupApp({ instrumentation, queue, cache, app, connectorConfig }) {
+module.exports = function setupApp({ instrumentation, queue, cache, app, connectorConfig }) {
   app.use(tokenMiddleware());
   app.use(notifMiddleware());
   app.use(smartNotifierMiddleware({ skipSignatureValidation: connectorConfig.skipSignatureValidation }));
@@ -31,4 +33,4 @@ export default function setupApp({ instrumentation, queue, cache, app, connector
 
 
   return app;
-}
+};

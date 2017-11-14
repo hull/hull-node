@@ -1,8 +1,8 @@
 /* global describe, it */
-import Promise from "bluebird";
-import { expect } from "chai";
+const Promise = require("bluebird");
+const { expect } = require("chai");
 
-import Instrumentation from "../../../src/infra/instrumentation";
+const Instrumentation = require("../../../src/infra/instrumentation");
 
 describe("Instrumentation", () => {
   it("should start raven", () => {
