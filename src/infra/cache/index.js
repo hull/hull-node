@@ -1,1 +1,1 @@
-export default from "./cache-agent";
+module.exports = require("./cache-agent");

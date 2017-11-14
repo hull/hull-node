@@ -1,7 +1,7 @@
-// @flow
-import _ from "lodash";
+/* @flow */
+const _ = require("lodash");
 
-import type { HullReqContextType, HullUserMessageType } from "hull"; // eslint-disable-line
+// const type { HullReqContextType, HullUserMessageType } = require( "hull"; // eslint-disable-line
 
 /**
  * Returns information if provided notification should be sent in an outgoing sync.

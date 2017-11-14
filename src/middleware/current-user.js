@@ -1,4 +1,4 @@
-import crypto from "hull-client/lib/lib/crypto";
+const crypto = require("hull-client/lib/lib/crypto");
 
 function parseSignedCookie(signedCookie) {
   if (!signedCookie) { return null; }

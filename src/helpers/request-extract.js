@@ -1,6 +1,6 @@
-import Promise from "bluebird";
-import URI from "urijs";
-import _ from "lodash";
+const Promise = require("bluebird");
+const URI = require("urijs");
+const _ = require("lodash");
 
 /**
  * Start an extract job and be notified with the url when complete.

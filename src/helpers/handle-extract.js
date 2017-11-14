@@ -1,10 +1,10 @@
-import Promise from "bluebird";
-import CSVStream from "csv-stream";
-import JSONStream from "JSONStream";
-import requestClient from "request";
-import ps from "promise-streams";
-import BatchStream from "batch-stream";
-import _ from "lodash";
+const Promise = require("bluebird");
+const CSVStream = require("csv-stream");
+const JSONStream = require("JSONStream");
+const requestClient = require("request");
+const ps = require("promise-streams");
+const BatchStream = require("batch-stream");
+const _ = require("lodash");
 
 /**
  * @param {Object} body Request Body Object

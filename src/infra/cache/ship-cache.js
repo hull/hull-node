@@ -1,8 +1,8 @@
-// @flow
-import jwt from "jwt-simple";
-import Promise from "bluebird";
+/* @flow */
+const jwt = require("jwt-simple");
+const Promise = require("bluebird");
 
-import type { HullReqContextType } from "hull"; // eslint-disable-line
+// const type { HullReqContextType } = require( "hull"; // eslint-disable-line
 
 export default class ConnectorCache {
   ctx: HullReqContextType;

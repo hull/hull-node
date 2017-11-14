@@ -1,5 +1,5 @@
-import { Router } from "express";
-import basicAuth from "basic-auth";
+const { Router } = require("express");
+const basicAuth = require("basic-auth");
 
 function auth(pass) {
   return (req, res, next) => {

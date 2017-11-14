@@ -1,4 +1,5 @@
-// @flow
+/* @flow */
+const _ = require("lodash");
 
 /**
  * Object which allows to reuse pending promises with the same
@@ -17,10 +18,9 @@ export default class PromiseReuser {
       return JSON.stringify(key);
     }
 
-    this.options = {
+    this.options = _.defaults({
       serializeArguments,
-      ...options
-    };
+    }, options);
     this.promiseMapsByArgs = {};
   }
 

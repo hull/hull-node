@@ -1,7 +1,7 @@
-import {
+const {
   SmartNotifierResponse,
   SmartNotifierError
-} from "./smart-notifier-response";
+} = require("./smart-notifier-response");
 
 /**
  * Error handlers that returns SmartNotifierError objects to json

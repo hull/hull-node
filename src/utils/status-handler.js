@@ -1,8 +1,8 @@
-import _ from "lodash";
-import { Router } from "express";
-import Promise from "bluebird";
+const _ = require("lodash");
+const { Router } = require("express")
+const Promise = require("bluebird")
 
-import requireHullMiddleware from "./require-hull-middleware";
+const requireHullMiddleware = require("./require-hull-middleware");
 
 const statusMap = {
   0: "ok",

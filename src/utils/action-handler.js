@@ -1,9 +1,9 @@
-import _ from "lodash";
-import { Router } from "express";
-import Promise from "bluebird";
+const _ = require("lodash");
+const { Router } = require("express");
+const Promise = require("bluebird");
 
-import responseMiddleware from "./response-middleware";
-import requireHullMiddleware from "./require-hull-middleware";
+const responseMiddleware = require("./response-middleware");
+const requireHullMiddleware = require("./require-hull-middleware");
 
 export default function actionHandler(handler) {
   const router = Router();

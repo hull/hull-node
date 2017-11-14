@@ -1,4 +1,4 @@
-import { defaultErrorFlowControl } from "./smart-notifier-flow-controls";
+const { defaultErrorFlowControl } = require("./smart-notifier-flow-controls");
 
 /**
  * FlowControl is a part of SmartNotifierResponse

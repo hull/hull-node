@@ -1,5 +1,5 @@
-import bodyParser from "body-parser";
-import MessageValidator from "sns-validator";
+const bodyParser = require("body-parser");
+const MessageValidator = require("sns-validator");
 
 /**
  * @param  {Object}   req

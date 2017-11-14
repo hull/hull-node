@@ -1,11 +1,8 @@
-// @flow
-import {
-  Request
-} from "express";
-import Promise from "bluebird";
-import requestClient from "request";
-import _ from "lodash";
-import jwt from "jsonwebtoken";
+/* @flow */
+const Promise = require("bluebird");
+const requestClient = require("request");
+const _ = require("lodash");
+const jwt = require("jsonwebtoken");
 
 const certCache = {};
 const supportedSignaturesVersions = ["v1"];

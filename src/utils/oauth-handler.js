@@ -1,9 +1,10 @@
-import express from "express";
-import passport from "passport";
-import bodyParser from "body-parser";
-import querystring from "querystring";
+const _ = require("lodash");
+const express = require("express");
+const passport = require("passport");
+const bodyParser = require("body-parser");
+const querystring = require("querystring");
 
-import requireHullMiddleware from "./require-hull-middleware";
+const requireHullMiddleware = require("./require-hull-middleware");
 
 const HOME_URL = "/";
 const LOGIN_URL = "/login";
@@ -56,7 +57,7 @@ export default function oauth({
     done(null, user);
   });
 
-  const strategy = new Strategy({ ...options, passReqToCallback: true }, function verifyAccount(req, accessToken, refreshToken, params, profile, done) {
+  const strategy = new Strategy(_.merge({}, options, { passReqToCallback: true }), function verifyAccount(req, accessToken, refreshToken, params, profile, done) {
     if (done === undefined) {
       done = profile;
       profile = params;
@@ -73,16 +74,16 @@ export default function oauth({
     const data = { name, urls: getURLs(req), ship };
     isSetup(req)
       .then(
-        (setup = {}) => { res.render(views.home, { ...data, ...setup }); },
-        (setup = {}) => { res.render(views.login, { ...data, ...setup }); }
+        (setup = {}) => { res.render(views.home, _.merge(data, setup)); },
+        (setup = {}) => { res.render(views.login, _.merge(data, setup)); }
       );
   });
 
   function authorize(req, res, next) {
-    passport.authorize(strategy.name, {
-      ...req.authParams,
-      callbackURL: getURL(req, CALLBACK_URL, tokenInUrl ? { token: req.hull.token } : false)
-    })(req, res, next);
+    passport.authorize(strategy.name, _.merge(
+      req.authParams,
+      { callbackURL: getURL(req, CALLBACK_URL, tokenInUrl ? { token: req.hull.token } : false) }
+    ))(req, res, next);
   }
 
   router.all(LOGIN_URL, (req, res, next) => {
@@ -92,10 +93,10 @@ export default function oauth({
       .then(() => next())
       .catch(() => next());
   }, (req, res, next) => {
-    req.authParams = {
-      ...req.authParams,
-      state: req.hull.token
-    };
+    req.authParams = _.merge(
+      req.authParams,
+      { state: req.hull.token }
+    );
     next();
   }, authorize);
 

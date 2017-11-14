@@ -1,5 +1,5 @@
-import path from "path";
-import express from "express";
+const path = require("path");
+const express = require("express");
 
 function ManifestRoute(dirname) {
   return function Manifest(req, res) {

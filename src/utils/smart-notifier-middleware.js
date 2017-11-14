@@ -1,10 +1,10 @@
-import _ from "lodash";
-import bodyParser from "body-parser";
-import Client from "hull-client";
-import Promise from "bluebird";
+const _ = require("lodash");
+const bodyParser = require("body-parser");
+const Client = require("hull-client");
+const Promise = require("bluebird");
 
-import { SmartNotifierResponse, SmartNotifierError } from "./smart-notifier-response";
-import SmartNofifierValidator from "./smart-notifier-validator";
+const { SmartNotifierResponse, SmartNotifierError } = require("./smart-notifier-response");
+const SmartNofifierValidator = require("./smart-notifier-validator");
 
 /**
  * @param  {Object}   req

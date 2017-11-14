@@ -1,14 +1,14 @@
-import cacheManager from "cache-manager";
-import _ from "lodash";
-import ShipCache from "./ship-cache";
-import PromiseReuser from "../../utils/promise-reuser";
+const cacheManager = require("cache-manager");
+const _ = require("lodash");
+const ShipCache = require("./ship-cache");
+const PromiseReuser = require("../../utils/promise-reuser");
 
 /**
  * This is a wrapper over https://github.com/BryanDonovan/node-cache-manager
  * to manage ship cache storage.
  * It is responsible for handling cache key for every ship.
  */
-export default class Cache {
+class Cache {
 
   /**
    * @param {Object} options passed to node-cache-manager
@@ -35,3 +35,5 @@ export default class Cache {
     };
   }
 }
+
+module.exports = Cache;

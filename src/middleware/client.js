@@ -1,7 +1,7 @@
-import _ from "lodash";
-import jwt from "jwt-simple";
+const _ = require("lodash");
+const jwt = require("jwt-simple");
 
-import { handleExtract, requestExtract } from "../helpers";
+const { handleExtract, requestExtract } = require("../helpers");
 
 function parseQueryString(query) {
   return ["organization", "ship", "secret"].reduce((cfg, k) => {

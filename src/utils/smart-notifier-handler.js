@@ -1,9 +1,9 @@
-import Client from "hull-client";
-import express from "express";
-import requireHullMiddleware from "./require-hull-middleware";
-import { SmartNotifierError } from "./smart-notifier-response";
+const Client = require("hull-client");
+const express = require("express");
+const requireHullMiddleware = require("./require-hull-middleware");
+const { SmartNotifierError } = require("./smart-notifier-response");
 
-import { defaultSuccessFlowControl, defaultErrorFlowControl, unsupportedChannelFlowControl } from "./smart-notifier-flow-controls";
+const { defaultSuccessFlowControl, defaultErrorFlowControl, unsupportedChannelFlowControl } = require("./smart-notifier-flow-controls");
 
 function processHandlersFactory(handlers, userHandlerOptions) {
   return function process(req, res, next) {
@@ -93,7 +93,7 @@ module.exports = function smartNotifierHandler({ handlers = {}, userHandlerOptio
   const app = express.Router();
   app.use((req, res, next) => {
     if (!req.hull.notification) {
-      return next(new SmartNotifierError("MISSING_NOTIFICATION", "Missing notification object from payload"));
+      return next(new SmartNotifierError("MISSING_NOTIFICATION", "Missing notification object = require( payload"));
     }
     return next();
   });

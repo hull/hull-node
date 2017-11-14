@@ -1,6 +1,6 @@
-import _ from "lodash";
+const _ = require("lodash");
 
-export default class MetricAgent {
+class MetricAgent {
   constructor(ctx, instrumentationAgent) {
     this.metrics = instrumentationAgent.metrics;
     this.dogapi = instrumentationAgent.dogapi;
@@ -52,3 +52,5 @@ export default class MetricAgent {
     return tags;
   }
 }
+
+module.exports = MetricAgent;

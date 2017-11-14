@@ -1,11 +1,11 @@
-import Promise from "bluebird";
-import kue from "kue";
-import ui from "kue-ui";
+const Promise = require("bluebird");
+const kue = require("kue");
+const ui = require("kue-ui");
 
 /**
  * Kue Adapter for queue
  */
-export default class KueAdapter {
+class KueAdapter {
 
   /**
    * @param {Object} queue Kue instance
@@ -93,3 +93,5 @@ export default class KueAdapter {
 
   clean() {} // eslint-disable-line class-methods-use-this
 }
+
+module.exports = KueAdapter;

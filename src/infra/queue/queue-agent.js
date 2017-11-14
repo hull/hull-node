@@ -1,5 +1,5 @@
-import enqueue from "./enqueue";
-import MemoryAdapter from "./adapter/memory";
+const enqueue = require("./enqueue");
+const MemoryAdapter = require("./adapter/memory");
 
 export default class QueueAgent {
 

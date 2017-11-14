@@ -1,9 +1,9 @@
-import crypto from "crypto";
-import { Router } from "express";
+const crypto = require("crypto");
+const { Router } = require("express");
 
-import responseMiddleware from "./response-middleware";
-import requireHullMiddleware from "./require-hull-middleware";
-import Batcher from "../infra/batcher";
+const responseMiddleware = require("./response-middleware");
+const requireHullMiddleware = require("./require-hull-middleware");
+const Batcher = require("../infra/batcher");
 
 export default function batcherHandler(handler, { maxSize = 100, maxTime = 10000 } = {}) {
   const ns = crypto.randomBytes(64).toString("hex");

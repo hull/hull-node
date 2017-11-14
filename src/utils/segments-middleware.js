@@ -1,6 +1,5 @@
 // @flow
-import _ from "lodash";
-import { Request, Response } from "express";
+const _ = require("lodash");
 
 /**
  * @param  {Object}   req
@@ -8,7 +7,7 @@ import { Request, Response } from "express";
  * @param  {Function} next
  */
 export default function segmentsMiddlewareFactory() {
-  return function segmentsMiddleware(req: Request, res: Response, next: Function) {
+  return function segmentsMiddleware(req: Object, res: Object, next: Function) {
     req.hull = req.hull || {};
 
     if (!req.hull.client) {

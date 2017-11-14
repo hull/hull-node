@@ -1,7 +1,9 @@
-import { renderFile } from "ejs";
-import timeout from "connect-timeout";
+const { renderFile } = require("ejs");
+const timeout = require("connect-timeout");
 
-import { staticRouter, tokenMiddleware, notifMiddleware, smartNotifierMiddleware, smartNotifierErrorMiddleware } from "../utils";
+const {
+  staticRouter, tokenMiddleware, notifMiddleware, smartNotifierMiddleware, smartNotifierErrorMiddleware
+} = require("../utils");
 
 
 /**

@@ -1,11 +1,11 @@
-import Promise from "bluebird";
-import fs from "fs";
-import _ from "lodash";
+const Promise = require("bluebird");
+const fs = require("fs");
+const _ = require("lodash");
 
-import setupApp from "./setup-app";
-import Worker from "./worker";
-import { Instrumentation, Cache, Queue, Batcher } from "../infra";
-import { exitHandler, segmentsMiddleware, requireHullMiddleware, helpersMiddleware, smartNotifierErrorMiddleware } from "../utils";
+const setupApp = require("./setup-app");
+const Worker = require("./worker");
+const { Instrumentation, Cache, Queue, Batcher } = require("../infra");
+const { exitHandler, segmentsMiddleware, requireHullMiddleware, helpersMiddleware, smartNotifierErrorMiddleware } = require("../utils");
 
 export default class HullConnector {
   constructor(Hull, {

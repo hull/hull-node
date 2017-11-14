@@ -1,9 +1,9 @@
-import Queue from "bull";
+const Queue = require("bull");
 
 /**
  * Bull Adapter for queue
  */
-export default class BullAdapter {
+class BullAdapter {
 
   constructor(options) {
     this.options = options;
@@ -60,7 +60,7 @@ export default class BullAdapter {
 
   setupUiRouter(router) { // eslint-disable-line class-methods-use-this
     // due to problems in arena configuration it's disabled right now
-    // and removed from the package.json
+    // and removed = require( the package.json
     //
     // const arenaConfig = {
     //   queues: [{
@@ -82,3 +82,5 @@ export default class BullAdapter {
     this.queue.clean(1296000000, "failed");
   }
 }
+
+module.exports = BullAdapter;

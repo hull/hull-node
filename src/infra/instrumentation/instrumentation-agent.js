@@ -1,18 +1,18 @@
-import Raven from "raven";
-import metrics from "datadog-metrics";
-import dogapi from "dogapi";
-import url from "url";
+const Raven = require("raven");
+const metrics = require("datadog-metrics");
+const dogapi = require("dogapi");
+const url = require("url");
 
-import MetricAgent from "./metric-agent";
+const MetricAgent = require("./metric-agent");
 
-export default class InstrumentationAgent {
+class InstrumentationAgent {
 
   constructor(options = {}) {
     this.exitOnError = options.exitOnError || false;
     this.nr = null;
     this.raven = null;
     try {
-      this.manifest = require(`${process.cwd()}/manifest.json`); // eslint-disable-line import/no-dynamic-require,global-require
+      this.manifest = require(`${process.cwd()}/manifest.json`); // eslint-disable-line const/no-dynamic-require,global-require
     } catch (e) {
       this.manifest = {};
     }
@@ -139,3 +139,6 @@ export default class InstrumentationAgent {
     return (new MetricAgent({}, this)).value(metric, value);
   }
 }
+
+
+module.exports = InstrumentationAgent;

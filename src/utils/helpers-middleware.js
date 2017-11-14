@@ -1,5 +1,5 @@
-import _ from "lodash";
-import * as helpers from "../helpers";
+const _ = require("lodash");
+const helpers = require("../helpers");
 
 export default function helpersMiddlewareFactory() {
   return function helpersMiddleware(req, res, next) {
