@@ -1,11 +1,11 @@
 /* @flow */
 
-import type { HullSegmentType } from "./";
+import type { THullSegment } from "./";
 
 /**
  * Represents segment changes in UserChangesType
  */
-export type HullSegmentsChangesType = {
-  entered: Array<HullSegmentType>;
-  left: Array<HullSegmentType>;
+export type THullSegmentsChanges = {
+  entered: Array<THullSegment>;
+  left: Array<THullSegment>;
 }

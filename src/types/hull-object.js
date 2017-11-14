@@ -1,8 +1,8 @@
 /* @flow */
 
-import type { HullUserType, HullAccountType } from "./";
+import type { THullUser, THullAccount } from "./";
 
 /**
  * General type for HullUserType and HullAccountType
  */
-export type HullObjectType = HullUserType | HullAccountType;
+export type THullObject = THullUser | THullAccount;

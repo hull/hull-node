@@ -1,18 +1,18 @@
 /* @flow */
-import type { HullReqContextType } from "../../types";
+import type { THullReqContext } from "../../types";
 
 const jwt = require("jwt-simple");
 const Promise = require("bluebird");
 
 class ConnectorCache {
-  ctx: HullReqContextType;
+  ctx: THullReqContext;
   cache: Object;
   promiseReuser: Object;
 
   /**
    * @param {Object} options passed to node-cache-manager
    */
-  constructor(ctx: HullReqContextType, cache: Object, promiseReuser: Object) {
+  constructor(ctx: THullReqContext, cache: Object, promiseReuser: Object) {
     this.ctx = ctx;
     this.cache = cache;
     this.promiseReuser = promiseReuser;

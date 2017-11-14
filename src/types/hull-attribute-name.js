@@ -3,4 +3,4 @@
 /**
  * Trait names are strings
  */
-export type HullTraitNameType = string;
+export type THullAttributeName = string;
