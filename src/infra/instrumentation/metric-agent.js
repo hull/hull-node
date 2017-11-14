@@ -36,7 +36,7 @@ class MetricAgent {
     if (!this.dogapi) {
       return null;
     }
-    return this.dogapi.event.create(`${this.manifest.name}.${title}`, text, _.merge(properties, {
+    return this.dogapi.event.create(`${this.manifest.name}.${title}`, text, _.merge({}, properties, {
       tags: this.getMetricTags()
     }));
   }

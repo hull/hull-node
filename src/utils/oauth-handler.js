@@ -74,13 +74,14 @@ module.exports = function oauth({
     const data = { name, urls: getURLs(req), ship };
     isSetup(req)
       .then(
-        (setup = {}) => { res.render(views.home, _.merge(data, setup)); },
-        (setup = {}) => { res.render(views.login, _.merge(data, setup)); }
+        (setup = {}) => { res.render(views.home, _.merge({}, data, setup)); },
+        (setup = {}) => { res.render(views.login, _.merge({}, data, setup)); }
       );
   });
 
   function authorize(req, res, next) {
     passport.authorize(strategy.name, _.merge(
+      {},
       req.authParams,
       { callbackURL: getURL(req, CALLBACK_URL, tokenInUrl ? { token: req.hull.token } : false) }
     ))(req, res, next);
@@ -94,6 +95,7 @@ module.exports = function oauth({
       .catch(() => next());
   }, (req, res, next) => {
     req.authParams = _.merge(
+      {},
       req.authParams,
       { state: req.hull.token }
     );
