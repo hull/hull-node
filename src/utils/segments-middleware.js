@@ -1,5 +1,6 @@
 /* @flow */
 const _ = require("lodash");
+const Promise = require("bluebird");
 
 /**
  * @param  {Object}   req
