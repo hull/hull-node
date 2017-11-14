@@ -1,3 +1,7 @@
+# 0.13.6
+* remove `import/export` and `...spread` to make the code runnable on node v6
+* add flow annotations commenting babel plugin
+
 # 0.13.5
 * added set of flow types which can be imported from "hull/lib/types"
 * reduced logging from Batcher utility
