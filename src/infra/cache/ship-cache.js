@@ -1,10 +1,10 @@
 /* @flow */
+import type { HullReqContextType } from "../../types";
+
 const jwt = require("jwt-simple");
 const Promise = require("bluebird");
 
-// const type { HullReqContextType } = require( "hull"; // eslint-disable-line
-
-export default class ConnectorCache {
+class ConnectorCache {
   ctx: HullReqContextType;
   cache: Object;
   promiseReuser: Object;
@@ -89,3 +89,5 @@ export default class ConnectorCache {
     });
   }
 }
+
+module.exports = ConnectorCache;

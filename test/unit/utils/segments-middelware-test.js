@@ -1,11 +1,11 @@
 /* global describe, it */
-import { expect, should } from "chai";
-import sinon from "sinon";
-import _ from "lodash";
-import Promise from "bluebird";
+const { expect, should } = require("chai");
+const sinon = require("sinon");
+const _ = require("lodash");
+const Promise = require("bluebird");
 
-import { Cache } from "../../../src/infra";
-import segmentsMiddleware from "../../../src/utils/segments-middleware";
+const { Cache } = require("../../../src/infra");
+const segmentsMiddleware = require("../../../src/utils/segments-middleware");
 
 describe("segmentMiddleware", () => {
   it("should reuse the internal call when done multiple times", (done) => {

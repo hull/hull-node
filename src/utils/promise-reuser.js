@@ -6,7 +6,7 @@ const _ = require("lodash");
  * arguments passed to original function
  * Based on https://github.com/elado/reuse-promise
  */
-export default class PromiseReuser {
+module.exports = class PromiseReuser {
   options: Object
   promiseMapsByArgs: Object
 
@@ -52,4 +52,4 @@ export default class PromiseReuser {
 
     return reusePromiseWrappedFn;
   }
-}
+};

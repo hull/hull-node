@@ -6,7 +6,7 @@ const MessageValidator = require("sns-validator");
  * @param  {Object}   res
  * @param  {Function} next
  */
-export default function notifMiddlewareFactory() {
+module.exports = function notifMiddlewareFactory() {
   const validator = new MessageValidator(/sns\.us-east-1\.amazonaws\.com/, "utf8");
 
   function verify(req, res, next) {
@@ -56,4 +56,4 @@ export default function notifMiddlewareFactory() {
       next();
     }
   };
-}
+};

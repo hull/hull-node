@@ -5,7 +5,7 @@ const Promise = require("bluebird");
 const responseMiddleware = require("./response-middleware");
 const requireHullMiddleware = require("./require-hull-middleware");
 
-export default function actionHandler(handler) {
+module.exports = function actionHandler(handler) {
   const router = Router();
   router.use(requireHullMiddleware());
   router.post("/", (req, res, next) => {
@@ -14,4 +14,4 @@ export default function actionHandler(handler) {
   router.use(responseMiddleware());
 
   return router;
-}
+};

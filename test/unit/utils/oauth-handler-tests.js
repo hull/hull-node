@@ -1,16 +1,16 @@
 /* global describe, it */
-import http from "http";
-import { expect, should } from "chai";
-import sinon from "sinon";
-import express from "express";
-import Promise from "bluebird";
-import passport from "passport";
-import request from "request";
-import { renderFile } from "ejs";
+const http = require("http");
+const { expect, should } = require("chai");
+const sinon = require("sinon");
+const express = require("express");
+const Promise = require("bluebird");
+const passport = require("passport");
+const request = require("request");
+const { renderFile } = require("ejs");
 
-import HullStub from "../support/hull-stub";
+const HullStub = require("../support/hull-stub");
 
-import oauthHandler from "../../../src/utils/oauth-handler";
+const oauthHandler = require("../../../src/utils/oauth-handler");
 
 class StrategyStub extends passport.Strategy {
   constructor() {

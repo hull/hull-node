@@ -6,7 +6,7 @@
  * @param  {Object} newSettings settings to update
  * @return {Promise}
  */
-export default function updateSettings(ctx, newSettings) {
+module.exports = function updateSettings(ctx, newSettings) {
   const { client, cache } = ctx;
   return client.utils.settings.update(newSettings)
     .then((ship) => {
@@ -17,4 +17,4 @@ export default function updateSettings(ctx, newSettings) {
       return cache.del(ship.id)
         .then(() => ship);
     });
-}
+};

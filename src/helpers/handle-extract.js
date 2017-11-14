@@ -14,7 +14,7 @@ const _ = require("lodash");
  *
  * return handleExtract(req, 100, (users) => Promise.resolve())
  */
-export default function handleExtract(ctx, { body, batchSize, handler, onResponse, onError }) {
+module.exports = function handleExtract(ctx, { body, batchSize, handler, onResponse, onError }) {
   const { logger } = ctx.client;
   const { url, format } = body;
   if (!url) return Promise.reject(new Error("Missing URL"));
@@ -45,4 +45,4 @@ export default function handleExtract(ctx, { body, batchSize, handler, onRespons
     }))
     .promise()
     .then(() => true);
-}
+};

@@ -14,7 +14,7 @@ function auth(pass) {
   };
 }
 
-export default function queueUiRouter({ hostSecret, queueAgent, queue }) {
+module.exports = function queueUiRouter({ hostSecret, queueAgent, queue }) {
   const router = Router();
 
   router.use(auth(hostSecret));
@@ -22,4 +22,4 @@ export default function queueUiRouter({ hostSecret, queueAgent, queue }) {
   (queueAgent || queue).adapter.setupUiRouter(router);
 
   return router;
-}
+};

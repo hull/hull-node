@@ -1,9 +1,9 @@
 /* global describe, it */
-import { expect } from "chai";
-import sinon from "sinon";
-import Promise from "bluebird";
+const { expect } = require("chai");
+const sinon = require("sinon");
+const Promise = require("bluebird");
 
-import { updateSettings } from "../../../src/helpers";
+const { updateSettings } = require("../../../src/helpers");
 
 describe("updateSettings", () => {
   it("should call utils.settings.update in the background", (done) => {

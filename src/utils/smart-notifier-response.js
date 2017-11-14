@@ -1,9 +1,10 @@
+/* @flow */
 const { defaultErrorFlowControl } = require("./smart-notifier-flow-controls");
 
 /**
  * FlowControl is a part of SmartNotifierResponse
  */
-export class SmartNotifierFlowControl {
+class SmartNotifierFlowControl {
   type: String;
   size: Number;
   in: Number;
@@ -31,7 +32,7 @@ export class SmartNotifierFlowControl {
   }
 }
 
-export class SmartNotifierMetric {
+class SmartNotifierMetric {
   name: String;
 
   constructor(metric: Object) {
@@ -43,7 +44,7 @@ export class SmartNotifierMetric {
   }
 }
 
-export class SmartNotifierError extends Error {
+class SmartNotifierError extends Error {
   code: String;
   statusCode: number;
   reason: String;
@@ -68,8 +69,8 @@ export class SmartNotifierError extends Error {
   }
 
 }
-// @flow
-export class SmartNotifierResponse {
+
+class SmartNotifierResponse {
   flowControl: SmartNotifierFlowControl;
   metrics: Array<SmartNotifierMetric>;
   errors: Array<SmartNotifierError>;
@@ -106,3 +107,10 @@ export class SmartNotifierResponse {
     };
   }
 }
+
+module.exports = {
+  SmartNotifierFlowControl,
+  SmartNotifierMetric,
+  SmartNotifierError,
+  SmartNotifierResponse
+};

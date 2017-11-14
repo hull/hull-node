@@ -5,7 +5,7 @@ const responseMiddleware = require("./response-middleware");
 const requireHullMiddleware = require("./require-hull-middleware");
 const Batcher = require("../infra/batcher");
 
-export default function batcherHandler(handler, { maxSize = 100, maxTime = 10000 } = {}) {
+module.exports = function batcherHandler(handler, { maxSize = 100, maxTime = 10000 } = {}) {
   const ns = crypto.randomBytes(64).toString("hex");
   const router = Router();
   router.use(requireHullMiddleware());
@@ -26,4 +26,4 @@ export default function batcherHandler(handler, { maxSize = 100, maxTime = 10000
   router.use(responseMiddleware());
 
   return router;
-}
+};

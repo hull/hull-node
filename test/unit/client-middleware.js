@@ -1,11 +1,11 @@
 /* global describe, it */
-import { expect, should } from "chai";
-import sinon from "sinon";
-import Promise from "bluebird";
-import _ from "lodash";
+const { expect, should } = require("chai");
+const sinon = require("sinon");
+const Promise = require("bluebird");
+const _ = require("lodash");
 
-import Middleware from "../../src/middleware/client";
-import HullStub from "./support/hull-stub";
+const Middleware = require("../../src/middleware/client");
+const HullStub = require("./support/hull-stub");
 
 describe("Client Middleware", () => {
   beforeEach(function beforeEachHandler() {

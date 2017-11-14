@@ -1,7 +1,7 @@
 const enqueue = require("./enqueue");
 const MemoryAdapter = require("./adapter/memory");
 
-export default class QueueAgent {
+module.exports = class QueueAgent {
 
   constructor(adapter) {
     this.adapter = adapter;
@@ -23,4 +23,4 @@ export default class QueueAgent {
   exit() {
     return this.adapter.exit();
   }
-}
+};

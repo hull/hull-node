@@ -7,7 +7,7 @@ const _ = require("lodash");
  * @param  {Object} options
  * @return {Promise}
  */
-export default function requestExtract(ctx, { segment = null, format = "json", path = "batch", fields = [], additionalQuery = {} } = {}) {
+module.exports = function requestExtract(ctx, { segment = null, format = "json", path = "batch", fields = [], additionalQuery = {} } = {}) {
   const { client, hostname } = ctx;
   const conf = client.configuration();
   const search = _.merge({
@@ -42,4 +42,4 @@ export default function requestExtract(ctx, { segment = null, format = "json", p
     client.logger.debug("connector.requestExtract.params", params);
     return client.post("extract/user_reports", params);
   });
-}
+};

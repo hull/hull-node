@@ -12,7 +12,7 @@ class InstrumentationAgent {
     this.nr = null;
     this.raven = null;
     try {
-      this.manifest = require(`${process.cwd()}/manifest.json`); // eslint-disable-line const/no-dynamic-require,global-require
+      this.manifest = require(`${process.cwd()}/manifest.json`); // eslint-disable-line import/no-dynamic-require,global-require
     } catch (e) {
       this.manifest = {};
     }

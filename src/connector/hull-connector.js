@@ -7,7 +7,7 @@ const Worker = require("./worker");
 const { Instrumentation, Cache, Queue, Batcher } = require("../infra");
 const { exitHandler, segmentsMiddleware, requireHullMiddleware, helpersMiddleware, smartNotifierErrorMiddleware } = require("../utils");
 
-export default class HullConnector {
+class HullConnector {
   constructor(Hull, {
     hostSecret, port, clientConfig = {}, instrumentation, cache, queue, connectorName, segmentFilterSetting, skipSignatureValidation
   } = {}) {
@@ -123,3 +123,5 @@ export default class HullConnector {
     }
   }
 }
+
+module.exports = HullConnector;

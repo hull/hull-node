@@ -11,7 +11,7 @@ const SmartNofifierValidator = require("./smart-notifier-validator");
  * @param  {Object}   res
  * @param  {Function} next
  */
-export default function smartNotifierMiddlewareFactory({ skipSignatureValidation = false, httpClient = null }) {
+module.exports = function smartNotifierMiddlewareFactory({ skipSignatureValidation = false, httpClient = null }) {
   return function notifMiddleware(req, res, next) {
     req.hull = req.hull || {};
     const smartNotifierValidator = new SmartNofifierValidator(httpClient);
@@ -69,4 +69,4 @@ export default function smartNotifierMiddlewareFactory({ skipSignatureValidation
         });
     });
   };
-}
+};

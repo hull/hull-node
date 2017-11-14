@@ -21,7 +21,7 @@ function fetchToken(req, res, next) {
   next();
 }
 
-export default function oauth({
+module.exports = function oauth({
   name,
   tokenInUrl = true,
   isSetup = function setup() { return Promise.resolve(); },
@@ -127,4 +127,4 @@ export default function oauth({
   });
 
   return router;
-}
+};

@@ -11,7 +11,7 @@ function Readme(req, res) {
   return res.redirect(`https://dashboard.hullapp.io/readme?url=https://${req.headers.host}`);
 }
 
-export default function staticRouter() {
+module.exports = function staticRouter() {
   const router = express.Router();
 
   router.use(express.static(`${process.cwd()}/dist`));
@@ -22,4 +22,4 @@ export default function staticRouter() {
   router.get("/readme", Readme);
 
   return router;
-}
+};

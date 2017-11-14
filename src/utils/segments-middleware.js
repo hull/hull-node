@@ -1,4 +1,4 @@
-// @flow
+/* @flow */
 const _ = require("lodash");
 
 /**
@@ -6,7 +6,7 @@ const _ = require("lodash");
  * @param  {Object}   res
  * @param  {Function} next
  */
-export default function segmentsMiddlewareFactory() {
+module.exports = function segmentsMiddlewareFactory() {
   return function segmentsMiddleware(req: Object, res: Object, next: Function) {
     req.hull = req.hull || {};
 
@@ -47,4 +47,4 @@ export default function segmentsMiddlewareFactory() {
       return next();
     }, () => next());
   };
-}
+};

@@ -7,8 +7,8 @@ const jwt = require("jsonwebtoken");
 const certCache = {};
 const supportedSignaturesVersions = ["v1"];
 
-export default class SmartNotifierValidator {
-  request: Request;
+module.exports = class SmartNotifierValidator {
+  request: Object;
   httpClient: requestClient;
 
   constructor(http: requestClient = null) {
@@ -19,7 +19,7 @@ export default class SmartNotifierValidator {
     }
   }
 
-  setRequest(request: Request) {
+  setRequest(request: Object) {
     this.request = request;
     return this;
   }
@@ -94,4 +94,4 @@ export default class SmartNotifierValidator {
       });
     });
   }
-}
+};

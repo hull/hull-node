@@ -9,7 +9,7 @@ const {
 /**
  * Base Express app for Ships front part
  */
-export default function setupApp({ instrumentation, queue, cache, app, connectorConfig }) {
+module.exports = function setupApp({ instrumentation, queue, cache, app, connectorConfig }) {
   app.use(tokenMiddleware());
   app.use(notifMiddleware());
   app.use(smartNotifierMiddleware({ skipSignatureValidation: connectorConfig.skipSignatureValidation }));
@@ -33,4 +33,4 @@ export default function setupApp({ instrumentation, queue, cache, app, connector
 
 
   return app;
-}
+};

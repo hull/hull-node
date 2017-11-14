@@ -1,7 +1,7 @@
-import _ from "lodash";
-import Promise from "bluebird";
+const _ = require("lodash");
+const Promise = require("bluebird");
 
-export default class HullStub {
+class HullStub {
   constructor() {
     this.id = _.uniqueId("ship-");
     this.logger = {
@@ -30,3 +30,5 @@ HullStub.logger = {
   info: console.log, // () {},
   debug: console.log, // () {}
 };
+
+module.exports = HullStub;

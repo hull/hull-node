@@ -1,8 +1,8 @@
 /* global describe, it */
-import { expect, should } from "chai";
-import sinon from "sinon";
+const { expect, should } = require("chai");
+const sinon = require("sinon");
 
-import responseMiddleware from "../../../src/utils/response-middleware";
+const responseMiddleware = require("../../../src/utils/response-middleware");
 
 const resMock = {
   status: () => {},
