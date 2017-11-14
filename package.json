@@ -24,6 +24,7 @@
     "update": "updtr",
     "clean": "rimraf lib",
     "build": "npm run clean && babel src -d lib",
+    "dev": "babel src -d lib -w",
     "prepublish": "npm run build"
   },
   "dependencies": {
