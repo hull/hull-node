@@ -60,7 +60,7 @@ class BullAdapter {
 
   setupUiRouter(router) { // eslint-disable-line class-methods-use-this
     // due to problems in arena configuration it's disabled right now
-    // and removed = require( the package.json
+    // and removed from the package.json
     //
     // const arenaConfig = {
     //   queues: [{

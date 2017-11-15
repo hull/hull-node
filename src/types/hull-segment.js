@@ -6,4 +6,4 @@
 export type THullSegment = {
   id: string;
   name: string;
-}
+};

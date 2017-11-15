@@ -3,6 +3,6 @@
 import type { THullUser, THullAccount } from "./";
 
 /**
- * General type for HullUserType and HullAccountType
+ * General type for THullUser and THullAccount
  */
 export type THullObject = THullUser | THullAccount;

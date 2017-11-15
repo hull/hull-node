@@ -1,7 +1,7 @@
 /* @flow */
 
 /**
- * Connector object with settings, private settings and manifest.json
+ * Connector (also called ship) object with settings, private settings and manifest.json
  */
 export type THullConnector = {
   id: string;
@@ -10,4 +10,4 @@ export type THullConnector = {
   settings: Object;
   private_settings: Object;
   status: Object;
-}
+};

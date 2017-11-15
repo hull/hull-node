@@ -8,4 +8,4 @@ export type THullEvent = {
   event: string;
   context: Object;
   properties: Object;
-}
+};

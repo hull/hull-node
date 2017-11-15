@@ -3,7 +3,7 @@
 import type { THullSegment, THullConnector } from "./";
 
 /**
- * Context added to the express app request by hull connector sdk.
+ * Context added to the express app request by hull-node connector sdk.
  * Accessible via `req.hull` param.
  */
 export type THullReqContext = {
@@ -14,7 +14,7 @@ export type THullReqContext = {
   service: Object;
 
   segments: Array<THullSegment>;
-  ship: THullConnector;
+  ship: THullConnector; // since ship name is deprated we move it to connector param
   connector: THullConnector;
 
   hostname: String;
@@ -25,5 +25,5 @@ export type THullReqContext = {
   helpers: Object;
   notification: Object;
 
-  smartNotifierResponse: Object;
-}
+  smartNotifierResponse: ?Object;
+};
