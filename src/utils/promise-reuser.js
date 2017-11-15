@@ -18,9 +18,9 @@ module.exports = class PromiseReuser {
       return JSON.stringify(key);
     }
 
-    this.options = _.defaults({
+    this.options = _.defaults(options, {
       serializeArguments,
-    }, options);
+    });
     this.promiseMapsByArgs = {};
   }
 
