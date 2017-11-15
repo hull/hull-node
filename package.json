@@ -75,6 +75,7 @@
     "chai-http": "^3.0.0",
     "eslint": "^3.2.2",
     "eslint-config-airbnb-base": "^11.1.0",
+    "eslint-plugin-flowtype": "^2.39.1",
     "eslint-plugin-import": "^2.2.0",
     "flow-bin": "^0.59.0",
     "isparta": "^4.0.0",
