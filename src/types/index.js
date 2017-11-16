@@ -12,3 +12,4 @@ export type { THullAttributesChanges } from "./hull-attributes-changes";
 export type { THullUserChanges } from "./hull-user-changes";
 export type { THullUserUpdateMessage } from "./hull-user-update-message";
 export type { THullUser } from "./hull-user";
+export type { THullRequest } from "./hull-request";

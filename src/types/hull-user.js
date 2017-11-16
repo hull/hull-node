@@ -7,5 +7,8 @@ import type { THullAttributeName, THullAttributeValue } from "./";
  */
 export type THullUser = {
   id: string;
-  [THullAttributeName]: THullAttributeValue
+  [THullAttributeName]: THullAttributeValue;
+  account: {
+    [THullAttributeName]: THullAttributeValue;
+  };
 };
