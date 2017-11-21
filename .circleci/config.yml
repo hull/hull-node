@@ -24,3 +24,4 @@ jobs:
             mv $OUTPUT hull-node.tgz
       - store_artifacts:
           path: ~/repo/hull-node.tgz
+          destination: /
