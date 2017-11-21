@@ -1,3 +1,21 @@
+/* @flow */
+export type {
+  THullAccount,
+  THullConnector,
+  THullEvent,
+  THullObject,
+  THullReqContext,
+  THullSegment,
+  THullSegmentsChanges,
+  THullAttributeName,
+  THullAttributeValue,
+  THullAttributesChanges,
+  THullUserChanges,
+  THullUserUpdateMessage,
+  THullUser,
+  THullRequest
+} from "./types";
+
 const Client = require("hull-client");
 
 const clientMiddleware = require("./middleware/client");
