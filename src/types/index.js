@@ -1,4 +1,5 @@
 /* @flow */
+/*::
 export type { THullAccount } from "./hull-account";
 export type { THullConnector } from "./hull-connector";
 export type { THullEvent } from "./hull-event";
@@ -13,3 +14,4 @@ export type { THullUserChanges } from "./hull-user-changes";
 export type { THullUserUpdateMessage } from "./hull-user-update-message";
 export type { THullUser } from "./hull-user";
 export type { THullRequest } from "./hull-request";
+*/

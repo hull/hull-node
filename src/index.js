@@ -1,4 +1,5 @@
 /* @flow */
+/*::
 export type {
   THullAccount,
   THullConnector,
@@ -15,6 +16,7 @@ export type {
   THullUser,
   THullRequest
 } from "./types";
+*/
 
 const Client = require("hull-client");
 
