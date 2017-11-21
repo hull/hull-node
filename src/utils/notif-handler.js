@@ -1,9 +1,9 @@
-import crypto from "crypto";
-import express from "express";
-import https from "https";
-import _ from "lodash";
-import requireHullMiddleware from "./require-hull-middleware";
-import Batcher from "../infra/batcher";
+const crypto = require("crypto");
+const express = require("express");
+const https = require("https");
+const _ = require("lodash");
+const requireHullMiddleware = require("./require-hull-middleware");
+const Batcher = require("../infra/batcher");
 
 function subscribeFactory(options) {
   return function subscribe(req, res, next) {

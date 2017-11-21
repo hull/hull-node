@@ -1,2 +1,2 @@
-export default from "./queue-agent";
+module.exports = require("./queue-agent");
 

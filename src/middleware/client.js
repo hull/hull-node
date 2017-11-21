@@ -1,7 +1,7 @@
-import _ from "lodash";
-import jwt from "jwt-simple";
+const _ = require("lodash");
+const jwt = require("jwt-simple");
 
-import { handleExtract, requestExtract } from "../helpers";
+const { handleExtract, requestExtract } = require("../helpers");
 
 function parseQueryString(query) {
   return ["organization", "ship", "secret"].reduce((cfg, k) => {
@@ -88,7 +88,7 @@ module.exports = function hullClientMiddlewareFactory(Client, { hostSecret, clie
         return getCurrentShip(id, req.hull.client, req.hull.cache, bust, notification).then((ship = {}) => {
           req.hull.ship = ship;
           req.hull.hostname = req.hostname;
-          req.hull.options = _.merge(req.query, req.body);
+          req.hull.options = _.merge({}, req.query, req.body);
           return next();
         }, (err) => {
           const e = new Error(err.message);

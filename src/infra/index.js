@@ -1,4 +1,4 @@
-export Cache from "./cache";
-export Instrumentation from "./instrumentation";
-export Queue from "./queue";
-export Batcher from "./batcher";
+module.exports.Cache = require("./cache");
+module.exports.Instrumentation = require("./instrumentation");
+module.exports.Queue = require("./queue");
+module.exports.Batcher = require("./batcher");

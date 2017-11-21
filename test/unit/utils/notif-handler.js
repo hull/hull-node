@@ -1,17 +1,17 @@
 /* global describe, it */
-import http from "http";
-import { expect, should } from "chai";
-import sinon from "sinon";
-import express from "express";
-import Promise from "bluebird";
+const http = require("http");
+const { expect, should } = require("chai");
+const sinon = require("sinon");
+const express = require("express");
+const Promise = require("bluebird");
 
-import shipUpdate from "../fixtures/sns-messages/ship-update.json";
-import userUpdate from "../fixtures/sns-messages/user-report.json";
-import userUpdateBig from "../fixtures/sns-messages/user-report-big.json";
-import HullStub from "../support/hull-stub";
+const shipUpdate = require("../fixtures/sns-messages/ship-update.json");
+const userUpdate = require("../fixtures/sns-messages/user-report.json");
+const userUpdateBig = require("../fixtures/sns-messages/user-report-big.json");
+const HullStub = require("../support/hull-stub");
 
-import notifHandler from "../../../src/utils/notif-handler";
-import notifMiddleware from "../../../src/utils/notif-middleware";
+const notifHandler = require("../../../src/utils/notif-handler");
+const notifMiddleware = require("../../../src/utils/notif-middleware");
 
 
 

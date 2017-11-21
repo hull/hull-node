@@ -1,10 +1,10 @@
 /* global describe, it */
 /* eslint-disable no-unused-expressions */
-import { expect } from "chai";
+const { expect } = require("chai");
 
-import { filterNotification } from "../../../src/helpers";
+const { filterNotification } = require("../../../src/helpers");
 
-import mockSettings from "../support/mock-settings";
+const mockSettings = require("../support/mock-settings");
 
 function mockReq(segments, settingsName) {
   const ctx = mockSettings({ synchronized_segments: segments }).hull;

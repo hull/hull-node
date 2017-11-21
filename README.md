@@ -951,3 +951,20 @@ app.post("fetch", ...middleware, (req, res, next) => {
     .then(next, next);
 }, responseMiddleware);
 ```
+
+## Flow annotations
+
+When using a [flow](https://flow.org) enabled project, we recommend using flow types provided by hull-node.
+You can import them in your source files directly from `hull` module and use `import type` flow structure:
+
+```
+/* @flow */
+import type { THullObject } from "hull";
+
+parseHullObject(user: THullObject) {
+  // ...
+}
+
+```
+
+See `src/lib/types` directory for a full list of available types.

@@ -1,9 +1,9 @@
 /* global describe, it */
-import { expect } from "chai";
-import sinon from "sinon";
-import HullStub from "../support/hull-stub";
+const { expect } = require("chai");
+const sinon = require("sinon");
+const HullStub = require("../support/hull-stub");
 
-import ShipCache from "../../../src/infra/cache/ship-cache";
+const ShipCache = require("../../../src/infra/cache/ship-cache");
 
 describe("Enqueue", () => {
   it("should expose set, wrap, get and del methods", () => {

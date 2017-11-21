@@ -1,8 +1,8 @@
 /* global describe, it */
-import Promise from "bluebird";
-import { expect } from "chai";
+const Promise = require("bluebird");
+const { expect } = require("chai");
 
-import Batcher from "../../../src/infra/batcher";
+const Batcher = require("../../../src/infra/batcher");
 
 const reqStub = {
   hull: {

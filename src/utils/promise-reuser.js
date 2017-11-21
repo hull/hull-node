@@ -1,11 +1,12 @@
-// @flow
+/* @flow */
+const _ = require("lodash");
 
 /**
  * Object which allows to reuse pending promises with the same
  * arguments passed to original function
  * Based on https://github.com/elado/reuse-promise
  */
-export default class PromiseReuser {
+module.exports = class PromiseReuser {
   options: Object
   promiseMapsByArgs: Object
 
@@ -17,10 +18,9 @@ export default class PromiseReuser {
       return JSON.stringify(key);
     }
 
-    this.options = {
+    this.options = _.defaults(options, {
       serializeArguments,
-      ...options
-    };
+    });
     this.promiseMapsByArgs = {};
   }
 
@@ -52,4 +52,4 @@ export default class PromiseReuser {
 
     return reusePromiseWrappedFn;
   }
-}
+};

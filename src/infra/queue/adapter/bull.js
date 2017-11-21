@@ -1,9 +1,9 @@
-import Queue from "bull";
+const Queue = require("bull");
 
 /**
  * Bull Adapter for queue
  */
-export default class BullAdapter {
+class BullAdapter {
 
   constructor(options) {
     this.options = options;
@@ -82,3 +82,5 @@ export default class BullAdapter {
     this.queue.clean(1296000000, "failed");
   }
 }
+
+module.exports = BullAdapter;

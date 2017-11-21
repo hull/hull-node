@@ -1,12 +1,12 @@
-// @flow
+/* @flow */
 
-import { HullTraitsChangesType, HullSegmentsChangesType } from "./";
+import type { THullAttributesChanges, THullSegmentsChanges } from "./";
 
 /**
- * Object containing all changes in HullUserMessage
+ * Object containing all changes related to User in THullUserUpdateMessage
  */
-export type HullUserChangesType = {
-  user: HullTraitsChangesType;
-  account: HullTraitsChangesType;
-  segments: HullSegmentsChangesType;
-}
+export type THullUserChanges = {
+  user: THullAttributesChanges;
+  account: THullAttributesChanges;
+  segments: THullSegmentsChanges;
+};

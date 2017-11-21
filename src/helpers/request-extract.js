@@ -1,13 +1,13 @@
-import Promise from "bluebird";
-import URI from "urijs";
-import _ from "lodash";
+const Promise = require("bluebird");
+const URI = require("urijs");
+const _ = require("lodash");
 
 /**
  * Start an extract job and be notified with the url when complete.
  * @param  {Object} options
  * @return {Promise}
  */
-export default function requestExtract(ctx, { segment = null, format = "json", path = "batch", fields = [], additionalQuery = {} } = {}) {
+module.exports = function requestExtract(ctx, { segment = null, format = "json", path = "batch", fields = [], additionalQuery = {} } = {}) {
   const { client, hostname } = ctx;
   const conf = client.configuration();
   const search = _.merge({
@@ -42,4 +42,4 @@ export default function requestExtract(ctx, { segment = null, format = "json", p
     client.logger.debug("connector.requestExtract.params", params);
     return client.post("extract/user_reports", params);
   });
-}
+};

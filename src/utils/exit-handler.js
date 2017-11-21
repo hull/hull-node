@@ -1,7 +1,7 @@
 /**
  * @param {Promise} promise
  */
-export default function exitHandler(promise) {
+module.exports = function exitHandler(promise) {
   function exitNow() {
     console.warn("connector.exitHandler.exitNow");
     process.exit(0);
@@ -17,4 +17,4 @@ export default function exitHandler(promise) {
   process.on("SIGINT", handleExit);
   process.on("SIGTERM", handleExit);
   process.on("gracefulExit", handleExit);
-}
+};
