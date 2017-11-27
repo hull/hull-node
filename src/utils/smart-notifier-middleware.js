@@ -60,7 +60,7 @@ export default function smartNotifierMiddlewareFactory({ skipSignatureValidation
           // FIXME: we need to do that mapping since the middleware is expecting
           // `ship` param instead of `id`
           req.hull.config.ship = _.get(req, "hull.notification.configuration.id");
-          req.hull.config.requestId = _.get(req, "hull.notification.notification_id");
+          req.hull.requestId = _.get(req, "hull.notification.notification_id");
           req.hull.smartNotifierResponse = new SmartNotifierResponse();
           return next();
         }, (error) => {
