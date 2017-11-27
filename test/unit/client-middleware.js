@@ -1,8 +1,6 @@
-/* global describe, it */
-import { expect, should } from "chai";
+import { expect } from "chai";
 import sinon from "sinon";
 import Promise from "bluebird";
-import _ from "lodash";
 
 import Middleware from "../../src/middleware/client";
 import HullStub from "./support/hull-stub";
@@ -10,6 +8,9 @@ import HullStub from "./support/hull-stub";
 describe("Client Middleware", () => {
   beforeEach(function beforeEachHandler() {
     this.reqStub = {
+      headers: {
+        "x-hull-request-id": "smart-notifier:123:456:789"
+      },
       query: {
         organization: "local",
         secret: "secret",
@@ -50,6 +51,26 @@ describe("Client Middleware", () => {
     const next = sinon.spy();
     instance({}, {}, next);
     expect(next.calledOnce).to.be.true;
+  });
+
+  it('should pick up the requestId from the request headers', function(done) {
+    const instance = Middleware(HullStub, { hostSecret: "secret" });
+    instance(this.reqStub, {}, () => {
+      const { requestId } = this.reqStub.hull.client.configuration();
+      expect(requestId).to.equal(this.reqStub.headers['x-hull-request-id']);
+      done();
+    });
+  });
+
+  it('should pick up the requestId from req.hull.requestId', function(done) {
+    const instance = Middleware(HullStub, { hostSecret: "secret" });
+    const requestId = "custom:request:123";
+    this.reqStub.hull = { requestId };
+    instance(this.reqStub, {}, () => {
+      const conf = this.reqStub.hull.client.configuration();
+      expect(conf.requestId).to.equal(requestId);
+      done();
+    });
   });
 
   it("should fetch a ship", function (done) {
@@ -125,7 +146,7 @@ describe("Client Middleware", () => {
         organization: "local",
         flushAt: 123,
         connector_name: "foo",
-        requestId: undefined
+        requestId: this.reqStub.headers["x-hull-request-id"]
       })).to.be.true;
       done();
     });

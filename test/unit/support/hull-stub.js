@@ -2,7 +2,8 @@ import _ from "lodash";
 import Promise from "bluebird";
 
 export default class HullStub {
-  constructor() {
+  constructor(config) {
+    this._configuration = config;
     this.id = _.uniqueId("ship-");
     this.logger = {
       info: console.log, //() {},
@@ -16,7 +17,7 @@ export default class HullStub {
   post(id) { return Promise.resolve({ id }); }
 
   configuration() {
-    return { id: this.id, secret: "shutt", organization: "xxx.hulltest.rocks" };
+    return _.merge({ id: this.id, secret: "shutt", organization: "xxx.hulltest.rocks" }, this._configuration);
   }
 
   static Middleware() {
