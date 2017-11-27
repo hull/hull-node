@@ -124,7 +124,8 @@ describe("Client Middleware", () => {
         secret: "secret",
         organization: "local",
         flushAt: 123,
-        connector_name: "foo"
+        connector_name: "foo",
+        requestId: undefined
       })).to.be.true;
       done();
     });
