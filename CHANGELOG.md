@@ -1,3 +1,6 @@
+# 0.13.6
+* Add requestId in client middleware to decorate logs with the incoming requestId
+
 # 0.13.5
 * added set of flow types which can be imported from "hull/lib/types"
 * reduced logging from Batcher utility
