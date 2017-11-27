@@ -1,5 +1,6 @@
 import bodyParser from "body-parser";
 import MessageValidator from "sns-validator";
+import _ from "lodash";
 
 /**
  * @param  {Object}   req
@@ -45,7 +46,9 @@ export default function notifMiddlewareFactory() {
   return function notifMiddleware(req, res, next) {
     req.hull = req.hull || {};
     if (!req.hull.requestId && req.headers["x-amz-sns-message-id"]) {
-      req.hull.requestId = `sns:${req.headers["x-amz-sns-message-id"]}`;
+      const appId = _.last((req.headers["x-amz-sns-topic-arn"] || "").split("-"));
+      const timestamp = Math.floor(new Date().getTime() / 1000);
+      req.hull.requestId = ["sns-notifier", appId, timestamp, req.headers["x-amz-sns-message-id"]].join(":");
     }
     if (req.headers["x-amz-sns-message-type"] || req.url.match("/batch")) {
       req.headers["content-type"] = "application/json;charset=UTF-8";
