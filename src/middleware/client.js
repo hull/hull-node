@@ -67,7 +67,10 @@ module.exports = function hullClientMiddlewareFactory(Client, { hostSecret, clie
         parseQueryString(req.query) ||
         {};
       const { message, notification, config } = req.hull;
-      const { organization, ship: id, secret, requestId } = config;
+      const { organization, ship: id, secret } = config;
+
+      const requestId = config.requestId || req.hull.requestId;
+
       if (organization && id && secret) {
         req.hull.client = new Client(_.merge({ id, secret, organization, requestId }, clientConfig));
         req.hull.client.utils = req.hull.client.utils || {};
