@@ -44,6 +44,9 @@ export default function notifMiddlewareFactory() {
 
   return function notifMiddleware(req, res, next) {
     req.hull = req.hull || {};
+    if (!req.hull.requestId && req.headers["x-amz-sns-message-id"]) {
+      req.hull.requestId = `sns:${req.headers["x-amz-sns-message-id"]}`;
+    }
     if (req.headers["x-amz-sns-message-type"] || req.url.match("/batch")) {
       req.headers["content-type"] = "application/json;charset=UTF-8";
       bodyParser.json({ limit: "256kb" })(req, res, () => {
