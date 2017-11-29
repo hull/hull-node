@@ -2,7 +2,8 @@ const _ = require("lodash");
 const Promise = require("bluebird");
 
 class HullStub {
-  constructor() {
+  constructor(config) {
+    this._configuration = config;
     this.id = _.uniqueId("ship-");
     this.logger = {
       info: console.log, //() {},
@@ -16,7 +17,7 @@ class HullStub {
   post(id) { return Promise.resolve({ id }); }
 
   configuration() {
-    return { id: this.id, secret: "shutt", organization: "xxx.hulltest.rocks" };
+    return _.merge({ id: this.id, secret: "shutt", organization: "xxx.hulltest.rocks" }, this._configuration);
   }
 
   static Middleware() {

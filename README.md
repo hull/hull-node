@@ -44,6 +44,8 @@ app.post("/show-segments", (req, res) => {
 
 The Hull Middleware operates on `req.hull` object. It uses it to setup the Hull Client and decide which configuration to pick - this are the core parameters the Middleware touches:
 
+* **req.hull.requestId**
+    > unique identifier for a specific request. Will be used to enrich the context of all the logs emitted by the the Hull.Client logger. This value is automatically added by the `notifHandler` and `smartNotifierHandler` with the SNS `MessageId` or SmartNotifier `notification_id`.
 * **req.hull.config**
     > an object carrying `id`, `secret` and `organization`. You can setup it prior to the Hull Middleware execution (via custom middleware) to ovewrite default configuration strategy
 * **req.hull.token**

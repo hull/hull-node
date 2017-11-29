@@ -1,6 +1,9 @@
-# 0.13.6
+# 0.13.7
 * remove `import/export` and `...spread` to make the code runnable on node v6
 * remove babeljs es transpilation and replace it with `transform-flow-comments` plugin to have the flow annotations be included in resulting code in comments
+
+# 0.13.6
+* Add requestId in client middleware to decorate logs with the incoming requestId
 
 # 0.13.5
 * added set of flow types which can be imported from "hull/lib/types"
