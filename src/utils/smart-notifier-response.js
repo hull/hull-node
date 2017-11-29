@@ -103,7 +103,7 @@ class SmartNotifierResponse {
 
   toJSON() {
     return {
-      flow_control: this.flowControl.toJSON(),
+      flow_control: this.flowControl && this.flowControl.toJSON(),
       metrics: this.metrics.map(m => m.toJSON()),
       errors: this.errors.map(err => err.toJSON())
     };
