@@ -7,12 +7,14 @@ const { defaultErrorFlowControl } = require("./smart-notifier-flow-controls");
 class SmartNotifierFlowControl {
   type: String;
   size: Number;
+  in_time: Number;
   in: Number;
   at: Date;
 
   constructor(flowControl: Object = {}) {
     this.type = flowControl.type;
     this.size = flowControl.size;
+    this.in_time = flowControl.in_time;
     this.in = flowControl.in;
     this.at = flowControl.at;
   }

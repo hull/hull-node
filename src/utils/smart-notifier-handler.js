@@ -59,6 +59,7 @@ function processHandlersFactory(handlers, userHandlerOptions) {
       const promise = messageHandler(ctx, notification.messages);
       return promise.then(() => {
         if (!req.hull.smartNotifierResponse.isValid()) {
+          ctx.client.logger.debug("connector.smartNotifierHandler.responseInvalid", req.hull.smartNotifierResponse.toJSON());
           req.hull.smartNotifierResponse.setFlowControl(defaultSuccessFlowControl);
         }
         const response = req.hull.smartNotifierResponse.toJSON();
@@ -69,6 +70,7 @@ function processHandlersFactory(handlers, userHandlerOptions) {
         req.hull.smartNotifierResponse.addError(new SmartNotifierError("N/A", err.message));
 
         if (!req.hull.smartNotifierResponse.isValid()) {
+          ctx.client.logger.debug("connector.smartNotifierHandler.responseInvalid", req.hull.smartNotifierResponse.toJSON());
           req.hull.smartNotifierResponse.setFlowControl(defaultErrorFlowControl);
         }
         const response = req.hull.smartNotifierResponse.toJSON();
