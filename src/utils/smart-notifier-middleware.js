@@ -17,6 +17,7 @@ module.exports = function smartNotifierMiddlewareFactory({ skipSignatureValidati
     const smartNotifierValidator = new SmartNofifierValidator(httpClient);
     smartNotifierValidator.setRequest(req);
 
+    // we are already dealing with SNS based notification
     if (req.hull.notification) {
       return next();
     }
