@@ -20,12 +20,12 @@ class MetricAgent {
     return null;
   }
 
-  increment(metric, value = 1) {
+  increment(metric, value = 1, tags = []) {
     if (!this.metrics) {
       return null;
     }
     try {
-      return this.metrics.increment(metric, parseFloat(value), this.getMetricTags());
+      return this.metrics.increment(metric, parseFloat(value), _.merge(this.getMetricTags(), tags));
     } catch (err) {
       console.warn("metricInc.error", err);
     }

@@ -18,3 +18,5 @@ module.exports.helpersMiddleware = require("./helpers-middleware");
 module.exports.SmartNotifierResponse = require("./smart-notifier-response");
 module.exports.PromiseReuser = require("./promise-reuser");
 
+module.exports.superagentUrlTemplatePlugin = require("./superagent-url-template-plugin");
+module.exports.superagentInstrumentationPlugin = require("././superagent-intrumentation-plugin.js");

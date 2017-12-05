@@ -17,11 +17,11 @@ function superagentUnstrumentationPluginFactory({ logger, metric }) {
           status: resData.status,
           vars: request.urlTemplateVariables
         });
-        metric.value("ship.service_api.request", elapsed, {
-          method,
-          url,
-          status: resData.status,
-        });
+        metric.value("ship.service_api.request", elapsed, [
+          `method:${method}`,
+          `url:${url}`,
+          `status:${resData.status}`,
+        ]);
       });
   };
 }
