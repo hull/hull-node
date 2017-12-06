@@ -9,6 +9,10 @@ import type { THullReqContext } from "./";
 export type THullRequest = {
   ...$Request,
   hull: THullReqContext,
-  shipApp?: Object,
-  service?: Object
+  shipApp?: {
+    [any]: any
+  },
+  service?: {
+    [any]: any
+  }
 };
