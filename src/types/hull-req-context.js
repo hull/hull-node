@@ -11,8 +11,8 @@ export type THullReqContext = {
   token: String;
   client: Object;
 
-  service?: Object;
-  shipApp?: Object;
+  service: Object;
+  shipApp: Object;
 
   segments: Array<THullSegment>;
   ship: THullConnector; // since ship name is deprated we move it to connector param
