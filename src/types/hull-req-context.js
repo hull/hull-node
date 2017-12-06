@@ -27,4 +27,5 @@ export type THullReqContext = {
   notification: Object;
 
   smartNotifierResponse: ?Object;
+  enqueue: Function;
 };
