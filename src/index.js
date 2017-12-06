@@ -12,6 +12,8 @@ export type {
   THullAttributeValue,
   THullAttributesChanges,
   THullUserChanges,
+  THullUserIdent  ,
+  THullUserTraits,
   THullUserUpdateMessage,
   THullUser,
   THullRequest

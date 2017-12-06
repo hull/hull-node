@@ -1040,7 +1040,7 @@ agent.get("https://api.url/{{defaultVariable}}/resource/{{resourceId}}")
 Above code will produce following log line:
 
 ```
-connector.api.response { responseTime: 880.502444,
+connector.service_api.request { responseTime: 880.502444,
   method: 'GET',
   url: 'https://api.url/{{defaultVariable}}/resource/{{resourceId}}',
   status: 200 }

@@ -11,6 +11,8 @@ export type { THullAttributeName } from "./hull-attribute-name";
 export type { THullAttributeValue } from "./hull-attribute-value";
 export type { THullAttributesChanges } from "./hull-attributes-changes";
 export type { THullUserChanges } from "./hull-user-changes";
+export type { THullUserIdent } from "./hull-user-ident";
+export type { THullUserTraits } from "./hull-user-traits";
 export type { THullUserUpdateMessage } from "./hull-user-update-message";
 export type { THullUser } from "./hull-user";
 export type { THullRequest } from "./hull-request";
