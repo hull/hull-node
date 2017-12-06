@@ -25,6 +25,7 @@ export type THullReqContext = {
   metric: Object;
   helpers: Object;
   notification: Object;
+  message?: Object;
 
   smartNotifierResponse: ?Object;
   enqueue: Function;
