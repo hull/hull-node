@@ -35,7 +35,7 @@ module.exports = function handleExtract(ctx, { body, batchSize, handler, onRespo
     })
     .pipe(decoder)
     .pipe(batch)
-    .pipe(ps.map({ concurrent: 2 }, (...args) => {
+    .pipe(ps.map({ concurrent: 1 }, (...args) => {
       try {
         return handler(...args);
       } catch (e) {
