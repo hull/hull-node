@@ -8,24 +8,24 @@ class MetricAgent {
     this.ctx = ctx;
   }
 
-  value(metric, value = 1) {
+  value(metric, value = 1, additionalTags = []) {
     if (!this.metrics) {
       return null;
     }
     try {
-      return this.metrics.gauge(metric, parseFloat(value), this.getMetricTags());
+      return this.metrics.gauge(metric, parseFloat(value), _.union(this.getMetricTags(), additionalTags));
     } catch (err) {
       console.warn("metricVal.error", err);
     }
     return null;
   }
 
-  increment(metric, value = 1, tags = []) {
+  increment(metric, value = 1, additionalTags = []) {
     if (!this.metrics) {
       return null;
     }
     try {
-      return this.metrics.increment(metric, parseFloat(value), _.merge(this.getMetricTags(), tags));
+      return this.metrics.increment(metric, parseFloat(value), _.union(this.getMetricTags(), additionalTags));
     } catch (err) {
       console.warn("metricInc.error", err);
     }
