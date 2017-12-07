@@ -6,6 +6,7 @@ function superagentUnstrumentationPluginFactory({ logger, metric }) {
     request
       .on("request", () => {
         start = process.hrtime();
+        // TODO: should be migrated to `connector.service_api.call`
         metric.increment("ship.service_api.call", 1, [
           `method:${method}`,
           `url:${url}`,
@@ -14,7 +15,7 @@ function superagentUnstrumentationPluginFactory({ logger, metric }) {
       .on("response", (resData) => {
         const hrTime = process.hrtime(start);
         const elapsed = (hrTime[0] * 1000) + (hrTime[1] / 1000000);
-        logger.debug("connector.service_api.responseTime", {
+        logger.debug("connector.service_api.call", {
           responseTime: elapsed,
           method,
           url,

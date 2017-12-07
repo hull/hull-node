@@ -1040,8 +1040,15 @@ agent.get("https://api.url/{{defaultVariable}}/resource/{{resourceId}}")
 Above code will produce following log line:
 
 ```
-connector.service_api.request { responseTime: 880.502444,
+connector.service_api.call {
+  responseTime: 880.502444,
   method: 'GET',
   url: 'https://api.url/{{defaultVariable}}/resource/{{resourceId}}',
-  status: 200 }
+  status: 200
+}
 ```
+
+and following metrics:
+
+- `ship.service_api.call` - should be migrated to `connector.service_api.call`
+- `connector.service_api.responseTime`
