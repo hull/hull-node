@@ -1,19 +1,20 @@
-// @flow
-
-import { defaultErrorFlowControl } from "./smart-notifier-flow-controls";
+/* @flow */
+const { defaultErrorFlowControl } = require("./smart-notifier-flow-controls");
 
 /**
  * FlowControl is a part of SmartNotifierResponse
  */
-export class SmartNotifierFlowControl {
+class SmartNotifierFlowControl {
   type: String;
   size: Number;
+  in_time: Number;
   in: Number;
   at: Date;
 
   constructor(flowControl: Object = {}) {
     this.type = flowControl.type;
     this.size = flowControl.size;
+    this.in_time = flowControl.in_time;
     this.in = flowControl.in;
     this.at = flowControl.at;
   }
@@ -33,7 +34,7 @@ export class SmartNotifierFlowControl {
   }
 }
 
-export class SmartNotifierMetric {
+class SmartNotifierMetric {
   name: String;
 
   constructor(metric: Object) {
@@ -45,20 +46,20 @@ export class SmartNotifierMetric {
   }
 }
 
-export class SmartNotifierError extends Error {
+class SmartNotifierError extends Error {
   code: String;
   statusCode: number;
   reason: String;
   flowControl: Object;
-  constructor: Function;
-  __proto__: Object;
+  // __proto__: Object;
 
   constructor(code: String, reason: String, statusCode: number = 400, flowControl: Object = defaultErrorFlowControl) {
     super(reason);
 
     // https://github.com/babel/babel/issues/3083
-    this.constructor = SmartNotifierError;
-    this.__proto__ = SmartNotifierError.prototype; // eslint-disable-line no-proto
+    // $FlowFixMe
+    // this.constructor = SmartNotifierError;
+    // this.__proto__ = SmartNotifierError.prototype; // eslint-disable-line no-proto
     this.code = code;
     this.statusCode = statusCode;
     this.reason = reason;
@@ -70,8 +71,8 @@ export class SmartNotifierError extends Error {
   }
 
 }
-// @flow
-export class SmartNotifierResponse {
+
+class SmartNotifierResponse {
   flowControl: SmartNotifierFlowControl;
   metrics: Array<SmartNotifierMetric>;
   errors: Array<SmartNotifierError>;
@@ -102,9 +103,16 @@ export class SmartNotifierResponse {
 
   toJSON() {
     return {
-      flow_control: this.flowControl.toJSON(),
+      flow_control: this.flowControl && this.flowControl.toJSON(),
       metrics: this.metrics.map(m => m.toJSON()),
       errors: this.errors.map(err => err.toJSON())
     };
   }
 }
+
+module.exports = {
+  SmartNotifierFlowControl,
+  SmartNotifierMetric,
+  SmartNotifierError,
+  SmartNotifierResponse
+};

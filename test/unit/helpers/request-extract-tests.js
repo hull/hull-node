@@ -1,11 +1,11 @@
 /* global describe, it */
 /* eslint-disable no-unused-expressions */
-import { expect } from "chai";
-import sinon from "sinon";
+const { expect } = require("chai");
+const sinon = require("sinon");
 
-import HullStub from "../support/hull-stub";
+const HullStub = require("../support/hull-stub");
 
-import requestExtract from "../../../src/helpers/request-extract";
+const requestExtract = require("../../../src/helpers/request-extract");
 
 describe("extract.request", () => {
   beforeEach(function beforeEachHandler() {

@@ -1,20 +1,22 @@
-export exitHandler from "./exit-handler";
-export notifHandler from "./notif-handler";
-export smartNotifierHandler from "./smart-notifier-handler";
-export oAuthHandler from "./oauth-handler";
-export actionHandler from "./action-handler";
-export batcherHandler from "./batcher-handler";
+module.exports.exitHandler = require("./exit-handler");
+module.exports.notifHandler = require("./notif-handler");
+module.exports.smartNotifierHandler = require("./smart-notifier-handler");
+module.exports.oAuthHandler = require("./oauth-handler");
+module.exports.actionHandler = require("./action-handler");
+module.exports.batcherHandler = require("./batcher-handler");
 
-export staticRouter from "./static-router";
+module.exports.staticRouter = require("./static-router");
 
-export tokenMiddleware from "./token-middleware";
-export requireHullMiddleware from "./require-hull-middleware";
-export responseMiddleware from "./response-middleware";
-export notifMiddleware from "./notif-middleware";
-export smartNotifierMiddleware from "./smart-notifier-middleware";
-export smartNotifierErrorMiddleware from "./smart-notifier-error-middleware";
-export segmentsMiddleware from "./segments-middleware";
-export helpersMiddleware from "./helpers-middleware";
-export SmartNotifierResponse from "./smart-notifier-response";
-export PromiseReuser from "./promise-reuser";
+module.exports.tokenMiddleware = require("./token-middleware");
+module.exports.requireHullMiddleware = require("./require-hull-middleware");
+module.exports.responseMiddleware = require("./response-middleware");
+module.exports.notifMiddleware = require("./notif-middleware");
+module.exports.smartNotifierMiddleware = require("./smart-notifier-middleware");
+module.exports.smartNotifierErrorMiddleware = require("./smart-notifier-error-middleware");
+module.exports.segmentsMiddleware = require("./segments-middleware");
+module.exports.helpersMiddleware = require("./helpers-middleware");
+module.exports.SmartNotifierResponse = require("./smart-notifier-response");
+module.exports.PromiseReuser = require("./promise-reuser");
 
+module.exports.superagentUrlTemplatePlugin = require("./superagent-url-template-plugin");
+module.exports.superagentInstrumentationPlugin = require("././superagent-intrumentation-plugin.js");

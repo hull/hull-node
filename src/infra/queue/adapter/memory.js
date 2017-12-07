@@ -1,8 +1,8 @@
-import _ from "lodash";
-import Promise from "bluebird";
+const _ = require("lodash");
+const Promise = require("bluebird");
 
 
-export default class MemoryAdapter {
+class MemoryAdapter {
 
   /**
    * @param {Object} queue Kue instance
@@ -33,10 +33,9 @@ export default class MemoryAdapter {
     this.queue[jobName] = this.queue[jobName] || [];
     this.queue[jobName].push({
       id: this.queue[jobName].length,
-      data: {
+      data: _.merge({
         name: jobName,
-        ...jobPayload
-      }
+      }, jobPayload)
     });
     return this.processQueues();
   }
@@ -73,3 +72,5 @@ export default class MemoryAdapter {
 
   clean() {} // eslint-disable-line class-methods-use-this
 }
+
+module.exports = MemoryAdapter;

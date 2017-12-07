@@ -1,7 +1,7 @@
-import {
+const {
   SmartNotifierResponse,
   SmartNotifierError
-} from "./smart-notifier-response";
+} = require("./smart-notifier-response");
 
 /**
  * Error handlers that returns SmartNotifierError objects to json
@@ -10,7 +10,7 @@ import {
  * @param  {Object}   res
  * @param  {Function} next
  */
-export default function smartNotifierErrorMiddlewareFactory() {
+module.exports = function smartNotifierErrorMiddlewareFactory() {
   return function handleError(err, req, res, next) { // eslint-disable-line no-unused-vars
     // only handle SmartNotifierResponse object
     if (err instanceof SmartNotifierError) {
@@ -25,4 +25,4 @@ export default function smartNotifierErrorMiddlewareFactory() {
       });
     }
   };
-}
+};

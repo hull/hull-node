@@ -1,11 +1,11 @@
-// @flow
+/* @flow */
 
 /**
  * Hull Event object
  */
-export type HullEventType = {
+export type THullEvent = {
   id: string;
   event: string;
   context: Object;
   properties: Object;
-}
+};

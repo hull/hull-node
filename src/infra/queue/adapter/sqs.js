@@ -1,14 +1,14 @@
-import _ from "lodash";
-import Aws from "aws-sdk";
-import SqsConsumer from "sqs-consumer";
-import Promise from "bluebird";
+const _ = require("lodash");
+const Aws = require("aws-sdk");
+const SqsConsumer = require("sqs-consumer");
+const Promise = require("bluebird");
 
 
 /**
  * SQS Adapter for queue
  */
 
-export default class SQSAdapter {
+class SQSAdapter {
 
   inactiveCount() {  // eslint-disable-line class-methods-use-this
     console.warn("Queue adapter inactiveCount not implemented");
@@ -99,3 +99,5 @@ export default class SQSAdapter {
   }
 
 }
+
+module.exports = SQSAdapter;

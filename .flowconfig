@@ -1,7 +1,12 @@
 [ignore]
-.*/node_modules/.*/\(lib\|test\|examples\).*\.json$
+<PROJECT_ROOT>/lib/*.
+
 [include]
-src/
+
 [libs]
 
+[lints]
+all=warn
+
 [options]
+include_warnings=true

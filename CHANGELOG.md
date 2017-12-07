@@ -1,3 +1,9 @@
+# 0.13.7
+* remove `import/export` and `...spread` to make the code runnable on node v6
+* remove babeljs es transpilation and replace it with `transform-flow-comments` plugin to have the flow annotations be included in resulting code in comments
+* adds `superagentUrlTemplatePlugin` and `superagentInstrumentationPlugin` plugins for superagent client
+* changed concurrency on `handleExtract` to 1
+
 # 0.13.6
 * Add requestId in client middleware to decorate logs with the incoming requestId
 

@@ -1,9 +1,9 @@
-import Client from "hull-client";
-import express from "express";
-import requireHullMiddleware from "./require-hull-middleware";
-import { SmartNotifierError } from "./smart-notifier-response";
+const Client = require("hull-client");
+const express = require("express");
+const requireHullMiddleware = require("./require-hull-middleware");
+const { SmartNotifierError } = require("./smart-notifier-response");
 
-import { defaultSuccessFlowControl, defaultErrorFlowControl, unsupportedChannelFlowControl } from "./smart-notifier-flow-controls";
+const { defaultSuccessFlowControl, defaultErrorFlowControl, unsupportedChannelFlowControl } = require("./smart-notifier-flow-controls");
 
 function processHandlersFactory(handlers, userHandlerOptions) {
   return function process(req, res, next) {
@@ -59,6 +59,7 @@ function processHandlersFactory(handlers, userHandlerOptions) {
       const promise = messageHandler(ctx, notification.messages);
       return promise.then(() => {
         if (!req.hull.smartNotifierResponse.isValid()) {
+          ctx.client.logger.debug("connector.smartNotifierHandler.responseInvalid", req.hull.smartNotifierResponse.toJSON());
           req.hull.smartNotifierResponse.setFlowControl(defaultSuccessFlowControl);
         }
         const response = req.hull.smartNotifierResponse.toJSON();
@@ -69,6 +70,7 @@ function processHandlersFactory(handlers, userHandlerOptions) {
         req.hull.smartNotifierResponse.addError(new SmartNotifierError("N/A", err.message));
 
         if (!req.hull.smartNotifierResponse.isValid()) {
+          ctx.client.logger.debug("connector.smartNotifierHandler.responseInvalid", req.hull.smartNotifierResponse.toJSON());
           req.hull.smartNotifierResponse.setFlowControl(defaultErrorFlowControl);
         }
         const response = req.hull.smartNotifierResponse.toJSON();
@@ -93,7 +95,7 @@ module.exports = function smartNotifierHandler({ handlers = {}, userHandlerOptio
   const app = express.Router();
   app.use((req, res, next) => {
     if (!req.hull.notification) {
-      return next(new SmartNotifierError("MISSING_NOTIFICATION", "Missing notification object from payload"));
+      return next(new SmartNotifierError("MISSING_NOTIFICATION", "Missing notification object = require( payload"));
     }
     return next();
   });

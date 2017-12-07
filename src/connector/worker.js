@@ -1,11 +1,11 @@
-import Supply from "supply";
-import Promise from "bluebird";
-import _ from "lodash";
+const Supply = require("supply");
+const Promise = require("bluebird");
+const _ = require("lodash");
 
 /**
  * Background worker using QueueAdapter.
  */
-export default class Worker {
+class Worker {
   constructor({ Hull, queue, instrumentation, cache }) {
     if (!Hull || !queue) {
       throw new Error("Worker initialized without all required dependencies: Hull, queue");
@@ -108,3 +108,5 @@ export default class Worker {
     });
   }
 }
+
+module.exports = Worker;

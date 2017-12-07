@@ -1,19 +1,19 @@
 /* global describe, it */
-import {
+const {
   expect,
   should
-} from "chai";
-import sinon from "sinon";
-import express from "express";
-import Promise from "bluebird";
+} = require("chai");
+const sinon = require("sinon");
+const express = require("express");
+const Promise = require("bluebird");
 
-import smartNotifierHandler from "../../src/utils/smart-notifier-handler";
-import smartNotifierMiddleware from "../../src/utils/smart-notifier-middleware";
-import smartNotifierErrorMiddleware from "../../src/utils/smart-notifier-error-middleware";
-import requestClient from "request";
-import HullStub from "../unit/support/hull-stub";
+const smartNotifierHandler = require("../../src/utils/smart-notifier-handler");
+const smartNotifierMiddleware = require("../../src/utils/smart-notifier-middleware");
+const smartNotifierErrorMiddleware = require("../../src/utils/smart-notifier-error-middleware");
+const requestClient = require("request");
+const HullStub = require("../unit/support/hull-stub");
 
-const flowControls = require("../../src/utils/smart-notifier-flow-controls")
+const flowControls = require("../../src/utils/smart-notifier-flow-controls");
 const chai = require('chai');
 const chaiHttp = require('chai-http');
 

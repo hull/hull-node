@@ -1,1 +1,1 @@
-export default from "./hull-connector";
+module.exports = require("./hull-connector");

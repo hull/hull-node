@@ -1,14 +1,14 @@
-// @flow
-import _ from "lodash";
-import { Request, Response } from "express";
+/* @flow */
+const _ = require("lodash");
+const Promise = require("bluebird");
 
 /**
  * @param  {Object}   req
  * @param  {Object}   res
  * @param  {Function} next
  */
-export default function segmentsMiddlewareFactory() {
-  return function segmentsMiddleware(req: Request, res: Response, next: Function) {
+module.exports = function segmentsMiddlewareFactory() {
+  return function segmentsMiddleware(req: Object, res: Object, next: Function) {
     req.hull = req.hull || {};
 
     if (!req.hull.client) {
@@ -48,4 +48,4 @@ export default function segmentsMiddlewareFactory() {
       return next();
     }, () => next());
   };
-}
+};

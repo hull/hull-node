@@ -1,7 +1,7 @@
-// @flow
-import _ from "lodash";
+/* @flow */
+import type { THullReqContext, THullUserUpdateMessage } from "../types";
 
-import { HullReqContextType, HullUserMessageType } from "../types";
+const _ = require("lodash");
 
 /**
  * Returns information if provided notification should be sent in an outgoing sync.
@@ -16,7 +16,7 @@ import { HullReqContextType, HullUserMessageType } from "../types";
  * @param  {String} fieldName the name of settings name
  * @return {Boolean}
  */
-export default function filterNotification(ctx: HullReqContextType, notification: HullUserMessageType, fieldName: ?string): boolean {
+module.exports = function filterNotification(ctx: THullReqContext, notification: THullUserUpdateMessage, fieldName: ?string): boolean {
   fieldName = fieldName || _.get(ctx, "connectorConfig.segmentFilterSetting");
   if (!_.has(ctx.ship.private_settings, fieldName)) {
     return true;
@@ -25,4 +25,4 @@ export default function filterNotification(ctx: HullReqContextType, notification
 
   const segments = _.get(notification, "segments", []);
   return _.intersection(filterSegmentIds, segments.map(s => s.id)).length > 0;
-}
+};

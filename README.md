@@ -953,3 +953,102 @@ app.post("fetch", ...middleware, (req, res, next) => {
     .then(next, next);
 }, responseMiddleware);
 ```
+
+## Flow annotations
+
+When using a [flow](https://flow.org) enabled project, we recommend using flow types provided by hull-node.
+You can import them in your source files directly from `hull` module and use `import type` flow structure:
+
+```
+/* @flow */
+import type { THullObject } from "hull";
+
+parseHullObject(user: THullObject) {
+  // ...
+}
+
+```
+
+See `src/lib/types` directory for a full list of available types.
+
+
+## Superagent plugins
+
+Hull Node promotes using [SuperAgent](http://visionmedia.github.io/superagent/) as a core HTTP client.
+We provide two plugins to add more instrumentation over the requests.
+
+### superagentUrlTemplatePlugin
+
+This plugin allows to pass generic url with variables - this allows better instrumentation and logging on the same REST API endpoint when resource ids varies.
+
+```js
+const superagent = require("superagent");
+const { superagentUrlTemplatePlugin } = require("hull/lib/utils");
+
+
+const agent = superagent.agent()
+  .use(urlTemplatePlugin({
+    defaultVariable: "mainVariable"
+  }));
+
+agent.get("https://api.url/{{defaultVariable}}/resource/{{resourceId}}")
+  .tmplVar({
+    resourceId: 123
+  })
+  .then((res) => {
+    assert(res.request.url === "https://api.url/mainVariable/resource/123");
+  });
+```
+
+### superagentInstrumentationPlugin
+
+This plugin takes `client.logger` and `metric` params from the `Context Object` and logs following log line:
+
+- `ship.service_api.request` with params:
+  * `url` - the original url passed to agent (use with `superagentUrlTemplatePlugin`)
+  * `responseTime` - full response time in ms
+  * `method` - HTTP verb
+  * `status` - response status code
+  * `vars` - when using `superagentUrlTemplatePlugin` it will contain all provided variables
+
+The plugin also issue a metric with the same name `ship.service_api.request`.
+
+```js
+const superagent = require("superagent");
+const { superagentInstrumentationPlugin } = require("hull/lib/utils");
+
+// const ctx is a Context Object here
+
+const agent = superagent.agent()
+  .use(urlTemplatePlugin({
+    defaultVariable: "mainVariable"
+  }))
+  .use(superagentInstrumentationPlugin({
+    logger: ctx.client.logger,
+    metric: ctx.metric
+  }));
+
+agent.get("https://api.url/{{defaultVariable}}/resource/{{resourceId}}")
+  .tmplVar({
+    resourceId: 123
+  })
+  .then((res) => {
+    assert(res.request.url === "https://api.url/mainVariable/resource/123");
+  });
+```
+
+Above code will produce following log line:
+
+```
+connector.service_api.call {
+  responseTime: 880.502444,
+  method: 'GET',
+  url: 'https://api.url/{{defaultVariable}}/resource/{{resourceId}}',
+  status: 200
+}
+```
+
+and following metrics:
+
+- `ship.service_api.call` - should be migrated to `connector.service_api.call`
+- `connector.service_api.responseTime`

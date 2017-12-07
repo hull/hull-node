@@ -1,8 +1,8 @@
 /* global describe, it */
-import { expect, should } from "chai";
-import sinon from "sinon";
+const { expect, should } = require("chai");
+const sinon = require("sinon");
 
-import smartNotifierMiddleware from "../../../src/utils/smart-notifier-middleware";
+const smartNotifierMiddleware = require("../../../src/utils/smart-notifier-middleware");
 
 
 describe("SmartNotifierMiddleware", () => {

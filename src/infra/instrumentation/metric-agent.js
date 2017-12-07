@@ -1,6 +1,6 @@
-import _ from "lodash";
+const _ = require("lodash");
 
-export default class MetricAgent {
+class MetricAgent {
   constructor(ctx, instrumentationAgent) {
     this.metrics = instrumentationAgent.metrics;
     this.dogapi = instrumentationAgent.dogapi;
@@ -8,24 +8,24 @@ export default class MetricAgent {
     this.ctx = ctx;
   }
 
-  value(metric, value = 1) {
+  value(metric, value = 1, additionalTags = []) {
     if (!this.metrics) {
       return null;
     }
     try {
-      return this.metrics.gauge(metric, parseFloat(value), this.getMetricTags());
+      return this.metrics.gauge(metric, parseFloat(value), _.union(this.getMetricTags(), additionalTags));
     } catch (err) {
       console.warn("metricVal.error", err);
     }
     return null;
   }
 
-  increment(metric, value = 1) {
+  increment(metric, value = 1, additionalTags = []) {
     if (!this.metrics) {
       return null;
     }
     try {
-      return this.metrics.increment(metric, parseFloat(value), this.getMetricTags());
+      return this.metrics.increment(metric, parseFloat(value), _.union(this.getMetricTags(), additionalTags));
     } catch (err) {
       console.warn("metricInc.error", err);
     }
@@ -36,7 +36,7 @@ export default class MetricAgent {
     if (!this.dogapi) {
       return null;
     }
-    return this.dogapi.event.create(`${this.manifest.name}.${title}`, text, _.merge(properties, {
+    return this.dogapi.event.create(`${this.manifest.name}.${title}`, text, _.merge({}, properties, {
       tags: this.getMetricTags()
     }));
   }
@@ -52,3 +52,5 @@ export default class MetricAgent {
     return tags;
   }
 }
+
+module.exports = MetricAgent;

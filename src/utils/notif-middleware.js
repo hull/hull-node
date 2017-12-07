@@ -1,13 +1,13 @@
-import bodyParser from "body-parser";
-import MessageValidator from "sns-validator";
-import _ from "lodash";
+const bodyParser = require("body-parser");
+const MessageValidator = require("sns-validator");
+const _ = require("lodash");
 
 /**
  * @param  {Object}   req
  * @param  {Object}   res
  * @param  {Function} next
  */
-export default function notifMiddlewareFactory() {
+module.exports = function notifMiddlewareFactory() {
   const validator = new MessageValidator(/sns\.us-east-1\.amazonaws\.com/, "utf8");
 
   function verify(req, res, next) {
@@ -62,4 +62,4 @@ export default function notifMiddlewareFactory() {
       next();
     }
   };
-}
+};
