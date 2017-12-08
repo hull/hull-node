@@ -1,3 +1,6 @@
+# 0.13.8
+* hotfixes CSVstream library which fails on Node v8
+
 # 0.13.7
 * remove `import/export` and `...spread` to make the code runnable on node v6
 * remove babeljs es transpilation and replace it with `transform-flow-comments` plugin to have the flow annotations be included in resulting code in comments
