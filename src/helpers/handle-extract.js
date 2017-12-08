@@ -20,6 +20,11 @@ module.exports = function handleExtract(ctx, { body, batchSize, handler, onRespo
   if (!url) return Promise.reject(new Error("Missing URL"));
   const decoder = format === "csv" ? CSVStream.createStream({ escapeChar: "\"", enclosedChar: "\"" }) : JSONStream.parse();
 
+  if (format === "csv") {
+    // Workaround over problems on Node v8
+    decoder._encoding = "utf8";
+  }
+
   const batch = new BatchStream({ size: batchSize });
 
   return requestClient({ url })
