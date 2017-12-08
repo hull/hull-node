@@ -7,8 +7,7 @@ const BatchStream = require("batch-stream");
 const _ = require("lodash");
 
 
-// Workaround over problems on Node v8
-CSVStream._encoding = "utf8";
+
 
 /**
  * @param {Object} body Request Body Object
@@ -23,6 +22,11 @@ module.exports = function handleExtract(ctx, { body, batchSize, handler, onRespo
   const { url, format } = body;
   if (!url) return Promise.reject(new Error("Missing URL"));
   const decoder = format === "csv" ? CSVStream.createStream({ escapeChar: "\"", enclosedChar: "\"" }) : JSONStream.parse();
+
+  if (format === "csv") {
+    // Workaround over problems on Node v8
+    decoder._encoding = "utf8";
+  }
 
   const batch = new BatchStream({ size: batchSize });
 
