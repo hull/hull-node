@@ -10,6 +10,7 @@ function superagentUnstrumentationPluginFactory({ logger, metric }) {
         metric.increment("ship.service_api.call", 1, [
           `method:${method}`,
           `url:${url}`,
+          `endpoint:${method} ${url}`,
         ]);
       })
       .on("response", (resData) => {
@@ -22,10 +23,10 @@ function superagentUnstrumentationPluginFactory({ logger, metric }) {
           status: resData.status,
           vars: request.urlTemplateVariables
         });
-        metric.value("connector.service_api.responseTime", elapsed, [
+        metric.value("connector.service_api.response_time", elapsed, [
           `method:${method}`,
           `url:${url}`,
-          `status:${resData.status}`,
+          `endpoint:${method} ${url}`,
         ]);
       });
   };
