@@ -11,6 +11,9 @@
   "bugs": {
     "url": "https://github.com/hull/hull-node/issues"
   },
+  "engines": {
+    "node": ">=6.12.0"
+  },
   "author": "Romain Dardour <romain@hull.io>",
   "license": "MIT",
   "scripts": {
@@ -43,8 +46,7 @@
     "del": "^2.2.1",
     "dogapi": "^2.6.0",
     "ejs": "^2.5.6",
-    "express": "^4.14.0",
-    "hull-client": "1.1.4",
+    "hull-client": "1.1.5",
     "jsonwebtoken": "^7.4.3",
     "jwt-simple": "^0.5.0",
     "kue": "^0.11.5",
@@ -62,8 +64,8 @@
     "urijs": "^1.18.7"
   },
   "peerDependencies": {
-    "aws-sdk": "^2.81.0",
-    "sqs-consumer": "^3.6.1"
+    "express": "^4.16.2",
+    "newrelic": "^2.4.1"
   },
   "devDependencies": {
     "babel": "^6.5.2",

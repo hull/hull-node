@@ -1,3 +1,8 @@
+# 0.13.9
+* upgrades hull-client to v1.1.5 which have better error handling (retrying all 5xx errors not only 503)
+* improved superagent instrumentation plugin metrics
+* moved added newrelic and expressjs to peerDependencies to ensure good versions
+
 # 0.13.8
 * hotfixes CSVstream library which fails on Node v8
 
