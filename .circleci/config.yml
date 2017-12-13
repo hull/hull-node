@@ -25,6 +25,14 @@ shared: &shared
           destination: /hull-node.tgz
 
 jobs:
+  "node-6.10":
+    <<: *shared
+    docker:
+      - image: circleci/node:6.10
+  "node-6.11":
+    <<: *shared
+    docker:
+      - image: circleci/node:6.11
   "node-6.12":
     <<: *shared
     docker:
@@ -38,5 +46,7 @@ workflows:
   version: 2
   build:
     jobs:
+      - "node-6.10"
+      - "node-6.11"
       - "node-6.12"
       - "node-8.9"
