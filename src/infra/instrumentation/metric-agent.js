@@ -10,7 +10,7 @@ class MetricAgent {
   }
 
   value(metric, value = 1, additionalTags = []) {
-    this.logFunction("metric.value", { metric, value });
+    this.logFunction("metric.value", { metric, value, additionalTags });
     if (!this.metrics) {
       return null;
     }
@@ -23,7 +23,7 @@ class MetricAgent {
   }
 
   increment(metric, value = 1, additionalTags = []) {
-    this.logFunction("metric.increment", { metric, value });
+    this.logFunction("metric.increment", { metric, value, additionalTags });
     if (!this.metrics) {
       return null;
     }
