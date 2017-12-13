@@ -3,9 +3,9 @@
 import type { THullAttributeName, THullAttributeValue } from "./";
 
 /**
- * Object which is passed to `hullClient.asUser().traits(traits: THullUserTraits)` call
+ * Object which is passed to `hullClient.asAccount().traits(traits: THullAccountTraits)` call
  */
-export type THullUserTraits = {
+export type THullAccountAttributes = {
   [THullAttributeName]: THullAttributeValue | {
     operation: string;
     value: THullAttributeValue
