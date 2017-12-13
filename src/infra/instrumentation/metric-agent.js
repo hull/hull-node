@@ -6,9 +6,11 @@ class MetricAgent {
     this.dogapi = instrumentationAgent.dogapi;
     this.manifest = instrumentationAgent.manifest;
     this.ctx = ctx;
+    this.logFunction = _.get(ctx, "client.logger.debug", console.log);
   }
 
   value(metric, value = 1, additionalTags = []) {
+    this.logFunction("metric.value", { metric, value });
     if (!this.metrics) {
       return null;
     }
@@ -21,6 +23,7 @@ class MetricAgent {
   }
 
   increment(metric, value = 1, additionalTags = []) {
+    this.logFunction("metric.increment", { metric, value });
     if (!this.metrics) {
       return null;
     }
@@ -33,6 +36,7 @@ class MetricAgent {
   }
 
   event({ title, text = "", properties = {} }) {
+    this.logFunction("metric.event", { title, text, properties });
     if (!this.dogapi) {
       return null;
     }
