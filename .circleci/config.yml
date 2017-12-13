@@ -1,6 +1,5 @@
 version: 2
-jobs:
-  build:
+shared: &shared
     docker:
       - image: circleci/node:6.12
     working_directory: ~/repo
@@ -25,3 +24,9 @@ jobs:
       - store_artifacts:
           path: ~/repo/hull-node.tgz
           destination: /hull-node.tgz
+
+jobs:
+  "ruby-2.2":
+    <<: *shared
+    docker:
+      - image: circleci/node:8.9
