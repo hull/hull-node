@@ -6,7 +6,9 @@ class MetricAgent {
     this.dogapi = instrumentationAgent.dogapi;
     this.manifest = instrumentationAgent.manifest;
     this.ctx = ctx;
-    this.logFunction = _.get(ctx, "client.logger.debug", console.log);
+    this.logFunction = process.env.CONNECTOR_METRIC_LOGS
+      ? _.get(ctx, "client.logger.debug", console.log)
+      : () => {};
   }
 
   value(metric, value = 1, additionalTags = []) {

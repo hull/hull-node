@@ -57,6 +57,11 @@ module.exports = function smartNotifierMiddlewareFactory({ skipSignatureValidati
       })()
         .then(() => {
           req.hull.notification = req.body;
+          if (!req.hull.requestId && req.body.notification_id) {
+            const timestamp = Math.floor(new Date().getTime() / 1000);
+            req.hull.requestId = ["smart-notifier", timestamp, req.body.notification_id].join(":");
+          }
+
           req.hull.config = req.hull.notification.configuration;
           // FIXME: we need to do that mapping since the middleware is expecting
           // `ship` param instead of `id`
