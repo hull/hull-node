@@ -1,3 +1,9 @@
+# 0.13.10
+* from now we test each commit on multiple nodejs versions
+* in case of smart-notifier notification if requestId is not passed as an http header we fallback to notification_id from body
+* adds more data to flow types
+* adds ENV VAR flagged optional logging of metrics
+
 # 0.13.9
 * upgrades hull-client to v1.1.5 which have better error handling (retrying all 5xx errors not only 503)
 * improved superagent instrumentation plugin metrics

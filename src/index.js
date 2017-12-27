@@ -1,22 +1,26 @@
 /* @flow */
 /*::
 export type {
+  THullAccountAttributes,
+  THullAccountIdent,
   THullAccount,
-  THullConnector,
-  THullEvent,
-  THullObject,
-  THullReqContext,
-  THullSegment,
-  THullSegmentsChanges,
   THullAttributeName,
   THullAttributeValue,
   THullAttributesChanges,
+  THullConnector,
+  THullEvent,
+  THullObjectAttributes,
+  THullObjectIdent,
+  THullObject,
+  THullReqContext,
+  THullRequest,
+  THullSegment,
+  THullSegmentsChanges,
   THullUserChanges,
-  THullUserIdent  ,
-  THullUserTraits,
+  THullUserAttributes,
+  THullUserIdent,
   THullUserUpdateMessage,
-  THullUser,
-  THullRequest
+  THullUser
 } from "./types";
 */
 
