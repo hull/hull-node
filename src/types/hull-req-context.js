@@ -18,7 +18,7 @@ export type THullReqContext = {
   ship: THullConnector; // since ship name is deprated we move it to connector param
   connector: THullConnector;
 
-  hostname: String;
+  hostname: string;
   options: Object;
   connectorConfig: Object;
 

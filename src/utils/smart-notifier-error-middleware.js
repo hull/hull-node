@@ -24,5 +24,6 @@ module.exports = function smartNotifierErrorMiddlewareFactory() {
         error: err.message
       });
     }
+    next(err);
   };
 };

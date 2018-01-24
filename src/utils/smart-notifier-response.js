@@ -5,7 +5,7 @@ const { defaultErrorFlowControl } = require("./smart-notifier-flow-controls");
  * FlowControl is a part of SmartNotifierResponse
  */
 class SmartNotifierFlowControl {
-  type: String;
+  type: string;
   size: Number;
   in_time: Number;
   in: Number;
@@ -35,7 +35,7 @@ class SmartNotifierFlowControl {
 }
 
 class SmartNotifierMetric {
-  name: String;
+  name: string;
 
   constructor(metric: Object) {
     this.name = metric.name;
@@ -47,19 +47,14 @@ class SmartNotifierMetric {
 }
 
 class SmartNotifierError extends Error {
-  code: String;
+  code: string;
   statusCode: number;
-  reason: String;
+  reason: string;
   flowControl: Object;
-  // __proto__: Object;
 
-  constructor(code: String, reason: String, statusCode: number = 400, flowControl: Object = defaultErrorFlowControl) {
+  constructor(code: string, reason: string, statusCode: number = 400, flowControl: Object = defaultErrorFlowControl) {
     super(reason);
 
-    // https://github.com/babel/babel/issues/3083
-    // $FlowFixMe
-    // this.constructor = SmartNotifierError;
-    // this.__proto__ = SmartNotifierError.prototype; // eslint-disable-line no-proto
     this.code = code;
     this.statusCode = statusCode;
     this.reason = reason;
