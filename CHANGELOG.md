@@ -1,3 +1,7 @@
+# 0.13.11
+* pass smart-notifier errors down the middleware stack
+* flow types fixes
+
 # 0.13.10
 * from now we test each commit on multiple nodejs versions
 * in case of smart-notifier notification if requestId is not passed as an http header we fallback to notification_id from body
