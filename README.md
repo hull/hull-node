@@ -686,7 +686,7 @@ app.use(
 );
 ```
 
-This is the simplest requests handler to expose custom logic through an API POST endpoint. The possible usage is triggering a custom operation (like fetching historical data) or a webhook. Both cases handle incoming flow data into Hull platform. However in case of busy webhook it's better to use [batcherHandler](#batcherhandler) which automatically group the incoming requests into batches.
+This is the simplest requests handler to expose custom logic through an API POST endpoint. The possible usage is triggering a custom operation (like fetching historical data) or a webhook. Both cases handle incoming flow data into Hull platform.
 
 ## smartNotifierHandler()
 
@@ -796,7 +796,7 @@ FlowControl is an element of the `SmartNotifierResponse`. When the HTTP response
 }
 ```
 
-## Extracts
+## Batch Jobs (Extracts)
 
 ```json
 {
@@ -806,37 +806,15 @@ FlowControl is an element of the `SmartNotifierResponse`. When the HTTP response
 
 > To mark a connector as supporting Batch processing, the `batch` tag should be present in `manifest.json` file.
 
-In addition to event notifications Hull supports sending extracts of userbase. These extracts can be triggered via Dashboard manual user action or can be programatically requested from Connector logic (see [requestExtract helper](./connector-helpers.md#requestextract-segment--null-path-fields---)). The Connector will receive manual batches if your ship's `manifest.json` exposes a `batch` tag in `tags`:
+In addition to event notifications Hull supports sending extracts of the User base. These extracts can be triggered via Dashboard manual user action or can be programatically requested from Connector logic (see [requestExtract helper](./connector-helpers.md#requestextract-segment--null-path-fields---)). The Connector will receive manual batches if your ship's `manifest.json` exposes a `batch` tag in `tags`:
 
-In both cases the batch extract is handled by the `user:update`. The extract is split into smaller chunks using the `userHandlerOptions.maxSize` option. In extract every message will contain only `user` and `segments` information.
-
-```javascript
-import { batcherHandler } from 'hull/lib/utils';
-const app = express();
-
-app.use(
-  '/fetch-all',
-  batcherHandler(
-    (ctx, messages) => {
-      messages.map(message => {
-        console.log(message); // { query, body }
-      });
-    },
-    {
-      maxSize: 100, // maximum size of the batch
-      maxTime: 1000 // time time in milliseconds to flush batch after the first item came in
-    }
-  )
-);
-```
+In both cases the batch extract is handled by the `user:update`. The extract is split into smaller chunks using the `userHandlerOptions.maxSize` option. In extract every message will contain only `account`, `user` and `segments` information.
 
 In addition to let the `user:update` handler detect whether it is processing a batch extract or notifications there is a third argument passed to that handler - in case of notifications it is `undefined`, otherwise it includes `query` and `body` parameters from req object.
 
-The second `incoming` handler which works in a similar way as `actionHandler` but it also groups incoming requests into batches of selected size:
+## notifHandler()
 
-## notifHandler() (Legacy)
-
-**Note** : The Smart notifier is the newer, more powerful way to handle data flows. We recommend using it instead of the NotifHandler.
+**Note** : The Smart notifier is the newer, more powerful way to handle data flows. We recommend using it instead of the NotifHandler. This handler is there to support Batch extracts.
 
 NotifHandler is a packaged solution to receive User and Segment Notifications from Hull. It's built to be used as an express route. Hull will receive notifications if your ship's `manifest.json` exposes a `subscriptions` key:
 
