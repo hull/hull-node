@@ -2,14 +2,43 @@ const { renderFile } = require("ejs");
 const timeout = require("connect-timeout");
 
 const {
-  staticRouter, tokenMiddleware, notifMiddleware, smartNotifierMiddleware, smartNotifierErrorMiddleware
+  staticRouter, tokenMiddleware, notifMiddleware, smartNotifierMiddleware, helpersMiddleware, segmentsMiddleware
 } = require("../utils");
 
-
 /**
- * Base Express app for Ships front part
+ * This function setups express application pre route middleware stack
  */
-module.exports = function setupApp({ instrumentation, queue, cache, app, connectorConfig }) {
+module.exports = function setupApp({ instrumentation, queue, cache, app, connectorConfig, clientMiddleware, middlewares }) {
+  /**
+   * This middleware overwrites default `send` method to make it timeout aware,
+   * and not to try to respond after timeout happened
+   */
+  app.use((req, res, next) => {
+    const originalSend = res.send;
+    const originalJson = res.json;
+    res.json = function customJson(data) {
+      if (res.headersSent) {
+        return;
+      }
+      originalJson.bind(res)(data);
+    };
+    res.send = function customSend(data) {
+      if (res.headersSent) {
+        return;
+      }
+      originalSend.bind(res)(data);
+    };
+    next();
+  });
+
+  /**
+   * The main responsibility of following timeout middleware
+   * is to make the web app respond always in time
+   */
+  app.use(timeout(connectorConfig.timeout || "25s"));
+
+  app.use("/", staticRouter());
+
   app.use(tokenMiddleware());
   app.use(notifMiddleware());
   app.use(smartNotifierMiddleware({ skipSignatureValidation: connectorConfig.skipSignatureValidation }));
@@ -19,18 +48,25 @@ module.exports = function setupApp({ instrumentation, queue, cache, app, connect
   app.use(queue.contextMiddleware());
   app.use(cache.contextMiddleware());
 
-  // the main responsibility of following timeout middleware
-  // is to make the web app respond always in time
-  app.use(timeout("25s"));
   app.engine("html", renderFile);
 
   app.set("views", `${process.cwd()}/views`);
   app.set("view engine", "ejs");
 
-  app.use("/", staticRouter());
-
-  app.use(smartNotifierErrorMiddleware());
-
+  app.use((req, res, next) => {
+    req.hull = req.hull || {};
+    req.hull.connectorConfig = connectorConfig;
+    next();
+  });
+  app.use(clientMiddleware);
+  app.use(instrumentation.ravenContextMiddleware());
+  app.use((req, res, next) => {
+    req.hull.metric.increment("connector.request", 1);
+    next();
+  });
+  app.use(helpersMiddleware());
+  app.use(segmentsMiddleware());
+  middlewares.map(middleware => app.use(middleware));
 
   return app;
 };

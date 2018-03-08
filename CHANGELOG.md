@@ -1,5 +1,11 @@
 # 0.13.11
-* pass smart-notifier errors down the middleware stack
+* this release brings bigger changes to error handling:
+  - it cleans up a little middleware stack including smart-notifier errors
+  - it introduces two types of errors - `unhandled error` which is handled the same as till now, and `transient error` which won't be pushed to sentry, but only instrumented in datadog
+  - it deprecates dedicated smartNotifierErrorMiddleware
+  - smartNotifierHandler in case of error behaves like notifHandler and pass the error down the middleware stack
+* added `timeout` option to `Hull.Connector` constructor to control the timeout value
+* upgrades `raven` library
 * flow types fixes
 
 # 0.13.10

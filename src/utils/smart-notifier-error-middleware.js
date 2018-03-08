@@ -1,3 +1,4 @@
+const util = require("util");
 const {
   SmartNotifierResponse,
   SmartNotifierError
@@ -10,7 +11,7 @@ const {
  * @param  {Object}   res
  * @param  {Function} next
  */
-module.exports = function smartNotifierErrorMiddlewareFactory() {
+module.exports = util.deprecate(function smartNotifierErrorMiddlewareFactory() {
   return function handleError(err, req, res, next) { // eslint-disable-line no-unused-vars
     // only handle SmartNotifierResponse object
     if (err instanceof SmartNotifierError) {
@@ -18,12 +19,8 @@ module.exports = function smartNotifierErrorMiddlewareFactory() {
       const response = new SmartNotifierResponse();
       response.setFlowControl(err.flowControl);
       response.addError(err);
-      res.status(statusCode).json(response.toJSON());
-    } else {
-      res.status(500).json({
-        error: err.message
-      });
+      return res.status(statusCode).json(response.toJSON());
     }
-    next(err);
+    return next(err);
   };
-};
+}, "smartNotifierErrorMiddleware is deprecated");

@@ -89,7 +89,6 @@ function processHandlersFactory(handlers, userHandlerOptions = {}) {
       return next();
     } catch (err) {
       err.status = 400;
-      console.error(err.stack || err);
       return next(err);
     }
   };

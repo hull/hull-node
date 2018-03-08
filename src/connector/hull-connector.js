@@ -5,11 +5,12 @@ const _ = require("lodash");
 const setupApp = require("./setup-app");
 const Worker = require("./worker");
 const { Instrumentation, Cache, Queue, Batcher } = require("../infra");
-const { exitHandler, segmentsMiddleware, requireHullMiddleware, helpersMiddleware, smartNotifierErrorMiddleware } = require("../utils");
+const { exitHandler, segmentsMiddleware, requireHullMiddleware, helpersMiddleware } = require("../utils");
+const { TransientError } = require("../errors");
 
 class HullConnector {
   constructor(Hull, {
-    hostSecret, port, clientConfig = {}, instrumentation, cache, queue, connectorName, segmentFilterSetting, skipSignatureValidation
+    hostSecret, port, clientConfig = {}, instrumentation, cache, queue, connectorName, segmentFilterSetting, skipSignatureValidation, timeout
   } = {}) {
     this.Hull = Hull;
     this.instrumentation = instrumentation || new Instrumentation();
@@ -40,6 +41,10 @@ class HullConnector {
       this.connectorConfig.skipSignatureValidation = skipSignatureValidation;
     }
 
+    if (timeout) {
+      this.connectorConfig.timeout = timeout;
+    }
+
     exitHandler(() => {
       return Promise.all([
         Batcher.exit(),
@@ -54,26 +59,47 @@ class HullConnector {
       instrumentation: this.instrumentation,
       cache: this.cache,
       queue: this.queue,
-      connectorConfig: this.connectorConfig
+      connectorConfig: this.connectorConfig,
+      clientMiddleware: this.clientMiddleware(),
+      middlewares: this.middlewares
     });
-    app.use((req, res, next) => {
-      req.hull = req.hull || {};
-      req.hull.connectorConfig = this.connectorConfig;
-      next();
-    });
-    app.use(this.clientMiddleware());
-    app.use(this.instrumentation.ravenContextMiddleware());
-    app.use(helpersMiddleware());
-    app.use(segmentsMiddleware());
-    this.middlewares.map(middleware => app.use(middleware));
-
-
     return app;
   }
 
   startApp(app) {
+    /**
+     * Transient Middleware
+     */
+    app.use((err, req, res, next) => {
+      if (err instanceof TransientError || err.name === "ServiceUnavailableError") {
+        req.hull.metric.increment("connector.transient_error", 1, [
+          `error_name:${_.snakeCase(err.name)}`,
+          `error_message:${_.snakeCase(err.message)}`
+        ]);
+        if (req.hull.smartNotifierResponse) {
+          const response = req.hull.smartNotifierResponse;
+          return res.status(err.status || 503).json(response.toJSON());
+        }
+        return res.status(err.status || 503).send("transient-error");
+      }
+      return next(err);
+    });
+
+    /**
+     * Instrumentation Middleware
+     */
     app.use(this.instrumentation.stopMiddleware());
-    app.use(smartNotifierErrorMiddleware());
+
+    /**
+     * Unhandled error middleware
+     */
+    app.use((err, req, res, next) => { // eslint-disable-line no-unused-vars
+      if (req.hull.smartNotifierResponse) {
+        const response = req.hull.smartNotifierResponse;
+        return res.status(500).json(response.toJSON());
+      }
+      return res.status(500).send("unhandled-error");
+    });
 
     return app.listen(this.port, () => {
       this.Hull.logger.info("connector.server.listen", { port: this.port });
