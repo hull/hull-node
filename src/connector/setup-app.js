@@ -5,13 +5,19 @@ const {
   staticRouter, tokenMiddleware, notifMiddleware, smartNotifierMiddleware, helpersMiddleware, segmentsMiddleware
 } = require("../utils");
 
+function haltOnTimedout(req, res, next) {
+  if (!req.timedout) {
+    next();
+  }
+}
+
 /**
  * This function setups express application pre route middleware stack
  */
 module.exports = function setupApp({ instrumentation, queue, cache, app, connectorConfig, clientMiddleware, middlewares }) {
   /**
-   * This middleware overwrites default `send` method to make it timeout aware,
-   * and not to try to respond after timeout happened
+   * This middleware overwrites default `send` and `json` methods to make it timeout aware,
+   * and not to try to respond second time after previous response after a timeout happened
    */
   app.use((req, res, next) => {
     const originalSend = res.send;
@@ -41,7 +47,9 @@ module.exports = function setupApp({ instrumentation, queue, cache, app, connect
 
   app.use(tokenMiddleware());
   app.use(notifMiddleware());
+  app.use(haltOnTimedout);
   app.use(smartNotifierMiddleware({ skipSignatureValidation: connectorConfig.skipSignatureValidation }));
+  app.use(haltOnTimedout);
   app.use(instrumentation.startMiddleware());
 
   app.use(instrumentation.contextMiddleware());
@@ -59,13 +67,16 @@ module.exports = function setupApp({ instrumentation, queue, cache, app, connect
     next();
   });
   app.use(clientMiddleware);
+  app.use(haltOnTimedout);
   app.use(instrumentation.ravenContextMiddleware());
   app.use((req, res, next) => {
     req.hull.metric.increment("connector.request", 1);
     next();
   });
   app.use(helpersMiddleware());
+  app.use(haltOnTimedout);
   app.use(segmentsMiddleware());
+  app.use(haltOnTimedout);
   middlewares.map(middleware => app.use(middleware));
 
   return app;

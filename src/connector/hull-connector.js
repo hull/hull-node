@@ -71,7 +71,7 @@ class HullConnector {
      * Transient Middleware
      */
     app.use((err, req, res, next) => {
-      if (err instanceof TransientError || err.name === "ServiceUnavailableError") {
+      if (err instanceof TransientError || (err.name === "ServiceUnavailableError" && err.message === "Response timeout")) {
         req.hull.metric.increment("connector.transient_error", 1, [
           `error_name:${_.snakeCase(err.name)}`,
           `error_message:${_.snakeCase(err.message)}`
