@@ -20,3 +20,4 @@ module.exports.PromiseReuser = require("./promise-reuser");
 
 module.exports.superagentUrlTemplatePlugin = require("./superagent-url-template-plugin");
 module.exports.superagentInstrumentationPlugin = require("././superagent-intrumentation-plugin.js");
+module.exports.superagentErrorPlugin = require("././superagent-error-plugin.js");

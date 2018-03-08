@@ -1,4 +1,3 @@
-const Client = require("hull-client");
 const express = require("express");
 const requireHullMiddleware = require("./require-hull-middleware");
 const { SmartNotifierError } = require("./smart-notifier-response");
@@ -73,19 +72,13 @@ function processHandlersFactory(handlers, userHandlerOptions) {
           ctx.client.logger.debug("connector.smartNotifierHandler.responseInvalid", req.hull.smartNotifierResponse.toJSON());
           req.hull.smartNotifierResponse.setFlowControl(defaultErrorFlowControl);
         }
-        const response = req.hull.smartNotifierResponse.toJSON();
         err = err || new Error("Error while processing notification");
-        ctx.client.logger.error("connector.smartNotifierHandler.error", err.stack || err);
-        ctx.client.logger.debug("connector.smartNotifierHandler.response", response);
-        return res.status(err.status || 500).json(response);
+        return next(err);
       });
     } catch (err) {
       err.status = 500;
-      console.error(err.stack || err);
       req.hull.smartNotifierResponse.setFlowControl(defaultErrorFlowControl);
-      const response = req.hull.smartNotifierResponse.toJSON();
-      Client.logger.debug("connector.smartNotifierHandler.response", response);
-      return res.status(err.status).json(response);
+      return next(err);
     }
   };
 }
@@ -95,7 +88,7 @@ module.exports = function smartNotifierHandler({ handlers = {}, userHandlerOptio
   const app = express.Router();
   app.use((req, res, next) => {
     if (!req.hull.notification) {
-      return next(new SmartNotifierError("MISSING_NOTIFICATION", "Missing notification object = require( payload"));
+      return next(new SmartNotifierError("MISSING_NOTIFICATION", "Missing notification object"));
     }
     return next();
   });

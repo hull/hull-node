@@ -24,6 +24,7 @@ describe("Instrumentation", () => {
     const instrumentation = new Instrumentation({ exitOnError: true });
     expect(instrumentation).to.be.an("object");
     delete process.env.SENTRY_URL;
+    // unhandled rejection below
     new Promise((resolve, reject) => {
       reject();
     });
