@@ -1,3 +1,7 @@
+# 0.13.10
+* Add support for batch handlers for accounts
+* **Deprecation** Renamed `userHandlerOptions` to `options` in notifyHandler
+
 # 0.13.9
 * upgrades hull-client to v1.1.5 which have better error handling (retrying all 5xx errors not only 503)
 * improved superagent instrumentation plugin metrics

@@ -66,7 +66,7 @@ The Hull Middleware operates on `req.hull` object. It uses it to setup the Hull 
 
 Here is what happens when your Express app receives a query.
 
-1. If a config object is found in `req.hull.config` steps **2** and **3** are skipped. 
+1. If a config object is found in `req.hull.config` steps **2** and **3** are skipped.
 2. If a token is present in `req.hull.token`, the middleware will try to use the `hostSecret` to decrypt it and set `req.hull.config`.
 3. If the query string (`req.query`) contains `id`, `secret`, `organization`, they will be stored in `req.hull.config`.
 4. After this, if a valid configuration is available in `req.hull.config`, a Hull Client instance will be created and stored in `req.hull.client`.
@@ -341,7 +341,7 @@ The core part of the **Context Object** is described in [Hull Middleware documen
   connector.use((req, res, next) => {
     req.hull.service = {
       customFunction: customFunction.bind(req.hull),
-      customModule: new CustomClass(req.hull) 
+      customModule: new CustomClass(req.hull)
     };
     next();
   });
@@ -640,7 +640,7 @@ import { notifHandler } from "hull/lib/utils";
 const app = express();
 
 const handler = NotifHandler({
-  userHandlerOptions: {
+  options: {
     groupTraits: true, // groups traits as in below examples
     maxSize: 6,
     maxTime: 10000,
@@ -714,7 +714,7 @@ const handler = smartNotifierHandler({
       return Promise.resolve();
     }
   },
-  userHandlerOptions: {
+  options: {
     groupTraits: false
   }
 });
@@ -760,7 +760,7 @@ FlowControl is an element of the `SmartNotifierResponse`
 ctx.smartNotifierResponse.setFlowControl({
   type: "next", // `next` or `retry`, defines next flow action
   size: 1000, // only for `next` - number of messages for next notification
-  in: 1000, // delay for next flow step in ms 
+  in: 1000, // delay for next flow step in ms
   at: 1501062782 // time to trigger next flow step
 })
 ```
@@ -780,17 +780,34 @@ When the HTTP response is built it has the following structure
 
 **Extracts**
 
-In addition to event notifications Hull supports sending extracts of userbase. These extracts can be triggered via Dashboard manual user action or can be programiatically requested from Connector logic (see [requestExtract helper](./connector-helpers.md#requestextract-segment--null-path-fields---)). The Connector will receive manual batches if your ship's `manifest.json` exposes a `batch` tag in `tags`:
+In addition to event notifications Hull supports sending extracts of users and accounts. These extracts can be triggered via manual user action on the dashboard or can be programmatically requested from the Connector logic (see [requestExtract helper](#requestextract)). The Connector will expose the manual batches action if your `manifest.json` includes a `batch` or `batch-accounts` tag :
 
 ```json
 {
-  "tags" : [ "batch" ]
+  "tags" : [ "batch", "batch-accounts" ]
 }
 ```
 
-In both cases the batch extract is handled by the `user:update`. The extract is split into smaller chunks using the `userHandlerOptions.maxSize` option. In extract every message will contain only `user` and `segments` information.
+In both cases the batch extracts are processed by the `user:update` and `account:update` handlers. The extract is split into smaller chunks using `options.maxSize`. Only traits and segments are exposed in the extracted lines, `events` are never sent.
 
-In addition to let the `user:update` handler detect whether it is processing a batch extract or notifications there is a third argument passed to that handler - in case of notifications it is `undefined`, otherwise it includes `query` and `body` parameters from req object.
+In addition, to let the handler function detect whether it is processing a batch extract or notifications, a third argument is passed- in case of notifications it is `undefined`, otherwise it includes `query` and `body` parameters from `req` object.
+
+Notification of batches, when the extracts are ready are sent as a `POST` request on the `/batch` and `/batch-accounts` endpoints respectively.
+
+
+```javascript
+app.post("/batch", notifHandler({
+  options: {
+    maxSize: 100,
+    groupTraits: false
+  },
+  handers: {
+    "user:update": ({ hull }, users) => {
+      hull.logger.info("Get users", users);
+    }
+  }
+}));
+```
 
 ### oAuthHandler()
 OAuthHandler is a packaged authentication handler using [Passport](http://passportjs.org/). You give it the right parameters, it handles the entire auth scenario for you.
