@@ -1,5 +1,5 @@
 /* global describe, it */
-const { expect, should } = require("chai");
+const { expect } = require("chai");
 const sinon = require("sinon");
 const _ = require("lodash");
 const Promise = require("bluebird");
@@ -26,12 +26,12 @@ describe("segmentMiddleware", () => {
     cache.contextMiddleware()(req, {}, () => {});
     cache.contextMiddleware()(req2, {}, () => {});
 
-    sinon.stub(req.hull.client, "configuration").returns({ id: "foo", secret: "bar", organization: "localhost"});
+    sinon.stub(req.hull.client, "configuration").returns({ id: "foo", secret: "bar", organization: "localhost" });
     sinon.stub(req2.hull.client, "configuration").returns({ id: "foo2", secret: "bar2", organization: "localhost2" });
 
     const getStub = sinon.stub(req.hull.client, "get")
       .callsFake(() => {
-        return new Promise((resolve, reject) => {
+        return new Promise((resolve) => {
           setTimeout(() => {
             resolve([{ id: "s1", name: "segment 1" }]);
           }, 100);
@@ -40,7 +40,7 @@ describe("segmentMiddleware", () => {
 
     const getStub2 = sinon.stub(req2.hull.client, "get")
       .callsFake(() => {
-        return new Promise((resolve, reject) => {
+        return new Promise((resolve) => {
           setTimeout(() => {
             resolve([{ id: "s2", name: "segment 2" }]);
           }, 200);
@@ -56,8 +56,8 @@ describe("segmentMiddleware", () => {
     instance(req2, {}, () => {});
     instance(req, {}, () => {
       instance(req2, {}, () => {
-        expect(getStub.callCount).to.equal(1);
-        expect(getStub2.callCount).to.equal(1);
+        expect(getStub.callCount).to.equal(2);
+        expect(getStub2.callCount).to.equal(2);
         expect(req.hull.segments).to.eql([{ id: "s1", name: "segment 1" }]);
         expect(req2.hull.segments).to.eql([{ id: "s2", name: "segment 2" }]);
         done();

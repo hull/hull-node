@@ -56,10 +56,12 @@ describe("segmentMiddleware", () => {
     instance(req2, {}, () => {});
     instance(req, {}, () => {
       instance(req2, {}, () => {
-        expect(getStub.callCount).to.equal(1);
-        expect(getStub2.callCount).to.equal(1);
+        expect(getStub.callCount).to.equal(2);
+        expect(getStub2.callCount).to.equal(2);
         expect(req.hull.segments).to.eql([{ id: "s1", name: "segment 1" }]);
         expect(req2.hull.segments).to.eql([{ id: "s2", name: "segment 2" }]);
+        expect(req.hull.users_segments).to.eql([{ id: "s1", name: "segment 1" }]);
+        expect(req2.hull.users_segments).to.eql([{ id: "s2", name: "segment 2" }]);
         done();
       });
     });
