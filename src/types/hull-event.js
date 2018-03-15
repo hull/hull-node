@@ -2,6 +2,8 @@
 
 /**
  * Hull Event object
+ * @public
+ * @memberof Types
  */
 export type THullEvent = {
   id: string;

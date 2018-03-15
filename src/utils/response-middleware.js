@@ -1,6 +1,9 @@
 const _ = require("lodash");
 
 /**
+ * This middleware helps sending a HTTP response and can be easily integrated with Promise based actions:
+ *
+ * The response middleware takes that instrastructure related code outside, so the action handler can focus on the logic only. It also makes sure that both Promise resolution are handled properly
  * @example
  * app.get("/", (req, res, next) => {
  *   promiseBasedFn.then(next, next);

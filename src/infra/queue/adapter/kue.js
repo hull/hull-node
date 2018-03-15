@@ -4,12 +4,9 @@ const ui = require("kue-ui");
 
 /**
  * Kue Adapter for queue
+ * @param {Object} options
  */
 class KueAdapter {
-
-  /**
-   * @param {Object} queue Kue instance
-   */
   constructor(options) {
     this.options = options;
     this.queue = kue.createQueue(options);
@@ -25,7 +22,7 @@ class KueAdapter {
   }
 
   /**
-   * @param {String} jobName queue name
+   * @param {string} jobName queue name
    * @param {Object} jobPayload
    * @return {Promise}
    */
@@ -54,8 +51,8 @@ class KueAdapter {
   }
 
   /**
-   * @param {String} jobName
-   * @param {Function -> Promise} jobCallback
+   * @param {string} jobName
+   * @param {Function} jobCallback
    * @return {Object} this
    */
   process(jobName, jobCallback) {

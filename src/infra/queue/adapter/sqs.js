@@ -7,7 +7,6 @@ const Promise = require("bluebird");
 /**
  * SQS Adapter for queue
  */
-
 class SQSAdapter {
 
   inactiveCount() {  // eslint-disable-line class-methods-use-this
@@ -39,7 +38,7 @@ class SQSAdapter {
   }
 
   /**
-   * @param {String} jobName queue name
+   * @param {string} jobName queue name
    * @param {Object} jobPayload
    * @return {Promise}
    */
@@ -59,8 +58,8 @@ class SQSAdapter {
   }
 
   /**
-   * @param {String} jobName
-   * @param {Function -> Promise} jobCallback
+   * @param {string} jobName
+   * @param {Function} jobCallback
    * @return {Object} this
    */
   process(jobName, jobCallback) {

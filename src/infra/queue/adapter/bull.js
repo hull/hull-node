@@ -27,7 +27,7 @@ class BullAdapter {
   }
 
   /**
-   * @param {String} jobName queue name
+   * @param {string} jobName queue name
    * @param {Object} jobPayload
    * @return {Promise}
    */
@@ -43,8 +43,8 @@ class BullAdapter {
   }
 
   /**
-   * @param {String} jobName
-   * @param {Function -> Promise} jobCallback
+   * @param {string} jobName
+   * @param {Function} jobCallback
    * @return {Object} this
    */
   process(jobName, jobCallback) {

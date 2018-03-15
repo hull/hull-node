@@ -18,7 +18,7 @@
   "license": "MIT",
   "scripts": {
     "test": "npm run test:lint && npm run test:flow && npm run test:unit && npm run test:integration",
-    "test:lint": "eslint src",
+    "test:lint": "eslint src && documentation lint src",
     "test:modules": "npm outdated --depth=0",
     "test:unit": "NODE_ENV=test mocha --require babel-register -R spec ./test/unit/*.js ./test/unit/**/*.js",
     "test:integration": "NODE_ENV=test mocha --require babel-register -R spec ./test/integration/*.js",
@@ -28,7 +28,9 @@
     "clean": "rimraf lib",
     "build": "npm run clean && babel src -d lib",
     "dev": "babel src -d lib -w",
-    "prepublish": "npm run build"
+    "prepublish": "npm run build",
+    "documentation": "documentation build src -f md -o API.md --access public",
+    "precommit": "npm run documentation"
   },
   "dependencies": {
     "JSONStream": "^1.1.2",
@@ -75,11 +77,13 @@
     "babel-register": "^6.9.0",
     "chai": "^3.5.0",
     "chai-http": "^3.0.0",
+    "documentation": "^6.1.0",
     "eslint": "^3.2.2",
     "eslint-config-airbnb-base": "^11.1.0",
     "eslint-plugin-flowtype": "^2.39.1",
     "eslint-plugin-import": "^2.2.0",
     "flow-bin": "^0.59.0",
+    "husky": "^0.14.3",
     "isparta": "^4.0.0",
     "minihull": "^2.1.1",
     "mkdirp": "^0.5.1",

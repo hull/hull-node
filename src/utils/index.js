@@ -1,3 +1,8 @@
+/**
+ * General utilities
+ * @namespace Utils
+ * @public
+ */
 module.exports.exitHandler = require("./exit-handler");
 module.exports.notifHandler = require("./notif-handler");
 module.exports.smartNotifierHandler = require("./smart-notifier-handler");

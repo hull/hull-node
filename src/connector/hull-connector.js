@@ -8,11 +8,21 @@ const { Instrumentation, Cache, Queue, Batcher } = require("../infra");
 const { exitHandler, segmentsMiddleware, requireHullMiddleware, helpersMiddleware } = require("../utils");
 const { TransientError } = require("../errors");
 
+/**
+ * @public
+ * @param {HullClient} HullClient
+ * @param {Object} [options={}]
+ * @param {string} [options.hostSecret]
+ * @param {Number|string} [options.port]
+ * @param {Object} [options.clientConfig]
+ * @param {boolean} [options.skipSignatureValidation]
+ * @param {Number} [options.timeout]
+ */
 class HullConnector {
-  constructor(Hull, {
+  constructor(HullClient, {
     hostSecret, port, clientConfig = {}, instrumentation, cache, queue, connectorName, segmentFilterSetting, skipSignatureValidation, timeout
   } = {}) {
-    this.Hull = Hull;
+    this.HullClient = HullClient;
     this.instrumentation = instrumentation || new Instrumentation();
     this.cache = cache || new Cache();
     this.queue = queue || new Queue();
@@ -53,6 +63,19 @@ class HullConnector {
     });
   }
 
+  /**
+   * This method applies all features of `Hull.Connector` to the provided application:
+   *   - serving `/manifest.json`, `/readme` and `/` endpoints
+   *   - serving static assets from `/dist` and `/assets` directiories
+   *   - rendering `/views/*.html` files with `ejs` renderer
+   *   - timeouting all requests after 25 seconds
+   *   - adding Newrelic and Sentry instrumentation
+   *   - initiating the wole [Context Object](#context)
+   *   - handling the `hullToken` parameter in a default way
+   * @public
+   * @param  {express} app expressjs application
+   * @return {express}     expressjs application
+   */
   setupApp(app) {
     setupApp({
       app,
@@ -66,6 +89,12 @@ class HullConnector {
     return app;
   }
 
+  /**
+   * This is a supplement method which calls `app.listen` internally and also terminates instrumentation of the application calls.
+   * @public
+   * @param  {express} app expressjs application
+   * @return {http.Server}
+   */
   startApp(app) {
     /**
      * Transient Middleware
@@ -102,13 +131,13 @@ class HullConnector {
     });
 
     return app.listen(this.port, () => {
-      this.Hull.logger.info("connector.server.listen", { port: this.port });
+      this.HullClient.logger.info("connector.server.listen", { port: this.port });
     });
   }
 
   worker(jobs) {
     this._worker = this._worker || new Worker({
-      Hull: this.Hull,
+      Hull: this.HullClient,
       instrumentation: this.instrumentation,
       cache: this.cache,
       queue: this.queue
@@ -134,7 +163,7 @@ class HullConnector {
   }
 
   clientMiddleware() {
-    this._middleware = this._middleware || this.Hull.Middleware({
+    this._middleware = this._middleware || this.HullClient.Middleware({
       hostSecret: this.hostSecret,
       clientConfig: this.clientConfig
     });
@@ -145,7 +174,7 @@ class HullConnector {
     this.instrumentation.exitOnError = true;
     if (this._worker) {
       this._worker.process(queueName);
-      this.Hull.logger.info("connector.worker.process", { queueName });
+      this.HullClient.logger.info("connector.worker.process", { queueName });
     }
   }
 }

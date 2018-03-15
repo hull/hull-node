@@ -7,9 +7,13 @@ const BatchStream = require("batch-stream");
 const _ = require("lodash");
 
 /**
- * @param {Object} body Request Body Object
- * @param {Object} batchSize
- * @param {Function} callback returning a Promise
+ * @param {Object}   ctx Hull request context
+ * @param {Object}   options
+ * @param {Object}   options.body Request Body Object
+ * @param {Object}   options.batchSize
+ * @param {Function} options.handler callback returning a Promise
+ * @param {Function} options.onResponse
+ * @param {Function} options.onError
  * @return {Promise}
  *
  * return handleExtract(req, 100, (users) => Promise.resolve())

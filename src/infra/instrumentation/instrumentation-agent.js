@@ -5,8 +5,25 @@ const url = require("url");
 
 const MetricAgent = require("./metric-agent");
 
+/**
+ * It automatically sends data to DataDog, Sentry and Newrelic if appropriate ENV VARS are set:
+ *
+ * - NEW_RELIC_LICENSE_KEY
+ * - DATADOG_API_KEY
+ * - SENTRY_URL
+ *
+ * It also exposes the `contextMiddleware` which adds `req.hull.metric` agent to add custom metrics to the ship. Right now it doesn't take any custom options, but it's showed here for the sake of completeness.
+ *
+ * @memberof Infra
+ * @public
+ * @example
+ * const { Instrumentation } = require("hull/lib/infra");
+ *
+ * const instrumentation = new Instrumentation();
+ *
+ * const connector = new Connector.App({ instrumentation });
+ */
 class InstrumentationAgent {
-
   constructor(options = {}) {
     this.exitOnError = options.exitOnError || false;
     this.nr = null;

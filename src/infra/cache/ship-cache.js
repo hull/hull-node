@@ -4,14 +4,14 @@ import type { THullReqContext } from "../../types";
 const jwt = require("jwt-simple");
 const Promise = require("bluebird");
 
+/**
+ * Cache available as `req.hull.cache` object
+ */
 class ConnectorCache {
   ctx: THullReqContext;
   cache: Object;
   promiseReuser: Object;
 
-  /**
-   * @param {Object} options passed to node-cache-manager
-   */
   constructor(ctx: THullReqContext, cache: Object, promiseReuser: Object) {
     this.ctx = ctx;
     this.cache = cache;
@@ -26,8 +26,8 @@ class ConnectorCache {
   }
 
   /**
-   * @param {String} id the ship id
-   * @return {String}
+   * @param {string} key the ship id
+   * @return {string}
    */
   getCacheKey(key: string): string {
     const { secret, organization } = this.ctx.client.configuration();
@@ -37,8 +37,9 @@ class ConnectorCache {
   /**
    * Hull client calls which fetch ship settings could be wrapped with this
    * method to cache the results
+   * @public
    * @see https://github.com/BryanDonovan/node-cache-manager#overview
-   * @param {String} id
+   * @param {string} key
    * @param {Function} cb callback which Promised result would be cached
    * @return {Promise}
    */
@@ -52,8 +53,9 @@ class ConnectorCache {
 
   /**
    * Saves ship data to the cache
-   * @param  {String} id ship id
-   * @param  {Object} ship
+   * @public
+   * @param  {string} key
+   * @param  {mixed} value
    * @return {Promise}
    */
   set(key: string, value: any, options: ?Object) {
@@ -63,7 +65,8 @@ class ConnectorCache {
 
   /**
    * Returns cached information
-   * @param  {String} id
+   * @public
+   * @param  {string} key
    * @return {Promise}
    */
   get(key: string) {
@@ -74,7 +77,8 @@ class ConnectorCache {
   /**
    * Clears the ship cache. Since Redis stores doesn't return promise
    * for this method, it passes a callback to get a Promise
-   * @param  {String} id
+   * @public
+   * @param  {string} key
    * @return Promise
    */
   del(key: string) {

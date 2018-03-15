@@ -5,6 +5,8 @@ import type { THullSegment, THullConnector } from "./";
 /**
  * Context added to the express app request by hull-node connector sdk.
  * Accessible via `req.hull` param.
+ * @public
+ * @memberof Types
  */
 export type THullReqContext = {
   config: Object;

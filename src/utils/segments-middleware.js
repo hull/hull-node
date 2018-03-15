@@ -3,9 +3,7 @@ const _ = require("lodash");
 const Promise = require("bluebird");
 
 /**
- * @param  {Object}   req
- * @param  {Object}   res
- * @param  {Function} next
+ * @return {Function} middleware
  */
 module.exports = function segmentsMiddlewareFactory() {
   return function segmentsMiddleware(req: Object, res: Object, next: Function) {

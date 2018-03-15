@@ -83,7 +83,68 @@ function processHandlersFactory(handlers, userHandlerOptions) {
   };
 }
 
-
+/**
+ * `smartNotifierHandler` is a next generation `notifHandler` cooperating with our internal notification tool. It handles Backpressure, throttling and retries for you and lets you adapt to any external rate limiting pattern.
+ *
+ * > To enable the smartNotifier for a connector, the `smart-notifier` tag should be present in `manifest.json` file. Otherwise, regular, unthrottled notifications will be sent without the possibility of flow control.
+ *
+ * ```json
+ * {
+ *   "tags": ["smart-notifier"],
+ *   "subscriptions": [
+ *     {
+ *       "url": "/notify"
+ *     }
+ *   ]
+ * }
+ * ```
+ *
+ * When performing operations on notification you can set FlowControl settings using `ctx.smartNotifierResponse` helper.
+ *
+ * @name smartNotifierHandler
+ * @public
+ * @memberof Utils
+ * @param  {Object} options   [description]
+ * @param  {Object} options.handlers   [description]
+ * @param  {Object} options.userHandlerOptions [description]
+ * @return {[type]}                    [description]
+ * @example
+ * const { smartNotifierHandler } = require("hull/lib/utils");
+ * const app = express();
+ *
+ * const handler = smartNotifierHandler({
+ *   handlers: {
+ *     'ship:update': function(ctx, messages = []) {},
+ *     'segment:update': function(ctx, messages = []) {},
+ *     'segment:delete': function(ctx, messages = []) {},
+ *     'account:update': function(ctx, messages = []) {},
+ *     'user:update': function(ctx, messages = []) {
+ *       console.log('Event Handler here', ctx, messages);
+ *       // ctx: Context Object
+ *       // messages: [{
+ *       //   user: { id: '123', ... },
+ *       //   segments: [{}],
+ *       //   changes: {},
+ *       //   events: [{}, {}]
+ *       //   matchesFilter: true | false
+ *       // }]
+ *       // more about `smartNotifierResponse` below
+ *       ctx.smartNotifierResponse.setFlowControl({
+ *         type: 'next',
+ *         size: 100,
+ *         in: 5000
+ *       });
+ *       return Promise.resolve();
+ *     }
+ *   },
+ *   userHandlerOptions: {
+ *     groupTraits: false
+ *   }
+ * });
+ *
+ * connector.setupApp(app);
+ * app.use('/notify', handler);
+ */
 module.exports = function smartNotifierHandler({ handlers = {}, userHandlerOptions = {} }) {
   const app = express.Router();
   app.use((req, res, next) => {

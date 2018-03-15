@@ -21,6 +21,93 @@ function fetchToken(req, res, next) {
   next();
 }
 
+/**
+ * OAuthHandler is a packaged authentication handler using [Passport](http://passportjs.org/). You give it the right parameters, it handles the entire auth scenario for you.
+ *
+ * It exposes hooks to check if the ship is Set up correctly, inject additional parameters during login, and save the returned settings during callback.
+ *
+ * To make it working in Hull dashboard set following line in **manifest.json** file:
+ *
+ * ```json
+ * {
+ *   "admin": "/auth/"
+ * }
+ * ```
+ *
+ * For example of the notifications payload [see details](./notifications.md)
+ *
+ * @name oAuthHandler
+ * @memberof Utils
+ * @public
+ * @param  {Object}    options
+ * @param  {string}    options.name        The name displayed to the User in the various screens.
+ * @param  {boolean}   options.tokenInUrl  Some services (like Stripe) require an exact URL match. Some others (like Hubspot) don't pass the state back on the other hand. Setting this flag to false (default: true) removes the `token` Querystring parameter in the URL to only rely on the `state` param.
+ * @param  {Function}  options.isSetup     A method returning a Promise, resolved if the ship is correctly setup, or rejected if it needs to display the Login screen.
+ * Lets you define in the Ship the name of the parameters you need to check for. You can return parameters in the Promise resolve and reject methods, that will be passed to the view. This lets you display status and show buttons and more to the customer
+ * @param  {Function}  options.onAuthorize A method returning a Promise, resolved when complete. Best used to save tokens and continue the sequence once saved.
+ * @param  {Function}  options.onLogin     A method returning a Promise, resolved when ready. Best used to process form parameters, and place them in `req.authParams` to be submitted to the Login sequence. Useful to add strategy-specific parameters, such as a portal ID for Hubspot for instance.
+ * @param  {Function}  options.Strategy    A Passport Strategy.
+ * @param  {Object}    options.views       Required, A hash of view files for the different screens: login, home, failure, success
+ * @param  {Object}    options.options     Hash passed to Passport to configure the OAuth Strategy. (See [Passport OAuth Configuration](http://passportjs.org/docs/oauth))
+ * @return {Function} OAuth handler to use with expressjs
+ * @example
+ * const { oAuthHandler } = require("hull/lib/utils");
+ * const { Strategy as HubspotStrategy } = require("passport-hubspot");
+ *
+ * const app = express();
+ *
+ * app.use(
+ *   '/auth',
+ *   oAuthHandler({
+ *     name: 'Hubspot',
+ *     tokenInUrl: true,
+ *     Strategy: HubspotStrategy,
+ *     options: {
+ *       clientID: 'xxxxxxxxx',
+ *       clientSecret: 'xxxxxxxxx', //Client Secret
+ *       scope: ['offline', 'contacts-rw', 'events-rw'] //App Scope
+ *     },
+ *     isSetup(req) {
+ *       if (!!req.query.reset) return Promise.reject();
+ *       const { token } = req.hull.ship.private_settings || {};
+ *       return !!token
+ *       ? Promise.resolve({ valid: true, total: 2 })
+ *       : Promise.reject({ valid: false, total: 0 });
+ *     },
+ *     onLogin: req => {
+ *       req.authParams = { ...req.body, ...req.query };
+ *       return req.hull.client.updateSettings({
+ *         portalId: req.authParams.portalId
+ *       });
+ *     },
+ *     onAuthorize: req => {
+ *       const { refreshToken, accessToken } = req.account || {};
+ *       return req.hull.client.updateSettings({
+ *         refresh_token: refreshToken,
+ *         token: accessToken
+ *       });
+ *     },
+ *     views: {
+ *       login: 'login.html',
+ *       home: 'home.html',
+ *       failure: 'failure.html',
+ *       success: 'success.html'
+ *     }
+ *   })
+ * );
+ *
+ * //each view will receive the following data:
+ * {
+ *   name: "The name passed as handler",
+ *   urls: {
+ *     login: '/auth/login',
+ *     success: '/auth/success',
+ *     failure: '/auth/failure',
+ *     home: '/auth/home',
+ *   },
+ *   ship: ship //The entire Ship instance's config
+ * }
+ */
 module.exports = function oauth({
   name,
   tokenInUrl = true,

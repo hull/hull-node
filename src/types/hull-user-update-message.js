@@ -4,6 +4,8 @@ import type { THullUser, THullUserChanges, THullAccount, THullEvent, THullSegmen
 
 /**
  * A message sent by the platform when any event, attribute (trait) or segment change happens.
+ * @public
+ * @memberof Types
  */
 export type THullUserUpdateMessage = {
   user: THullUser;

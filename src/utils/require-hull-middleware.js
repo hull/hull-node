@@ -1,3 +1,7 @@
+/**
+ * The middleware which ensures that the Hull Client was successfully setup by the Hull.Middleware:
+ * @return {[type]} [description]
+ */
 module.exports = function requireHullMiddlewareFactory() {
   return function requireHullMiddleware(req, res, next) {
     if (!req.hull || !req.hull.client) {

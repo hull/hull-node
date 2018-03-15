@@ -23,8 +23,15 @@ const ERROR_CODES = [
  * In case of any other request the plugin applies simple error handling strategy:
  * every non 2xx or 3xx response is treated as an error and the promise will be rejected.
  * Every connector ServiceClient should apply it's own error handling strategy by overriding `ok` handler.
- * Example:
- * ```
+ *
+ * @public
+ * @name superagentErrorPlugin
+ * @memberof Utils
+ * @param  {Object} [options={}]
+ * @param  {Number} [options.retries] Number of retries
+ * @param  {Number} [options.timeout] Timeout for request
+ * @return {Function} function to use as superagent plugin
+ * @example
  * superagent.get("http://test/test")
  *   .use(superagentErrorPlugin())
  *   .ok((res) => {
@@ -40,10 +47,6 @@ const ERROR_CODES = [
  *     // error.constructor.name can be ConfigurationError, RateLimitError coming from `ok` handler above
  *     // or TransientError coming from logic applied by `superagentErrorPlugin`
  *   })
- * ```
- *
- * @param  {integer} options.retries Number of retries
- * @return {Function}
  */
 function superagentErrorPluginFactory({ retries = 2, timeout = 10000 } = {}) {
   return function superagentErrorPlugin(request) {
