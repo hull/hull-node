@@ -6,7 +6,7 @@
 const hullClient = new Hull.Client({ configuration });
 ```
 
-Most low level Hull Platform API client. Please refer to [separate Github repository](https://github.com/hull/hull-client-node) for documentation.
+This is an example of the bare bones API client. Please refer to [it's own Github repository](https://github.com/hull/hull-client-node) for documentation.
 
 ## [Hull Middleware](#hullmiddleware)
 
@@ -14,7 +14,7 @@ Most low level Hull Platform API client. Please refer to [separate Github reposi
 app.use(Hull.Middleware({ configuration }));
 ```
 
-A bridge between Hull Client and a NodeJS HTTP application (e.g. express) which initializes context for every HTTP request.
+A bridge between Hull Client and a NodeJS HTTP application (e.g. express) which initializes a context for every HTTP request.
 
 ## [Hull Connector](#hullconnector)
 
@@ -22,7 +22,7 @@ A bridge between Hull Client and a NodeJS HTTP application (e.g. express) which 
 const connector = new Hull.Connector({ configuration });
 ```
 
-A complete toolkit to operate with Hull Client in request handlers. Includes Hull Middleware and a set of official patterns to build highly scalable and efficient Connectors
+A complete toolkit to operate with a Hull Client available in request handlers. Includes Hull Middleware and a set of official patterns to build highly scalable and efficient Connectors
 
 ![hull node core components](/assets/docs/hull-node-components.png)
 
@@ -45,7 +45,7 @@ app.post("/show-segments", (req, res) => {
 });
 ```
 
-This middleware standardizes the instantiation of a [Hull Client](https://github.com/hull/hull-client-node) in the context of authorized HTTP request. It also fetches the entire ship's configuration. As a result it's responsible for creating Base part of [Context Object](#basecontext).
+This middleware standardizes the instantiation of a [Hull Client](https://github.com/hull/hull-client-node) in the context of authorized HTTP request. It also fetches the entire Connector's configuration. As a result it's responsible for creating and exposing a [Context Object](#basecontext).
 
 For configuration details refer to [API REFERENCE](./API.md#hullmiddleware)
 
@@ -61,9 +61,9 @@ app.get("/manifest.json", serveTheManifestJson);
 app.listen(port);
 ```
 
-The connector is a simple HTTP application served from public address. It could be implemented in any way and in any technological stack unless it implements the same API.
+The connector is a simple HTTP application served from public address. It can be implemented in any way and in any technological stack as long as it implements the same API.
 
-Yet to ease the connector development and to extract common code base the `hull-node` library comes with the **Hull.Connector** toolkit which simplify the process of building new connector by a set of helpers and utilities which follows the same convention.
+Yet to ease the connector development and to extract common code base the `hull-node` library comes with the **Hull.Connector** toolkit which simplifies the process of building a Connector with a set of helpers and utilities.
 
 ## Initialization
 
@@ -78,7 +78,7 @@ const connector = new Hull.Connector({
 
 This is the instance of the `Connector` module which exposes a set of utilities which can be applied to the main [express](http://expressjs.com/) app. All configuration options are listen in [API REFERENCE](./API.md#hullconnector)
 
-The utilities can be taken one-by-one and applied the the application manually, but to make the whole process easier there are two helper method exposed which applies everything be default:
+The utilities can be taken one-by-one and applied the the application manually, but to make the whole process easier, there are two helper methods that set everything up for you:
 
 ## Setup Helpers
 
@@ -96,7 +96,7 @@ app.post('/fetch-all', (req, res) => {
 connector.startApp(app, port); // internally calls app.listen
 ```
 
-Setup Helpers are two high-level methods exposed by initialized Connector instance to apply custom middlewares to the Express application. Those middlewares enrich the application with connector features.
+Setup Helpers are two high-level methods exposed by initialized Connector instances to apply custom middlewares to the Express application. Those middlewares enrich the application with connector features.
 
 To get more details on how they work please refere [API REFERENCE](./API.md#setupApp)
 
@@ -104,7 +104,7 @@ To get more details on how they work please refere [API REFERENCE](./API.md#setu
 
 # Context Object
 
-[Hull.Connector](#hullconnector) and [Hull.Middleware](#hullmiddleware) applies multiple middlewares to the request handler. The result is `req.hull` object which is the **Context Object** - a set of parameters and modules to work in the context of current organization and connector instance. This Context is divided into base set by Hull.Middleware (if you use it standalone) and extended applied when using `Hull.Connector`
+[Hull.Connector](#hullconnector) and [Hull.Middleware](#hullmiddleware) apply multiple middlewares to the request handler. The result is a **Context Object** that's available in as `req.hull`. It's a set of parameters and modules to work in the context of current organization and connector instance. This Context is divided into a base set by `Hull.Middleware` (if you use it standalone) and an extended set applied when using `Hull.Connector`
 
 ```javascript
 {
@@ -112,10 +112,14 @@ To get more details on how they work please refere [API REFERENCE](./API.md#setu
   requestId: "",
   config: {},
   token: "",
-  client: {
+  client: { // Instance of "new Hull.Client()"    
     logger: {},
   },
-  ship: {},
+  ship: {
+    //The values for the settings defined in the Connector's settings tab
+    private_settings: {},
+    settings: {}
+  },
   hostname: req.hostname,
   params: req.query + req.body,
 
@@ -145,13 +149,13 @@ an object carrying `id`, `secret` and `organization`. You can setup it prior to 
 
 ### **token**
 
-an encrypted version of configuration. If it's already set in the request, Hull Middleware will try to decrypt it and get configuration from it. If it's not available at the beginning and middleware resolved the configuration from other sources it will encrypt it and set `req.hull.token` value.
+an encrypted version of configuration. If it's already set in the request, Hull Middleware will try to decrypt it and get the configuration from it. If it's not available at the beginning and middleware resolved the configuration from other sources it will encrypt it and set `req.hull.token` value.
 
-When the connector needs to send the information outside the Hull ecosystem it must use the token, not to expose the raw credentials. The usual places where it happens are:
+When the connector needs to send the information outside the Hull ecosystem it has to use the token, not to expose the raw credentials. The usual places where this happens are:
 
 - dashboard pane links
 - oAuth flow (callback url)
-- external webhooks
+- external incoming webhooks
 
 ### **client**
 
@@ -159,7 +163,8 @@ When the connector needs to send the information outside the Hull ecosystem it m
 
 ### **ship**
 
-ship object with manifest information and `private_settings` fetched from Hull Platform.
+ship object with manifest information and `private_settings` fetched from the Hull Platform.
+`ship` is the legacy name for Connectors.
 
 ### **hostname**
 
@@ -222,7 +227,7 @@ req.hull.metric.increment("metricName", incrementValue = 1); // increments the m
 req.hull.metric.event("eventName", { text = "", properties = {} });
 ```
 
-An object added to context by `Instrumentation Module`. It allows to send data to metrics service. It's being initiated in the right context, and expose following methods:
+An object added to context by the `Instrumentation Module`. It allows to send data to the metrics service
 
 ### **helpers**
 
@@ -354,6 +359,9 @@ class ServiceAgent {
 
 ## Helpers
 
+
+Helpers are just a set of simple functions which take [Context Object](context.md) as a first argument. When being initialized by `Hull.Middleware` their are all bound to the proper object, but the functions can be also used in a standalone manner:
+
 ```javascript
 import { updateSettings } from 'hull/lib/helpers';
 
@@ -363,8 +371,6 @@ app.post('/request', (req, res) => {
   req.hull.helpers.updateSettings({ called: true });
 });
 ```
-
-Helpers are just a set of simple functions which take [Context Object](context.md) as a first argument. When being initialized by `Hull.Middleware` their are all bound to the proper object, but the functions can be also used in a standalone manner:
 
 ---
 
@@ -381,7 +387,7 @@ The connector internally uses infrastructure modules to support its operation:
 
 **Handling the process shutdown**
 
-Two infrastrcture services needs to be notified about the exit event:
+Two infrastrcture services need to be notified about the exit event:
 
 - `Queue` - to drain and stop the current queue processing
 - `Batcher` - to flush all pending data.
@@ -390,7 +396,7 @@ Two infrastrcture services needs to be notified about the exit event:
 
 ## Worker
 
-More complex connector usually need a background worker to split its operation into smaller tasks to spread the workload:
+More complex connectors usually need a background worker to split its operation into smaller tasks to spread the workload:
 
 ```javascript
 const express = require("express");
