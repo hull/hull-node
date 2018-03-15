@@ -1,5 +1,11 @@
 const _ = require("lodash");
 
+/**
+ * Metric agent available as `req.hull.metric` object
+ * @public
+ * @name metric
+ * @memberof Context
+ */
 class MetricAgent {
   constructor(ctx, instrumentationAgent) {
     this.metrics = instrumentationAgent.metrics;
@@ -11,6 +17,15 @@ class MetricAgent {
       : () => {};
   }
 
+  /**
+   * Sets metric value for gauge metric
+   * @public
+   * @memberof Context.metric
+   * @param  {string} metric metric name
+   * @param  {number} value metric value
+   * @param  {Array}  [additionalTags=[]] additional tags in form of `["tag_name:tag_value"]`
+   * @return {mixed}
+   */
   value(metric, value = 1, additionalTags = []) {
     this.logFunction("metric.value", { metric, value, additionalTags });
     if (!this.metrics) {
@@ -24,6 +39,15 @@ class MetricAgent {
     return null;
   }
 
+  /**
+   * Increments value of selected metric
+   * @public
+   * @memberof Context.metric
+   * @param  {string} metric metric metric name
+   * @param  {number} value value which we should increment metric by
+   * @param  {Array}  [additionalTags=[]] additional tags in form of `["tag_name:tag_value"]`
+   * @return {mixed}
+   */
   increment(metric, value = 1, additionalTags = []) {
     this.logFunction("metric.increment", { metric, value, additionalTags });
     if (!this.metrics) {
@@ -37,6 +61,15 @@ class MetricAgent {
     return null;
   }
 
+  /**
+   * @public
+   * @memberof Context.metric
+   * @param  {Object} options
+   * @param  {string} options.title
+   * @param  {string} options.text
+   * @param  {Object} [options.properties={}]
+   * @return {mixed}
+   */
   event({ title, text = "", properties = {} }) {
     this.logFunction("metric.event", { title, text, properties });
     if (!this.dogapi) {

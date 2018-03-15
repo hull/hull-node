@@ -43,7 +43,7 @@ const PromiseReuser = require("../../utils/promise-reuser");
  *
  * const connector = new Hull.Connector({ cache });
  */
-class Cache {
+class CacheAgent {
   constructor(options = {}) {
     _.defaults(options, {
       ttl: 60, /* seconds */
@@ -64,4 +64,4 @@ class Cache {
   }
 }
 
-module.exports = Cache;
+module.exports = CacheAgent;

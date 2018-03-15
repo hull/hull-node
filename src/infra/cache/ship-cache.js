@@ -6,6 +6,9 @@ const Promise = require("bluebird");
 
 /**
  * Cache available as `req.hull.cache` object
+ * @public
+ * @name cache
+ * @memberof Context
  */
 class ConnectorCache {
   ctx: THullReqContext;
@@ -19,6 +22,7 @@ class ConnectorCache {
   }
 
   /**
+   * @memberof Context.cache
    * @deprecated
    */
   getShipKey(key: string): string {
@@ -26,6 +30,7 @@ class ConnectorCache {
   }
 
   /**
+   * @memberof Context.cache
    * @param {string} key the ship id
    * @return {string}
    */
@@ -37,7 +42,9 @@ class ConnectorCache {
   /**
    * Hull client calls which fetch ship settings could be wrapped with this
    * method to cache the results
+   *
    * @public
+   * @memberof Context.cache
    * @see https://github.com/BryanDonovan/node-cache-manager#overview
    * @param {string} key
    * @param {Function} cb callback which Promised result would be cached
@@ -54,6 +61,7 @@ class ConnectorCache {
   /**
    * Saves ship data to the cache
    * @public
+   * @memberof Context.cache
    * @param  {string} key
    * @param  {mixed} value
    * @return {Promise}
@@ -66,6 +74,7 @@ class ConnectorCache {
   /**
    * Returns cached information
    * @public
+   * @memberof Context.cache
    * @param  {string} key
    * @return {Promise}
    */
@@ -78,6 +87,7 @@ class ConnectorCache {
    * Clears the ship cache. Since Redis stores doesn't return promise
    * for this method, it passes a callback to get a Promise
    * @public
+   * @memberof Context.cache
    * @param  {string} key
    * @return Promise
    */

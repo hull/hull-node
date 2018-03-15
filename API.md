@@ -6,58 +6,68 @@
     -   [setupApp][2]
     -   [startApp][3]
 -   [Helpers][4]
-    -   [exports][5]
-    -   [exports][6]
--   [Context][7]
-    -   [enqueue][8]
--   [Infra][9]
-    -   [Cache][10]
-    -   [InstrumentationAgent][11]
-    -   [QueueAgent][12]
--   [Hull.Middleware][13]
--   [Types][14]
-    -   [THullAccountAttributes][15]
-    -   [THullAccountIdent][16]
-    -   [THullAccount][17]
-    -   [THullAttributeName][18]
-    -   [THullAttributeValue][19]
-    -   [THullAttributesChanges][20]
-    -   [THullConnector][21]
-    -   [THullEvent][22]
-    -   [THullObjectAttributes][23]
-    -   [THullObjectIdent][24]
-    -   [THullObject][25]
-    -   [THullReqContext][26]
-    -   [THullSegment][27]
-    -   [THullSegmentsChanges][28]
-    -   [THullUserAttributes][29]
-    -   [THullUserChanges][30]
-    -   [THullUserIdent][31]
-    -   [THullUserUpdateMessage][32]
-    -   [THullUser][33]
--   [Utils][34]
-    -   [notifHandler][35]
-    -   [oAuthHandler][36]
-    -   [smartNotifierHandler][37]
-    -   [superagentErrorPlugin][38]
-    -   [superagentUnstrumentationPluginFactory][39]
-    -   [superagentUrlTemplatePluginFactory][40]
+    -   [handleExtract][5]
+    -   [requestExtract][6]
+    -   [updateSettings][7]
+-   [Context][8]
+    -   [cache][9]
+        -   [wrap][10]
+        -   [set][11]
+        -   [get][12]
+        -   [del][13]
+    -   [metric][14]
+        -   [value][15]
+        -   [increment][16]
+        -   [event][17]
+    -   [enqueue][18]
+-   [Infra][19]
+    -   [CacheAgent][20]
+    -   [InstrumentationAgent][21]
+    -   [QueueAgent][22]
+-   [Hull.Middleware][23]
+-   [Types][24]
+    -   [THullAccountAttributes][25]
+    -   [THullAccountIdent][26]
+    -   [THullAccount][27]
+    -   [THullAttributeName][28]
+    -   [THullAttributeValue][29]
+    -   [THullAttributesChanges][30]
+    -   [THullConnector][31]
+    -   [THullEvent][32]
+    -   [THullObjectAttributes][33]
+    -   [THullObjectIdent][34]
+    -   [THullObject][35]
+    -   [THullReqContext][36]
+    -   [THullSegment][37]
+    -   [THullSegmentsChanges][38]
+    -   [THullUserAttributes][39]
+    -   [THullUserChanges][40]
+    -   [THullUserIdent][41]
+    -   [THullUserUpdateMessage][42]
+    -   [THullUser][43]
+-   [Utils][44]
+    -   [notifHandler][45]
+    -   [oAuthHandler][46]
+    -   [smartNotifierHandler][47]
+    -   [superagentErrorPlugin][48]
+    -   [superagentUnstrumentationPluginFactory][49]
+    -   [superagentUrlTemplatePluginFactory][50]
 
 ## HullConnector
 
 **Parameters**
 
 -   `HullClient` **HullClient** 
--   `options` **[Object][41]**  (optional, default `{}`)
-    -   `options.hostSecret` **[string][42]?** 
-    -   `options.port` **([Number][43] \| [string][42])?** 
-    -   `options.clientConfig` **[Object][41]?**  (optional, default `{}`)
-    -   `options.skipSignatureValidation` **[boolean][44]?** 
-    -   `options.timeout` **[Number][43]?** 
-    -   `options.instrumentation`  
-    -   `options.cache`  
-    -   `options.queue`  
-    -   `options.connectorName`  
+-   `options` **[Object][51]**  (optional, default `{}`)
+    -   `options.hostSecret` **[string][52]?** secret to sign req.hull.token
+    -   `options.port` **([Number][53] \| [string][52])?** port on which expressjs application should be started
+    -   `options.clientConfig` **[Object][51]?** additional `HullClient` configuration (optional, default `{}`)
+    -   `options.instrumentation` **[Object][51]?** override default InstrumentationAgent
+    -   `options.cache` **[Object][51]?** override default CacheAgent
+    -   `options.queue` **[Object][51]?** override default QueueAgent
+    -   `options.connectorName` **[string][52]?** force connector name - if not provided will be taken from manifest.json
+    -   `options.skipSignatureValidation` **[boolean][54]?** skip signature validation on notifications (for testing only)
+    -   `options.timeout` **([number][53] \| [string][52])?** global HTTP server timeout
     -   `options.segmentFilterSetting`  
 
 ### setupApp
@@ -69,7 +79,7 @@ This method applies all features of `Hull.Connector` to the provided application
 -   rendering `/views/*.html` files with `ejs` renderer
 -   timeouting all requests after 25 seconds
 -   adding Newrelic and Sentry instrumentation
--   initiating the wole [Context Object][7]
+-   initiating the wole [Context Object][8]
 -   handling the `hullToken` parameter in a default way
 
 **Parameters**
@@ -92,19 +102,35 @@ Returns **http.Server**
 
 This is a set of additional helper functions being exposed at `req.hull.helpers`. They allow to perform common operation in the context of current request. They are similar o `req.hull.client.utils`, but operate at higher level, ensure good practises and should be used in the first place before falling back to raw utils.
 
-### exports
+### handleExtract
+
+Helper function to handle JSON extract sent to batch endpoint
+
+**Parameters**
+
+-   `ctx` **[Object][51]** Hull request context
+-   `options` **[Object][51]** 
+    -   `options.body` **[Object][51]** request body object (req.body)
+    -   `options.batchSize` **[Object][51]** size of the chunk we want to pass to handler
+    -   `options.handler` **[Function][55]** callback returning a Promise (will be called with array of elements)
+    -   `options.onResponse` **[Function][55]** callback called on successful inital response
+    -   `options.onError` **[Function][55]** callback called during error
+
+Returns **[Promise][56]** 
+
+### requestExtract
 
 This is a method to request an extract of user base to be sent back to the Connector to a selected `path` which should be handled by `notifHandler`.
 
 **Parameters**
 
--   `ctx` **[Object][41]** Hull request context
--   `options` **[Object][41]**  (optional, default `{}`)
-    -   `options.segment` **[Object][41]**  (optional, default `null`)
-    -   `options.format` **[Object][41]**  (optional, default `json`)
-    -   `options.path` **[Object][41]**  (optional, default `batch`)
-    -   `options.fields` **[Object][41]**  (optional, default `[]`)
-    -   `options.additionalQuery` **[Object][41]**  (optional, default `{}`)
+-   `ctx` **[Object][51]** Hull request context
+-   `options` **[Object][51]**  (optional, default `{}`)
+    -   `options.segment` **[Object][51]**  (optional, default `null`)
+    -   `options.format` **[Object][51]**  (optional, default `json`)
+    -   `options.path` **[Object][51]**  (optional, default `batch`)
+    -   `options.fields` **[Object][51]**  (optional, default `[]`)
+    -   `options.additionalQuery` **[Object][51]**  (optional, default `{}`)
 
 **Examples**
 
@@ -112,20 +138,17 @@ This is a method to request an extract of user base to be sent back to the Conne
 req.hull.helpers.requestExtract({ segment = null, path, fields = [], additionalQuery = {} });
 ```
 
-Returns **[Promise][45]** 
+Returns **[Promise][56]** 
 
-### exports
+### updateSettings
 
-Allows to update selected settings of the ship `private_settings` object. This is a wrapper over `hull.utils.settings.update()` call. On top of that it makes sure that the current context ship object is updated, and the ship cache is refreshed.
-
-Updates `private_settings`, touching only provided settings.
-Also clears the `shipCache`.
-`hullClient.put` will emit `ship:update` notify event.
+Allows to update selected settings of the ship `private_settings` object. This is a wrapper over `hullClient.utils.settings.update()` call. On top of that it makes sure that the current context ship object is updated, and the ship cache is refreshed.
+It will emit `ship:update` notify event.
 
 **Parameters**
 
--   `ctx` **[Object][41]** The Context Object
--   `newSettings` **[Object][41]** settings to update
+-   `ctx` **[Object][51]** The Context Object
+-   `newSettings` **[Object][51]** settings to update
 
 **Examples**
 
@@ -133,24 +156,128 @@ Also clears the `shipCache`.
 req.hull.helpers.updateSettings({ newSettings });
 ```
 
-Returns **[Promise][45]** 
+Returns **[Promise][56]** 
 
 ## Context
+
+### cache
+
+Cache available as `req.hull.cache` object
+
+#### wrap
+
+-   **See: [https://github.com/BryanDonovan/node-cache-manager#overview][57]**
+
+Hull client calls which fetch ship settings could be wrapped with this
+method to cache the results
+
+**Parameters**
+
+-   `key` **[string][52]** 
+-   `cb` **[Function][55]** callback which Promised result would be cached
+-   `options` **[Object][51]?** 
+
+Returns **[Promise][56]** 
+
+#### set
+
+Saves ship data to the cache
+
+**Parameters**
+
+-   `key` **[string][52]** 
+-   `value` **mixed** 
+-   `options` **[Object][51]?** 
+
+Returns **[Promise][56]** 
+
+#### get
+
+Returns cached information
+
+**Parameters**
+
+-   `key` **[string][52]** 
+
+Returns **[Promise][56]** 
+
+#### del
+
+Clears the ship cache. Since Redis stores doesn't return promise
+for this method, it passes a callback to get a Promise
+
+**Parameters**
+
+-   `key` **[string][52]** 
+
+Returns **any** Promise
+
+### metric
+
+Metric agent available as `req.hull.metric` object
+
+#### value
+
+Sets metric value for gauge metric
+
+**Parameters**
+
+-   `metric` **[string][52]** metric name
+-   `value` **[number][53]** metric value (optional, default `1`)
+-   `additionalTags` **[Array][58]** additional tags in form of `["tag_name:tag_value"]` (optional, default `[]`)
+
+Returns **mixed** 
+
+#### increment
+
+Increments value of selected metric
+
+**Parameters**
+
+-   `metric` **[string][52]** metric metric name
+-   `value` **[number][53]** value which we should increment metric by (optional, default `1`)
+-   `additionalTags` **[Array][58]** additional tags in form of `["tag_name:tag_value"]` (optional, default `[]`)
+
+Returns **mixed** 
+
+#### event
+
+**Parameters**
+
+-   `options` **[Object][51]** 
+    -   `options.title` **[string][52]** 
+    -   `options.text` **[string][52]**  (optional, default `""`)
+    -   `options.properties` **[Object][51]**  (optional, default `{}`)
+
+Returns **mixed** 
 
 ### enqueue
 
 **Parameters**
 
--   `queueAdapter` **[Object][41]** [description]
--   `ctx` **[Object][41]** [description]
--   `jobName` **\[type]** [description]
--   `jobPayload` **\[type]** [description]
--   `options` **[Object][41]** [description]
-    -   `options.ttl` **[number][43]** Job producers can set an expiry value for the time their job can live in active state, so that if workers didn't reply in timely fashion, Kue will fail it with TTL exceeded error message preventing that job from being stuck in active state and spoiling concurrency.
-    -   `options.delay` **[number][43]** Delayed jobs may be scheduled to be queued for an arbitrary distance in time by invoking the .delay(ms) method, passing the number of milliseconds relative to now. Alternatively, you can pass a JavaScript Date object with a specific time in the future. This automatically flags the Job as "delayed".
-    -   `options.priority` **([number][43] \| [string][42])** 
+-   `queueAdapter` **[Object][51]** adapter to run - when using this function in Context this param is bound
+-   `ctx` **[Context][59]** Hull Context Object - when using this function in Context this param is bound
+-   `jobName` **[string][52]** name of specific job to execute
+-   `jobPayload` **[Object][51]** the payload of the job
+-   `options` **[Object][51]**  (optional, default `{}`)
+    -   `options.ttl` **[number][53]?** job producers can set an expiry value for the time their job can live in active state, so that if workers didn't reply in timely fashion, Kue will fail it with TTL exceeded error message preventing that job from being stuck in active state and spoiling concurrency.
+    -   `options.delay` **[number][53]?** delayed jobs may be scheduled to be queued for an arbitrary distance in time by invoking the .delay(ms) method, passing the number of milliseconds relative to now. Alternatively, you can pass a JavaScript Date object with a specific time in the future. This automatically flags the Job as "delayed".
+    -   `options.queueName` **[string][52]?** when you start worker with a different queue name, you can explicitly set it here to queue specific jobs to that queue
+    -   `options.priority` **([number][53] \| [string][52])?** you can use this param to specify priority of job
 
-Returns **[Promise][45]** [description]
+**Examples**
+
+```javascript
+// app is Hull.Connector wrapped expressjs app
+app.get((req, res) => {
+  req.hull.enqueue("jobName", { payload: "to-work" })
+    .then(() => {
+      res.end("ok");
+    });
+});
+```
+
+Returns **[Promise][56]** which is resolved when job is successfully enqueued
 
 ## Infra
 
@@ -166,13 +293,13 @@ const queue = new Queue();
 const connector = new Hull.Connector({ instrumentation, cache, queue });
 ```
 
-### Cache
+### CacheAgent
 
-This is a wrapper over [https://github.com/BryanDonovan/node-cache-manager][46]
+This is a wrapper over [https://github.com/BryanDonovan/node-cache-manager][60]
 to manage ship cache storage.
 It is responsible for handling cache key for every ship.
 
-By default it comes with the basic in-memory store, but in case of distributed connectors being run in multiple processes for reliable operation a shared cache solution should be used. The `Cache` module internally uses [node-cache-manager][46], so any of it's compatibile store like `redis` or `memcache` could be used:
+By default it comes with the basic in-memory store, but in case of distributed connectors being run in multiple processes for reliable operation a shared cache solution should be used. The `Cache` module internally uses [node-cache-manager][60], so any of it's compatibile store like `redis` or `memcache` could be used:
 
 The `cache` instance also exposes `contextMiddleware` whch adds `req.hull.cache` to store the ship and segments information in the cache to not fetch it for every request. The `req.hull.cache` is automatically picked and used by the `Hull.Middleware` and `segmentsMiddleware`.
 
@@ -195,7 +322,7 @@ ctx.cache.wrap('object_name', () => {
 
 **Parameters**
 
--   `options` **[Object][41]** passed to node-cache-manager (optional, default `{}`)
+-   `options` **[Object][51]** passed to node-cache-manager (optional, default `{}`)
 
 **Examples**
 
@@ -237,11 +364,11 @@ const connector = new Connector.App({ instrumentation });
 
 ### QueueAgent
 
-By default it's initiated inside `Hull.Connector` as a very simplistic in-memory queue, but in case of production grade needs, it comes with a [Kue][47] or [Bull][48] adapters which you can initiate in a following way:
+By default it's initiated inside `Hull.Connector` as a very simplistic in-memory queue, but in case of production grade needs, it comes with a [Kue][61] or [Bull][62] adapters which you can initiate in a following way:
 
 `Options` from the constructor of the `BullAdapter` or `KueAdapter` are passed directly to the internal init method and can be set with following parameters:
 
-[https://github.com/Automattic/kue#redis-connection-settings][49] [https://github.com/OptimalBits/bull/blob/master/REFERENCE.md#queue][50]
+[https://github.com/Automattic/kue#redis-connection-settings][63] [https://github.com/OptimalBits/bull/blob/master/REFERENCE.md#queue][64]
 
 The `queue` instance has a `contextMiddleware` method which adds `req.hull.enqueue` method to queue jobs - this is done automatically by `Hull.Connector().setupApp(app)`:
 
@@ -266,7 +393,7 @@ connector.startWorker();
 
 **Parameters**
 
--   `adapter` **[Object][41]** 
+-   `adapter` **[Object][51]** 
 
 **Examples**
 
@@ -284,16 +411,16 @@ const connector = new Hull.Connector({ queue });
 
 ## Hull.Middleware
 
-This middleware standardizes the instantiation of a [Hull Client][51] in the context of authorized HTTP request. It also fetches the entire ship's configuration.
+This middleware standardizes the instantiation of a [Hull Client][65] in the context of authorized HTTP request. It also fetches the entire ship's configuration.
 
 **Parameters**
 
 -   `HullClient` **HullClient** Hull Client - the version exposed by this library comes with HullClient argument bound
--   `options` **[Object][41]** 
-    -   `options.hostSecret` **[string][42]** The ship hosted secret - consider this as a private key which is used to encrypt and decrypt `req.hull.token`. The token is useful for exposing it outside the Connector &lt;-> Hull Platform communication. For example the OAuth flow or webhooks. Thanks to the encryption no 3rd party will get access to Hull Platform credentials.
-    -   `options.clientConfig` **[Object][41]** Additional config which will be passed to the new instance of Hull Client (optional, default `{}`)
+-   `options` **[Object][51]** 
+    -   `options.hostSecret` **[string][52]** The ship hosted secret - consider this as a private key which is used to encrypt and decrypt `req.hull.token`. The token is useful for exposing it outside the Connector &lt;-> Hull Platform communication. For example the OAuth flow or webhooks. Thanks to the encryption no 3rd party will get access to Hull Platform credentials.
+    -   `options.clientConfig` **[Object][51]** Additional config which will be passed to the new instance of Hull Client (optional, default `{}`)
 
-Returns **[Function][52]** 
+Returns **[Function][55]** 
 
 ## Types
 
@@ -307,35 +434,35 @@ Type: {}
 
 Object which is passed to \`hullClient.asAccount(ident: THullAccountIdent)``
 
-Type: {id: [string][42]?, domain: [string][42]?, external_id: [string][42]?}
+Type: {id: [string][52]?, domain: [string][52]?, external_id: [string][52]?}
 
 **Properties**
 
--   `id` **[string][42]?** 
--   `domain` **[string][42]?** 
--   `external_id` **[string][42]?** 
+-   `id` **[string][52]?** 
+-   `domain` **[string][52]?** 
+-   `external_id` **[string][52]?** 
 
 ### THullAccount
 
 Account object with ident information and traits
 
-Type: {id: [string][42]}
+Type: {id: [string][52]}
 
 **Properties**
 
--   `id` **[string][42]** 
+-   `id` **[string][52]** 
 
 ### THullAttributeName
 
 Attributes (also called traits) names are strings
 
-Type: [string][42]
+Type: [string][52]
 
 ### THullAttributeValue
 
 Possible attribute (trait) values
 
-Type: ([string][42] \| [boolean][44] \| [Date][53] \| [Array][54]&lt;[string][42]>)
+Type: ([string][52] \| [boolean][54] \| [Date][66] \| [Array][58]&lt;[string][52]>)
 
 ### THullAttributesChanges
 
@@ -349,33 +476,33 @@ Type: {}
 
 Connector (also called ship) object with settings, private settings and manifest.json
 
-Type: {id: [string][42], updated_at: [string][42], created_at: [string][42], name: [string][42], description: [string][42], tags: [Array][54]&lt;[string][42]>, manifest: [Object][41], settings: [Object][41], private_settings: [Object][41], status: [Object][41]}
+Type: {id: [string][52], updated_at: [string][52], created_at: [string][52], name: [string][52], description: [string][52], tags: [Array][58]&lt;[string][52]>, manifest: [Object][51], settings: [Object][51], private_settings: [Object][51], status: [Object][51]}
 
 **Properties**
 
--   `id` **[string][42]** 
--   `updated_at` **[string][42]** 
--   `created_at` **[string][42]** 
--   `name` **[string][42]** 
--   `description` **[string][42]** 
--   `tags` **[Array][54]&lt;[string][42]>** 
--   `manifest` **[Object][41]** 
--   `settings` **[Object][41]** 
--   `private_settings` **[Object][41]** 
--   `status` **[Object][41]** 
+-   `id` **[string][52]** 
+-   `updated_at` **[string][52]** 
+-   `created_at` **[string][52]** 
+-   `name` **[string][52]** 
+-   `description` **[string][52]** 
+-   `tags` **[Array][58]&lt;[string][52]>** 
+-   `manifest` **[Object][51]** 
+-   `settings` **[Object][51]** 
+-   `private_settings` **[Object][51]** 
+-   `status` **[Object][51]** 
 
 ### THullEvent
 
 Hull Event object
 
-Type: {id: [string][42], event: [string][42], context: [Object][41], properties: [Object][41]}
+Type: {id: [string][52], event: [string][52], context: [Object][51], properties: [Object][51]}
 
 **Properties**
 
--   `id` **[string][42]** 
--   `event` **[string][42]** 
--   `context` **[Object][41]** 
--   `properties` **[Object][41]** 
+-   `id` **[string][52]** 
+-   `event` **[string][52]** 
+-   `context` **[Object][51]** 
+-   `properties` **[Object][51]** 
 
 ### THullObjectAttributes
 
@@ -400,40 +527,40 @@ Type: (THullUser | THullAccount)
 Context added to the express app request by hull-node connector sdk.
 Accessible via `req.hull` param.
 
-Type: {config: [Object][41], token: [String][42], client: [Object][41], service: [Object][41], shipApp: [Object][41], segments: [Array][54]&lt;THullSegment>, ship: THullConnector, connector: THullConnector, hostname: [string][42], options: [Object][41], connectorConfig: [Object][41], metric: [Object][41], helpers: [Object][41], notification: [Object][41], message: [Object][41]?, smartNotifierResponse: [Object][41]?, enqueue: [Function][52]}
+Type: {config: [Object][51], token: [String][52], client: [Object][51], service: [Object][51], shipApp: [Object][51], segments: [Array][58]&lt;THullSegment>, ship: THullConnector, connector: THullConnector, hostname: [string][52], options: [Object][51], connectorConfig: [Object][51], metric: [Object][51], helpers: [Object][51], notification: [Object][51], message: [Object][51]?, smartNotifierResponse: [Object][51]?, enqueue: [Function][55]}
 
 **Properties**
 
--   `config` **[Object][41]** 
--   `token` **[String][42]** 
--   `client` **[Object][41]** 
--   `service` **[Object][41]** 
--   `shipApp` **[Object][41]** 
--   `segments` **[Array][54]&lt;THullSegment>** 
+-   `config` **[Object][51]** 
+-   `token` **[String][52]** 
+-   `client` **[Object][51]** 
+-   `service` **[Object][51]** 
+-   `shipApp` **[Object][51]** 
+-   `segments` **[Array][58]&lt;THullSegment>** 
 -   `ship` **THullConnector** 
 -   `connector` **THullConnector** 
--   `hostname` **[string][42]** 
--   `options` **[Object][41]** 
--   `connectorConfig` **[Object][41]** 
--   `metric` **[Object][41]** 
--   `helpers` **[Object][41]** 
--   `notification` **[Object][41]** 
--   `message` **[Object][41]?** 
--   `smartNotifierResponse` **[Object][41]?** 
--   `enqueue` **[Function][52]** 
+-   `hostname` **[string][52]** 
+-   `options` **[Object][51]** 
+-   `connectorConfig` **[Object][51]** 
+-   `metric` **[Object][51]** 
+-   `helpers` **[Object][51]** 
+-   `notification` **[Object][51]** 
+-   `message` **[Object][51]?** 
+-   `smartNotifierResponse` **[Object][51]?** 
+-   `enqueue` **[Function][55]** 
 
 ### THullSegment
 
 An object representing the Hull Segment
 
-Type: {id: [string][42], name: [string][42], stats: {users: [Number][43]}}
+Type: {id: [string][52], name: [string][52], stats: {users: [Number][53]}}
 
 **Properties**
 
--   `id` **[string][42]** 
--   `name` **[string][42]** 
--   `stats` **{users: [Number][43]}** 
--   `stats.users` **[Number][43]** 
+-   `id` **[string][52]** 
+-   `name` **[string][52]** 
+-   `stats` **{users: [Number][53]}** 
+-   `stats.users` **[Number][53]** 
 
 ### THullSegmentsChanges
 
@@ -441,12 +568,12 @@ Represents segment changes in TUserChanges.
 The object contains two params which mark which segments user left or entered.
 It may contain none, one or multiple THullSegment in both params.
 
-Type: {entered: [Array][54]&lt;THullSegment>, left: [Array][54]&lt;THullSegment>}
+Type: {entered: [Array][58]&lt;THullSegment>, left: [Array][58]&lt;THullSegment>}
 
 **Properties**
 
--   `entered` **[Array][54]&lt;THullSegment>** 
--   `left` **[Array][54]&lt;THullSegment>** 
+-   `entered` **[Array][58]&lt;THullSegment>** 
+-   `left` **[Array][58]&lt;THullSegment>** 
 
 ### THullUserAttributes
 
@@ -470,40 +597,40 @@ Type: {user: THullAttributesChanges, account: THullAttributesChanges, segments: 
 
 Object which is passed to \`hullClient.asUser(ident: THullUserIdent)``
 
-Type: {id: [string][42]?, email: [string][42]?, external_id: [string][42]?, anonymous_id: [string][42]?}
+Type: {id: [string][52]?, email: [string][52]?, external_id: [string][52]?, anonymous_id: [string][52]?}
 
 **Properties**
 
--   `id` **[string][42]?** 
--   `email` **[string][42]?** 
--   `external_id` **[string][42]?** 
--   `anonymous_id` **[string][42]?** 
+-   `id` **[string][52]?** 
+-   `email` **[string][52]?** 
+-   `external_id` **[string][52]?** 
+-   `anonymous_id` **[string][52]?** 
 
 ### THullUserUpdateMessage
 
 A message sent by the platform when any event, attribute (trait) or segment change happens.
 
-Type: {user: THullUser, changes: THullUserChanges, segments: [Array][54]&lt;THullSegment>, events: [Array][54]&lt;THullEvent>, account: THullAccount}
+Type: {user: THullUser, changes: THullUserChanges, segments: [Array][58]&lt;THullSegment>, events: [Array][58]&lt;THullEvent>, account: THullAccount}
 
 **Properties**
 
 -   `user` **THullUser** 
 -   `changes` **THullUserChanges** 
--   `segments` **[Array][54]&lt;THullSegment>** 
--   `events` **[Array][54]&lt;THullEvent>** 
+-   `segments` **[Array][58]&lt;THullSegment>** 
+-   `events` **[Array][58]&lt;THullEvent>** 
 -   `account` **THullAccount** 
 
 ### THullUser
 
 Main HullUser object with attributes (traits)
 
-Type: {id: [string][42], anonymous_id: [Array][54]&lt;[string][42]>, email: [string][42], account: {}}
+Type: {id: [string][52], anonymous_id: [Array][58]&lt;[string][52]>, email: [string][52], account: {}}
 
 **Properties**
 
--   `id` **[string][42]** 
--   `anonymous_id` **[Array][54]&lt;[string][42]>** 
--   `email` **[string][42]** 
+-   `id` **[string][52]** 
+-   `anonymous_id` **[Array][58]&lt;[string][52]>** 
+-   `email` **[string][52]** 
 -   `account` **{}** 
 
 ## Utils
@@ -524,13 +651,13 @@ NotifHandler is a packaged solution to receive User and Segment Notifications fr
 
 **Parameters**
 
--   `options` **[Object][41]** 
-    -   `options.handlers` **[Object][41]** [description]
-    -   `options.onSubscribe` **[Function][52]** [description]
-    -   `options.userHandlerOptions` **[Object][41]** [description]
-        -   `options.userHandlerOptions.maxSize` **[Object][41]** [description]
-        -   `options.userHandlerOptions.maxTime` **[Object][41]** [description]
-        -   `options.userHandlerOptions.segmentFilterSetting` **[Object][41]** [description]
+-   `options` **[Object][51]** 
+    -   `options.handlers` **[Object][51]** [description]
+    -   `options.onSubscribe` **[Function][55]** [description]
+    -   `options.userHandlerOptions` **[Object][51]** [description]
+        -   `options.userHandlerOptions.maxSize` **[Object][51]** [description]
+        -   `options.userHandlerOptions.maxTime` **[Object][51]** [description]
+        -   `options.userHandlerOptions.segmentFilterSetting` **[Object][51]** [description]
 
 **Examples**
 
@@ -569,11 +696,11 @@ connector.setupApp(app);
 app.use('/notify', handler);
 ```
 
-Returns **[Function][52]** expressjs router
+Returns **[Function][55]** expressjs router
 
 ### oAuthHandler
 
-OAuthHandler is a packaged authentication handler using [Passport][55]. You give it the right parameters, it handles the entire auth scenario for you.
+OAuthHandler is a packaged authentication handler using [Passport][67]. You give it the right parameters, it handles the entire auth scenario for you.
 
 It exposes hooks to check if the ship is Set up correctly, inject additional parameters during login, and save the returned settings during callback.
 
@@ -585,20 +712,20 @@ To make it working in Hull dashboard set following line in **manifest.json** fil
 }
 ```
 
-For example of the notifications payload [see details][56]
+For example of the notifications payload [see details][68]
 
 **Parameters**
 
--   `options` **[Object][41]** 
-    -   `options.name` **[string][42]** The name displayed to the User in the various screens.
-    -   `options.tokenInUrl` **[boolean][44]** Some services (like Stripe) require an exact URL match. Some others (like Hubspot) don't pass the state back on the other hand. Setting this flag to false (default: true) removes the `token` Querystring parameter in the URL to only rely on the `state` param.
-    -   `options.isSetup` **[Function][52]** A method returning a Promise, resolved if the ship is correctly setup, or rejected if it needs to display the Login screen.
+-   `options` **[Object][51]** 
+    -   `options.name` **[string][52]** The name displayed to the User in the various screens.
+    -   `options.tokenInUrl` **[boolean][54]** Some services (like Stripe) require an exact URL match. Some others (like Hubspot) don't pass the state back on the other hand. Setting this flag to false (default: true) removes the `token` Querystring parameter in the URL to only rely on the `state` param.
+    -   `options.isSetup` **[Function][55]** A method returning a Promise, resolved if the ship is correctly setup, or rejected if it needs to display the Login screen.
         Lets you define in the Ship the name of the parameters you need to check for. You can return parameters in the Promise resolve and reject methods, that will be passed to the view. This lets you display status and show buttons and more to the customer
-    -   `options.onAuthorize` **[Function][52]** A method returning a Promise, resolved when complete. Best used to save tokens and continue the sequence once saved.
-    -   `options.onLogin` **[Function][52]** A method returning a Promise, resolved when ready. Best used to process form parameters, and place them in `req.authParams` to be submitted to the Login sequence. Useful to add strategy-specific parameters, such as a portal ID for Hubspot for instance.
-    -   `options.Strategy` **[Function][52]** A Passport Strategy.
-    -   `options.views` **[Object][41]** Required, A hash of view files for the different screens: login, home, failure, success
-    -   `options.options` **[Object][41]** Hash passed to Passport to configure the OAuth Strategy. (See [Passport OAuth Configuration][57])
+    -   `options.onAuthorize` **[Function][55]** A method returning a Promise, resolved when complete. Best used to save tokens and continue the sequence once saved.
+    -   `options.onLogin` **[Function][55]** A method returning a Promise, resolved when ready. Best used to process form parameters, and place them in `req.authParams` to be submitted to the Login sequence. Useful to add strategy-specific parameters, such as a portal ID for Hubspot for instance.
+    -   `options.Strategy` **[Function][55]** A Passport Strategy.
+    -   `options.views` **[Object][51]** Required, A hash of view files for the different screens: login, home, failure, success
+    -   `options.options` **[Object][51]** Hash passed to Passport to configure the OAuth Strategy. (See [Passport OAuth Configuration][69])
 
 **Examples**
 
@@ -661,7 +788,7 @@ app.use(
 }
 ```
 
-Returns **[Function][52]** OAuth handler to use with expressjs
+Returns **[Function][55]** OAuth handler to use with expressjs
 
 ### smartNotifierHandler
 
@@ -684,9 +811,9 @@ When performing operations on notification you can set FlowControl settings usin
 
 **Parameters**
 
--   `options` **[Object][41]** [description]
-    -   `options.handlers` **[Object][41]** [description]
-    -   `options.userHandlerOptions` **[Object][41]** [description]
+-   `options` **[Object][51]** [description]
+    -   `options.handlers` **[Object][51]** [description]
+    -   `options.userHandlerOptions` **[Object][51]** [description]
 
 **Examples**
 
@@ -748,9 +875,9 @@ Every connector ServiceClient should apply it's own error handling strategy by o
 
 **Parameters**
 
--   `options` **[Object][41]**  (optional, default `{}`)
-    -   `options.retries` **[Number][43]?** Number of retries
-    -   `options.timeout` **[Number][43]?** Timeout for request
+-   `options` **[Object][51]**  (optional, default `{}`)
+    -   `options.retries` **[Number][53]?** Number of retries
+    -   `options.timeout` **[Number][53]?** Timeout for request
 
 **Examples**
 
@@ -772,7 +899,7 @@ superagent.get("http://test/test")
   })
 ```
 
-Returns **[Function][52]** function to use as superagent plugin
+Returns **[Function][55]** function to use as superagent plugin
 
 ### superagentUnstrumentationPluginFactory
 
@@ -789,9 +916,9 @@ The plugin also issue a metric with the same name `ship.service_api.request`.
 
 **Parameters**
 
--   `options` **[Object][41]** 
-    -   `options.logger` **[Object][41]** Logger from HullClient
-    -   `options.metric` **[Object][41]** Metric from Hull.Connector
+-   `options` **[Object][51]** 
+    -   `options.logger` **[Object][51]** Logger from HullClient
+    -   `options.metric` **[Object][51]** Metric from Hull.Connector
 
 **Examples**
 
@@ -842,7 +969,7 @@ connector.service_api.call {
 ```
 ````
 
-Returns **[Function][52]** function to use as superagent plugin
+Returns **[Function][55]** function to use as superagent plugin
 
 ### superagentUrlTemplatePluginFactory
 
@@ -850,7 +977,7 @@ This plugin allows to pass generic url with variables - this allows better instr
 
 **Parameters**
 
--   `defaults` **[Object][41]** default template variable (optional, default `{}`)
+-   `defaults` **[Object][51]** default template variable (optional, default `{}`)
 
 **Examples**
 
@@ -874,7 +1001,7 @@ agent
 });
 ```
 
-Returns **[Function][52]** function to use as superagent plugin
+Returns **[Function][55]** function to use as superagent plugin
 
 [1]: #hullconnector
 
@@ -884,108 +1011,132 @@ Returns **[Function][52]** function to use as superagent plugin
 
 [4]: #helpers
 
-[5]: #exports
+[5]: #handleextract
 
-[6]: #exports-1
+[6]: #requestextract
 
-[7]: #context
+[7]: #updatesettings
 
-[8]: #enqueue
+[8]: #context
 
-[9]: #infra
+[9]: #cache
 
-[10]: #cache
+[10]: #wrap
 
-[11]: #instrumentationagent
+[11]: #set
 
-[12]: #queueagent
+[12]: #get
 
-[13]: #hullmiddleware
+[13]: #del
 
-[14]: #types
+[14]: #metric
 
-[15]: #thullaccountattributes
+[15]: #value
 
-[16]: #thullaccountident
+[16]: #increment
 
-[17]: #thullaccount
+[17]: #event
 
-[18]: #thullattributename
+[18]: #enqueue
 
-[19]: #thullattributevalue
+[19]: #infra
 
-[20]: #thullattributeschanges
+[20]: #cacheagent
 
-[21]: #thullconnector
+[21]: #instrumentationagent
 
-[22]: #thullevent
+[22]: #queueagent
 
-[23]: #thullobjectattributes
+[23]: #hullmiddleware
 
-[24]: #thullobjectident
+[24]: #types
 
-[25]: #thullobject
+[25]: #thullaccountattributes
 
-[26]: #thullreqcontext
+[26]: #thullaccountident
 
-[27]: #thullsegment
+[27]: #thullaccount
 
-[28]: #thullsegmentschanges
+[28]: #thullattributename
 
-[29]: #thulluserattributes
+[29]: #thullattributevalue
 
-[30]: #thulluserchanges
+[30]: #thullattributeschanges
 
-[31]: #thulluserident
+[31]: #thullconnector
 
-[32]: #thulluserupdatemessage
+[32]: #thullevent
 
-[33]: #thulluser
+[33]: #thullobjectattributes
 
-[34]: #utils
+[34]: #thullobjectident
 
-[35]: #notifhandler
+[35]: #thullobject
 
-[36]: #oauthhandler
+[36]: #thullreqcontext
 
-[37]: #smartnotifierhandler
+[37]: #thullsegment
 
-[38]: #superagenterrorplugin
+[38]: #thullsegmentschanges
 
-[39]: #superagentunstrumentationpluginfactory
+[39]: #thulluserattributes
 
-[40]: #superagenturltemplatepluginfactory
+[40]: #thulluserchanges
 
-[41]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object
+[41]: #thulluserident
 
-[42]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String
+[42]: #thulluserupdatemessage
 
-[43]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number
+[43]: #thulluser
 
-[44]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Boolean
+[44]: #utils
 
-[45]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Promise
+[45]: #notifhandler
 
-[46]: https://github.com/BryanDonovan/node-cache-manager
+[46]: #oauthhandler
 
-[47]: https://github.com/Automattic/kue
+[47]: #smartnotifierhandler
 
-[48]: https://github.com/OptimalBits/bull
+[48]: #superagenterrorplugin
 
-[49]: https://github.com/Automattic/kue#redis-connection-settings
+[49]: #superagentunstrumentationpluginfactory
 
-[50]: https://github.com/OptimalBits/bull/blob/master/REFERENCE.md#queue
+[50]: #superagenturltemplatepluginfactory
 
-[51]: https://github.com/hull/hull-client-node
+[51]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object
 
-[52]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Statements/function
+[52]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String
 
-[53]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Date
+[53]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number
 
-[54]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array
+[54]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Boolean
 
-[55]: http://passportjs.org/
+[55]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Statements/function
 
-[56]: ./notifications.md
+[56]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Promise
 
-[57]: http://passportjs.org/docs/oauth
+[57]: https://github.com/BryanDonovan/node-cache-manager#overview
+
+[58]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array
+
+[59]: #context
+
+[60]: https://github.com/BryanDonovan/node-cache-manager
+
+[61]: https://github.com/Automattic/kue
+
+[62]: https://github.com/OptimalBits/bull
+
+[63]: https://github.com/Automattic/kue#redis-connection-settings
+
+[64]: https://github.com/OptimalBits/bull/blob/master/REFERENCE.md#queue
+
+[65]: https://github.com/hull/hull-client-node
+
+[66]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Date
+
+[67]: http://passportjs.org/
+
+[68]: ./notifications.md
+
+[69]: http://passportjs.org/docs/oauth

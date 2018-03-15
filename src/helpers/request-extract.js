@@ -6,6 +6,7 @@ const _ = require("lodash");
  * This is a method to request an extract of user base to be sent back to the Connector to a selected `path` which should be handled by `notifHandler`.
  *
  * @public
+ * @name requestExtract
  * @memberof Helpers
  * @param {Object}   ctx Hull request context
  * @param {Object} [options={}]

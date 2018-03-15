@@ -24,7 +24,7 @@ const connector = new Hull.Connector({ configuration });
 
 A complete toolkit to operate with Hull Client in request handlers. Includes Hull Middleware and a set of official patterns to build highly scalable and efficient Connectors
 
-![hull node core components](/assets/docs/hull-node-components.png)
+![hull node core components](/docs/assets/hull-node-components.png)
 
 ---
 
@@ -45,7 +45,7 @@ app.post("/show-segments", (req, res) => {
 });
 ```
 
-This middleware standardizes the instantiation of a [Hull Client](https://github.com/hull/hull-client-node) in the context of authorized HTTP request. It also fetches the entire ship's configuration. As a result it's responsible for creating Base part of [Context Object](#basecontext).
+This middleware standardizes the instantiation of a [Hull Client](https://github.com/hull/hull-client-node) in the context of authorized HTTP request. It also fetches the entire ship's configuration. As a result it's responsible for creating Base part of [Context Object](#base-context).
 
 For configuration details refer to [API REFERENCE](./API.md#hullmiddleware)
 
@@ -98,7 +98,7 @@ connector.startApp(app, port); // internally calls app.listen
 
 Setup Helpers are two high-level methods exposed by initialized Connector instance to apply custom middlewares to the Express application. Those middlewares enrich the application with connector features.
 
-To get more details on how they work please refere [API REFERENCE](./API.md#setupApp)
+To get more details on how they work please refere [API REFERENCE](./API.md#setupapp)
 
 ---
 
@@ -180,25 +180,28 @@ Hash with connector settings, details [here](#hullconnector)
 ```json
 [
   {
-    name: "Segment name",
-    id: "123abc"
+    "name": "Segment name",
+    "id": "123abc"
   }
 ]
 ```
 
-An array of segments defined at the organization, it's being automatically exposed to the context object
+An array of segments defined at the organization, it's being automatically exposed to the context object.
+The segment flow type is specified [here](/API.md#thullsegment).
 
 ### **cache**
 
+Since every connector can possibly work on high volumes of data performing and handling big number of requests. Internally the cache is picked by the `Hull Middleware` to store the `ship object` and by `segmentsMiddleware` to store `segments list`. The cache can be also used for other purposes, e.g. for minimizing the External API calls. `Caching Module` is exposing three public methods:
+
 ```javascript
-ctx.cache.get('object_name');
-ctx.cache.set('object_name', object_value);
-ctx.cache.wrap('object_name', () => {
-  return Promise.resolve(object_value);
+ctx.cache.get("object_name");
+ctx.cache.set("object_name", objectValue);
+ctx.cache.wrap("object_name", (objectValue) => {
+  return Promise.resolve(objectValue);
 });
 ```
 
-Since every connector can possibly work on high volumes of data performing and handling big number of requests. Internally the cache is picked by the `Hull Middleware` to store the `ship object` and by `segmentsMiddleware` to store `segments list`. The cache can be also used for other purposes, e.g. for minimizing the External API calls. `Caching Module` is exposing three public methods:
+[Full API reference](./API.md#cache)
 
 ### **enqueue**
 
@@ -212,9 +215,11 @@ A function added to context by `Queue Module`. It allows to perform tasks in an 
 - split the workload into smaller chunks (e.g. for extract parsing)
 - control the concurrency - most of the SERVICE APIs have rate limits
 
-- **options.queueName** - when you start worker with a different queue name, you can explicitly set it here to queue specific jobs to that queue
+[Full API reference](./API.md#enqueue)
 
 ### **metric**
+
+An object added to context by `Instrumentation Module`. It allows to send data to metrics service. It's being initiated in the right context, and expose following methods:
 
 ```javascript
 req.hull.metric.value("metricName", metricValue = 1);
@@ -222,19 +227,15 @@ req.hull.metric.increment("metricName", incrementValue = 1); // increments the m
 req.hull.metric.event("eventName", { text = "", properties = {} });
 ```
 
-An object added to context by `Instrumentation Module`. It allows to send data to metrics service. It's being initiated in the right context, and expose following methods:
+[Full API reference](./API.md#metric)
 
 ### **helpers**
 
-```javascript
-req.hull.helpers.filterUserSegments();
-req.hull.helpers.requestExtract();
-req.hull.helpers.setUserSegments();
-```
-
-A set of functions from `connector/helpers` bound to current Context Object. More details [here](#helpers).
+A set of functions from `connector/helpers` bound to current Context Object. All helpers are listed in [API REFERENCE](./API.md#helpers)
 
 ### **service**
+
+A namespace reserved for connector developer to inject a custom logic. When the connector base code evolves, the best technique to keep it maintainable is to split it into a set of functions or classes. To make it even simpler and straightforward the connector toolkit uses [one convention](#context) to pass the context into the functions and classes. The `service` namespace is reserved for the purpose and should be used together with `use` method on connector instance to apply custom middleware. That should be an object with custom structure adjusted to specific connector needs and scale:
 
 ```javascript
 connector.use((req, res, next) => {
@@ -255,9 +256,11 @@ app.get('/action', (req, res) => {
 });
 ```
 
-A namespace reserved for connector developer to inject a custom logic. When the connector base code evolves, the best technique to keep it maintainable is to split it into a set of functions or classes. To make it even simpler and straightforward the connector toolkit uses [one convention](#context) to pass the context into the functions and classes. The `service` namespace is reserved for the purpose and should be used together with `use` method on connector instance to apply custom middleware. That should be an object with custom structure adjusted to specific connector needs and scale:
-
 ### **message**
+
+Optional - set if there is a sns message incoming.
+
+It contains the raw, message object - should not be used directly by the connector, `req.hull.notification` is added for that purpose.
 
 ```javascript
 Type: "Notification",
@@ -265,11 +268,9 @@ Subject: "user_report:update",
 Message: "{\"user\":{}}"
 ```
 
-> Optional - set if there is a sns message incoming.
-
-It contains the raw, message object - should not be used directly by the connector, `req.hull.notification` is added for that purpose.
-
 ### **notification**
+
+Optional - if the incoming message type if `Notification`, then the messaged is parsed and set to notification.
 
 ```javascript
 subject: "user_report:update",
@@ -277,9 +278,9 @@ timestamp: new Date(message.Timestamp),
 paload: { user: {} }
 ```
 
-> Optional - if the incoming message type if `Notification`, then the messaged is parsed and set to notification.
-
 ### **smartNotifierResponse**
+
+Use setFlowControl to instruct the Smart notifier how to handle backpressure.
 
 ```javascript
 ctx.smartNotifierResponse.setFlowControl({
@@ -288,9 +289,6 @@ ctx.smartNotifierResponse.setFlowControl({
   in: 5000
 });
 ```
-
-> use setFlowControl to instruct the Smart notifier how to handle backpressure.
-
 
 ## Configuration resolve strategy
 
@@ -333,14 +331,16 @@ function getProperties(context, prop) {
 }
 ```
 
-> This allow binding functions to the context and using bound version
+This allow binding functions to the context and using bound version
 
 ```javascript
 const getProp = getProperties.bind(null, context);
 getProp('test') === getProperties(context, 'test');
 ```
 
-> In case of a class the context is the one and only argument:
+### Classes
+
+In case of a class the context is the one and only argument:
 
 ```javascript
 class ServiceAgent {
@@ -350,21 +350,25 @@ class ServiceAgent {
 }
 ```
 
+All functions and classes listen in [API reference](./API.md) which take `Context` as first argument and are exposed in the `Context` object will be bound so one don't need to provide the first argument when using them.
+
 ---
 
 ## Helpers
 
-```javascript
-import { updateSettings } from 'hull/lib/helpers';
+Helpers are just a set of simple functions which take [Context Object](context.md) as a first argument. When being initialized by `Hull.Middleware` their are all bound to the proper object, but the functions can be also used in a standalone manner:
 
-app.post('/request', (req, res) => {
+```javascript
+const { updateSettings } = require("hull/lib/helpers");
+
+app.post("/request", (req, res) => {
   updateSettings(req.hull, { called: true });
   // or:
   req.hull.helpers.updateSettings({ called: true });
 });
 ```
 
-Helpers are just a set of simple functions which take [Context Object](context.md) as a first argument. When being initialized by `Hull.Middleware` their are all bound to the proper object, but the functions can be also used in a standalone manner:
+All helpers are listed in [API REFERENCE](./API.md#helpers)
 
 ---
 
@@ -377,7 +381,7 @@ The connector internally uses infrastructure modules to support its operation:
 - Cache (for caching ship object and segment lists)
 - Batcher (for internal incoming traffing grouping)
 
-[Read more](#infrastructure) how configure them.
+[Read more](./API.md#infra) how configure them.
 
 **Handling the process shutdown**
 
@@ -420,7 +424,11 @@ connector.startWorker((queueName = 'queueApp'));
 
 In addition to the [Connector toolkit](connector.md) the library provides a variety of the utilities to perform most common actions of the ship. Following list of handlers and middleware helps in performing most common connector operations.
 
-## Superagent plugins
+All list of utilities are available [here](./API.md#utils)
+
+### SmartNotifierHandler
+
+### Superagent plugins
 
 Hull Node promotes using [SuperAgent](http://visionmedia.github.io/superagent/) as a core HTTP client. We provide two plugins to add more instrumentation over the requests.
 
@@ -487,6 +495,8 @@ In addition to let the `user:update` handler detect whether it is processing a b
 
 ## Flow annotations
 
+When using a [flow](https://flow.org) enabled project, we recommend using flow types provided by hull-node. You can import them in your source files directly from `hull` module and use `import type` flow structure:
+
 ```javascript
 /* @flow */
 import type { THullObject } from "hull";
@@ -496,6 +506,4 @@ parseHullObject(user: THullObject) {
 }
 ```
 
-> See `src/lib/types` directory for a full list of available types.
-
-When using a [flow](https://flow.org) enabled project, we recommend using flow types provided by hull-node. You can import them in your source files directly from `hull` module and use `import type` flow structure:
+See [API REFERENCE](./API.md#types) or `src/lib/types` directory for a full list of available types.

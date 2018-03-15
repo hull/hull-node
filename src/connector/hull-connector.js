@@ -10,13 +10,17 @@ const { TransientError } = require("../errors");
 
 /**
  * @public
- * @param {HullClient} HullClient
- * @param {Object} [options={}]
- * @param {string} [options.hostSecret]
- * @param {Number|string} [options.port]
- * @param {Object} [options.clientConfig]
- * @param {boolean} [options.skipSignatureValidation]
- * @param {Number} [options.timeout]
+ * @param {HullClient}    HullClient
+ * @param {Object}        [options={}]
+ * @param {string}        [options.connectorName] force connector name - if not provided will be taken from manifest.json
+ * @param {string}        [options.hostSecret] secret to sign req.hull.token
+ * @param {Number|string} [options.port] port on which expressjs application should be started
+ * @param {Object}        [options.clientConfig] additional `HullClient` configuration
+ * @param {boolean}       [options.skipSignatureValidation] skip signature validation on notifications (for testing only)
+ * @param {number|string} [options.timeout] global HTTP server timeout
+ * @param {Object}        [options.instrumentation] override default InstrumentationAgent
+ * @param {Object}        [options.cache] override default CacheAgent
+ * @param {Object}        [options.queue] override default QueueAgent
  */
 class HullConnector {
   constructor(HullClient, {

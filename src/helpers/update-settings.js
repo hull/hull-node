@@ -1,11 +1,9 @@
 /**
- * Allows to update selected settings of the ship `private_settings` object. This is a wrapper over `hull.utils.settings.update()` call. On top of that it makes sure that the current context ship object is updated, and the ship cache is refreshed.
- *
- * Updates `private_settings`, touching only provided settings.
- * Also clears the `shipCache`.
- * `hullClient.put` will emit `ship:update` notify event.
+ * Allows to update selected settings of the ship `private_settings` object. This is a wrapper over `hullClient.utils.settings.update()` call. On top of that it makes sure that the current context ship object is updated, and the ship cache is refreshed.
+ * It will emit `ship:update` notify event.
  *
  * @public
+ * @name updateSettings
  * @memberof Helpers
  * @param {Object} ctx The Context Object
  * @param  {Object} newSettings settings to update
