@@ -38,7 +38,7 @@
     "bluebird": "^3.4.7",
     "body-parser": "^1.15.2",
     "bull": "^3.0.0-rc.3",
-    "cache-manager": "^2.1.2",
+    "cache-manager": "2.6.0",
     "connect": "^3.4.1",
     "connect-timeout": "^1.8.0",
     "csv-stream": "^0.1.3",

@@ -31,14 +31,15 @@ module.exports = function handleExtractFactory({ handlers, options }) {
             entities = entities.map(u => client.utils.traits.group(u));
           }
 
-          const segmentsList = req.hull[`${entityType}s_segments`];
+          const segmentsList = req.hull[`${entityType}s_segments`].map(s => _.pick(s, ["id", "name", "type", "created_at", "updated_at"]));
+          const entitySegmentsKey = entityType === "user" ? "segments" : "account_segments";
           const messages = entities.map((entity) => {
             const segmentIds = _.compact(
               _.uniq(_.concat(entity.segment_ids || [], [segmentId]))
             );
             const message = {
-              [entityType]: entity,
-              segments: _.compact(
+              [entityType]: _.omit(entity, "segment_ids"),
+              [entitySegmentsKey]: _.compact(
                 segmentIds.map(id => _.find(segmentsList, { id }))
               )
             };
