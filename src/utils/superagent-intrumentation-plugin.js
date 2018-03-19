@@ -11,6 +11,7 @@
  *
  * @public
  * @memberof Utils
+ * @name superagentInstrumentationPlugin
  * @param  {Object}   options
  * @param  {Object}   options.logger Logger from HullClient
  * @param  {Object}   options.metric Metric from Hull.Connector
@@ -61,7 +62,7 @@
  * - `connector.service_api.responseTime`
  * ```
  */
-function superagentUnstrumentationPluginFactory({ logger, metric }) {
+function superagentInstrumentationPluginFactory({ logger, metric }) {
   return function superagentInstrumentationPlugin(request) {
     const url = request.url;
     const method = request.method;

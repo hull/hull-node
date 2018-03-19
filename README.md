@@ -148,7 +148,7 @@ Here is the base structure of the Context Object (we also provide Flow type for 
 }
 ```
 
-## Base Context
+## Base Context - set by Hull.Middleware
 
 ### **requestId**
 
@@ -185,11 +185,11 @@ Hostname of the current request. Since the connector are stateless services this
 
 Is the object including data from `query` and `body` of the request
 
-## Extended Context
+## Extended Context - set by `Hull.Connector`
 
 ### **connectorConfig**
 
-Hash with connector settings, details [here](#hullconnector)
+Hash with connector settings, details in Hull.Connector [constructor reference](./API.md#hullconnector).
 
 ### **segments**
 
@@ -221,8 +221,10 @@ ctx.cache.wrap("object_name", (objectValue) => {
 
 ### **enqueue**
 
+**This is generally a deprecated idea and should not be implemented in new connectors. Fluent flow control should be used instead.**
+
 ```javascript
-req.hull.enqueue('jobName', { user: [] }, (options = {}));
+req.hull.enqueue("jobName", { user: [] }, options = {});
 ```
 
 A function added to context by `Queue Module`. It allows to perform tasks in an async manner. The queue is processed in background in a sequential way, it allows to:
@@ -247,7 +249,22 @@ An object added to context by the `Instrumentation Module`. It allows to send da
 
 ### **helpers**
 
-A set of functions from `connector/helpers` directory bound to current Context Object. All helpers are listed in [API REFERENCE](./API.md#helpers)
+Helpers are just a set of simple functions added to the Context Object which make common operation easier to perform. They all follow [context management convention](#context-management-convention) but the functions can be also used in a standalone manner:
+
+```javascript
+const { updateSettings } = require("hull/lib/helpers");
+
+app.post("/request", (req, res) => {
+  updateSettings(req.hull, { called: true });
+  // or:
+  req.hull.helpers.updateSettings({ called: true });
+});
+```
+
+
+Beside of connector setting updating, they also simplify working with [outgoing extracts](#batch-extracts).
+
+All helpers are listed in [API REFERENCE](./API.md#helpers)
 
 ### **service**
 
@@ -373,30 +390,11 @@ All functions and classes listed in [API reference](./API.md) and available in t
 
 ---
 
-## Helpers
-
-Helpers are just a set of simple functions added to the Context Object which make common operation easier to perform. They all follow [context management convention](#context-management-convention) but the functions can be also used in a standalone manner:
-
-```javascript
-const { updateSettings } = require("hull/lib/helpers");
-
-app.post("/request", (req, res) => {
-  updateSettings(req.hull, { called: true });
-  // or:
-  req.hull.helpers.updateSettings({ called: true });
-});
-```
-
-
-Beside of connector setting updating, they also siplify working with [outgoing extracts](#batch-extracts). All helpers are listed in [API REFERENCE](./API.md#helpers)
-
----
-
 # Incoming data flow
 
-To get data into platform we need to use `traits` or `track` methods from HullClient (see details [here](https://github.com/hull/hull-client-node/#methods-for-user-or-account-scoped-instance)). When using HullConnector we have the client initialized in the correct context so we can use it right away.
+To get data into platform we need to use `traits` or `track` methods from `HullClient` (see details [here](https://github.com/hull/hull-client-node/#methods-for-user-or-account-scoped-instance)). When using `Hull.Connector` we have the client initialized in the correct context so we can use it right away.
 
-Let's write a simple possible HTTP endpoint on the connector to fetch some users:
+Let's write the simplest possible HTTP endpoint on the connector to fetch some users:
 
 ```javascript
 const app = express();
@@ -499,8 +497,9 @@ Inside the handler you can use any object from the [Context Object](#context-obj
 
 Full information on `smartNotifierHandler` is available in [API REFERENCE](./API.md#smartnotifierhandler).
 
-
 ### FlowControl
+
+`Smart-notifier` generation of notifications delivery allows us to setup `flow control ` which define pace at which connector will be called with new messages:
 
 ```javascript
 ctx.smartNotifierResponse.setFlowControl({
@@ -524,7 +523,7 @@ FlowControl is an element of the `SmartNotifierResponse`. When the HTTP response
 }
 ```
 
-> The Defaults are the following:
+The Defaults are the following:
 
 ```javascript
 // for a resolved, successful promise:
@@ -575,34 +574,48 @@ In addition to let the `user:update` handler detect whether it is processing a b
 
 ---
 
+# Installation & Authorization
+
+First step of connector installation is done automatically by the platform and the only needed part from connector end is manifest.json file.
+
+However typically after the installation we want that the connector is authorized with the 3rd party API.
+
+Hull Node comes with packaged authentication handler using Passport - the utility is called oAuthHandler and you can find documentation [here](./API.md#oauthhandler).
+
+---
+
 # Utilities
 
-In addition to the [Connector toolkit](connector.md) the library provides a variety of the utilities to perform most common actions of the ship. Following list of handlers and middleware helps in performing most common connector operations.
+Beside of `Hull.Connector` class and `Context Object` all other public API elements of this library is exposed as `Utils` which are standalone functions to be picked one-by-one and used in custom connector code.
 
-All list of utilities are available [here](./API.md#utils)
+List of all utilities are available [here](./API.md#utils)
 
 ## Superagent plugins
 
 Hull Node promotes using [SuperAgent](http://visionmedia.github.io/superagent/) as a core HTTP client. We provide two plugins to add more instrumentation over the requests.
 
+- [superagentErrorPlugin](./API.md#superagenterrorplugin)
+- [superagentInstrumentationPlugin](./API.md#superagentinstrumentationplugin)
+- [superagentUrlTemplatePlugin](./API.md#superagenturltemplateplugin)
+
 ---
 
 # Infrastructure
 
-The connector internally uses infrastructure modules to support its operation on application process level:
+The connector internally uses infrastructure modules to support its operation on application process level and provide some of the [Context Object](#context-object) elements like `cache`, `metric` and `enqueue`. See following API REFERENCE docs to see what is the default behavior and how to change it:
 
-- Instrumentation (for gathering metrics)
-- Cache (for caching ship object, segment lists and custom elements)
-- Queue (for internal queueing purposes)
+- [Instrumentation](./API.md#instrumentationagent) (for gathering metrics)
+- [Cache](./API.md#cacheagent) (for caching ship object, segment lists and custom elements)
+- [Queue](./API.md#queueagent) (for internal queueing purposes)
 - Batcher (for internal incoming traffing grouping)
-
-[Read more](./API.md#infra) how configure them.
 
 ---
 
 # Worker
 
-More complex connectors usually need a background worker to split its operation into smaller tasks to spread the workload:
+More complex connectors usually need a background worker to split its operation into smaller tasks to spread the workload.
+
+**This is generally a deprecated idea and should not be implemented in new connectors. Fluent flow control should be used instead.**
 
 ```javascript
 const express = require("express");

@@ -50,8 +50,8 @@
     -   [oAuthHandler][46]
     -   [smartNotifierHandler][47]
     -   [superagentErrorPlugin][48]
-    -   [superagentUnstrumentationPluginFactory][49]
-    -   [superagentUrlTemplatePluginFactory][50]
+    -   [superagentInstrumentationPlugin][49]
+    -   [superagentUrlTemplatePlugin][50]
 
 ## HullConnector
 
@@ -903,7 +903,7 @@ superagent.get("http://test/test")
 
 Returns **[Function][55]** function to use as superagent plugin
 
-### superagentUnstrumentationPluginFactory
+### superagentInstrumentationPlugin
 
 This plugin takes `client.logger` and `metric` params from the `Context Object` and logs following log line:
 
@@ -973,13 +973,13 @@ connector.service_api.call {
 
 Returns **[Function][55]** function to use as superagent plugin
 
-### superagentUrlTemplatePluginFactory
+### superagentUrlTemplatePlugin
 
 This plugin allows to pass generic url with variables - this allows better instrumentation and logging on the same REST API endpoint when resource ids varies.
 
 **Parameters**
 
--   `defaults` **[Object][51]** default template variable (optional, default `{}`)
+-   `defaults` **[Object][51]** default template variable
 
 **Examples**
 
@@ -1101,9 +1101,9 @@ Returns **[Function][55]** function to use as superagent plugin
 
 [48]: #superagenterrorplugin
 
-[49]: #superagentunstrumentationpluginfactory
+[49]: #superagentinstrumentationplugin
 
-[50]: #superagenturltemplatepluginfactory
+[50]: #superagenturltemplateplugin
 
 [51]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object
 

@@ -4,6 +4,7 @@ const _ = require("lodash");
  * This plugin allows to pass generic url with variables - this allows better instrumentation and logging on the same REST API endpoint when resource ids varies.
  *
  * @public
+ * @name superagentUrlTemplatePlugin
  * @memberof Utils
  * @param  {Object} defaults default template variable
  * @return {Function} function to use as superagent plugin
