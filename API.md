@@ -527,27 +527,29 @@ Type: (THullUser | THullAccount)
 Context added to the express app request by hull-node connector sdk.
 Accessible via `req.hull` param.
 
-Type: {config: [Object][51], token: [String][52], client: [Object][51], service: [Object][51], shipApp: [Object][51], segments: [Array][58]&lt;THullSegment>, ship: THullConnector, connector: THullConnector, hostname: [string][52], options: [Object][51], connectorConfig: [Object][51], metric: [Object][51], helpers: [Object][51], notification: [Object][51], message: [Object][51]?, smartNotifierResponse: [Object][51]?, enqueue: [Function][55]}
+Type: {requestId: [string][52], config: [Object][51], token: [string][52], client: [Object][51], ship: THullConnector, connector: THullConnector, hostname: [string][52], options: [Object][51], connectorConfig: [Object][51], segments: [Array][58]&lt;THullSegment>, cache: [Object][51], metric: [Object][51], enqueue: [Function][55], helpers: [Object][51], service: [Object][51], shipApp: [Object][51], message: [Object][51]?, notification: [Object][51], smartNotifierResponse: [Object][51]?}
 
 **Properties**
 
+-   `requestId` **[string][52]** 
 -   `config` **[Object][51]** 
--   `token` **[String][52]** 
+-   `token` **[string][52]** 
 -   `client` **[Object][51]** 
--   `service` **[Object][51]** 
--   `shipApp` **[Object][51]** 
--   `segments` **[Array][58]&lt;THullSegment>** 
 -   `ship` **THullConnector** 
 -   `connector` **THullConnector** 
 -   `hostname` **[string][52]** 
 -   `options` **[Object][51]** 
 -   `connectorConfig` **[Object][51]** 
+-   `segments` **[Array][58]&lt;THullSegment>** 
+-   `cache` **[Object][51]** 
 -   `metric` **[Object][51]** 
--   `helpers` **[Object][51]** 
--   `notification` **[Object][51]** 
--   `message` **[Object][51]?** 
--   `smartNotifierResponse` **[Object][51]?** 
 -   `enqueue` **[Function][55]** 
+-   `helpers` **[Object][51]** 
+-   `service` **[Object][51]** 
+-   `shipApp` **[Object][51]** 
+-   `message` **[Object][51]?** 
+-   `notification` **[Object][51]** 
+-   `smartNotifierResponse` **[Object][51]?** 
 
 ### THullSegment
 
