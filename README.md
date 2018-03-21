@@ -392,7 +392,7 @@ All functions and classes listed in [API reference](./API.md) and available in t
 
 # Incoming data flow
 
-To get data into platform we need to use `traits` or `track` methods from `HullClient` (see details [here](https://github.com/hull/hull-client-node/#methods-for-user-or-account-scoped-instance)). When using `Hull.Connector` we have the client initialized in the correct context so we can use it right away.
+To get data into platform we need to use `traits` or `track` methods from `HullClient` (see details [here](https://github.com/hull/hull-client-node/#methods-for-user-or-account-scoped-instance)). When using `Hull.Connector` we have the client initialized in the correct context so we can use it right away in side any HTTP request handler.
 
 Let's write the simplest possible HTTP endpoint on the connector to fetch some users:
 
@@ -402,7 +402,7 @@ const connector = new Hull.Connector();
 
 connector.setupApp(app);
 
-app.get("/fetch-all-users", (req, res) => {
+app.get("/fetch-users", (req, res) => {
   const ctx = req.hull;
   const { api_key } = ctx.ship.private_settings;
 
@@ -441,7 +441,7 @@ If you want to run specific endpoint with a selected interval you can use `sched
 }
 ```
 
-The implementation of the `/fetch-users` is very same as above `/fetch-all-users` just apply `setupApp` and `startApp` methods and you have full context available.
+This way selected connector endpoint would be run at every 5th minute.
 
 ---
 
@@ -655,3 +655,113 @@ parseHullObject(user: THullObject) {
 ```
 
 See [API REFERENCE](./API.md#types) or `src/lib/types` directory for a full list of available types.
+
+---
+
+# Error handling
+
+
+## Unhandled error
+
+context | behavior
+--- | ---
+smart-notifier response | retry
+other endpoints | error
+status code | 500
+sentry | yes
+datadog | no
+
+```javascript
+
+app.use("/smart-notifier-handler", smartNotifierHandler({
+  handlers: {
+    "user:update": (ctx, messages) => {
+      return Promise.reject(new Error("Error message"));
+      // or
+      throw new Error("Error message");
+    }
+  }
+}));
+```
+
+
+## Transient error
+
+TransientError
+
+  RateLimitError
+  ConfigurationError
+  RecoverableError
+
+context | behavior
+--- | ---
+smart-notifier response | retry
+other endpoints | error
+status code | 500
+sentry | no
+datadog | yes
+
+retry
+but not go to sentry
+go to datadog metrics
+
+```javascript
+
+app.use("/smart-notifier-handler", smartNotifierHandler({
+  handlers: {
+    "user:update": (ctx, messages) => {
+      ctx.smartNotifierResponse.setFlowControl({
+
+      });
+
+      return Promise.reject(new TransientError("Error message"));
+      // or
+      throw new TransientError("Error message");
+    }
+  }
+}));
+```
+
+## Logic error
+
+context | behavior
+--- | ---
+smart-notifier response | next
+other endpoints | success
+status code | 200
+sentry | no
+datadog | no
+
+logs outgoing.user.error
+does not retry
+
+```javascript
+app.use("/smart-notifier-handler", smartNotifierHandler({
+  handlers: {
+    "user:update": (ctx, messages) => {
+      return (() => {
+        return Promise.reject(new LogicError("Validation error"));
+      })
+      .catch((err) => {
+        if (err.name === "LogicError") {
+          // log outgoing.user.error
+          return Promise.resolve();
+        }
+        return Promise.reject(err);
+      });
+
+      // or
+
+      try {
+        throw new LogicError("Validation error")
+      } catch (LogicError error) {
+        // log outgoing.user.error
+      } catch (error) {
+        throw error;
+      }
+    }
+  }
+}));
+```
+
+

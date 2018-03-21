@@ -68,10 +68,10 @@ function processHandlersFactory(handlers, userHandlerOptions) {
         // we enrich the response with the underlying error
         req.hull.smartNotifierResponse.addError(new SmartNotifierError("N/A", err.message));
 
-        if (!req.hull.smartNotifierResponse.isValid()) {
-          ctx.client.logger.debug("connector.smartNotifierHandler.responseInvalid", req.hull.smartNotifierResponse.toJSON());
-          req.hull.smartNotifierResponse.setFlowControl(defaultErrorFlowControl);
-        }
+        // if (!req.hull.smartNotifierResponse.isValid()) {
+          // ctx.client.logger.debug("connector.smartNotifierHandler.responseInvalid", req.hull.smartNotifierResponse.toJSON());
+        req.hull.smartNotifierResponse.setFlowControl(defaultErrorFlowControl);
+        // }
         err = err || new Error("Error while processing notification");
         return next(err);
       });

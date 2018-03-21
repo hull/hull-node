@@ -115,6 +115,7 @@ class HullConnector {
         }
         return res.status(err.status || 503).send("transient-error");
       }
+      // pass the error
       return next(err);
     });
 
