@@ -109,4 +109,4 @@ function superagentInstrumentationPluginFactory({ logger, metric }) {
   };
 }
 
-module.exports = superagentUnstrumentationPluginFactory;
+module.exports = superagentInstrumentationPluginFactory;
