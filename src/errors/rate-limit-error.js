@@ -3,8 +3,9 @@ const TransientError = require("./transient-error");
 
 /**
  * This is a subclass of TransientError.
- * It have similar nature but it's very common during connector
- * operations so it's treated in a separate class.
+ * It have similar nature but it's very common during connector operations so it's treated in a separate class.
+ * Usually connector is able to tell more about when exactly the rate limit error will be gone to optimize retry strategy.
+ *
  * @public
  * @memberof Errors
  */

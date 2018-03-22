@@ -112,7 +112,8 @@ General utilities
 
 **Extends TransientError**
 
-This is an error related to connector configuration.
+This is an error related to wrong connector configuration.
+It's a transient error, but it makes sense to retry the payload only after the connector settings update.
 
 **Parameters**
 
@@ -122,6 +123,10 @@ This is an error related to connector configuration.
 ### LogicError
 
 **Extends Error**
+
+This is an error which should be handled by the connector implementation itself.
+
+Rejecting or throwing this error without try/catch block will be treated as unhandled error.
 
 **Parameters**
 
@@ -142,8 +147,8 @@ function validationFunction() {
 **Extends TransientError**
 
 This is a subclass of TransientError.
-It have similar nature but it's very common during connector
-operations so it's treated in a separate class.
+It have similar nature but it's very common during connector operations so it's treated in a separate class.
+Usually connector is able to tell more about when exactly the rate limit error will be gone to optimize retry strategy.
 
 **Parameters**
 
@@ -155,6 +160,8 @@ operations so it's treated in a separate class.
 **Extends TransientError**
 
 This error means that 3rd party API resources is out of sync comparing to Hull organization state.
+For example customer by accident removed a resource which we use to express segment information (for example user tags, user sub lists etc.)
+So this is a TransientError which could be retried after forcing "reconciliation" operation (which should recreate missing resource)
 
 **Parameters**
 
@@ -166,6 +173,8 @@ This error means that 3rd party API resources is out of sync comparing to Hull o
 **Extends Error**
 
 This is a transient error related to either connectivity issues or temporary 3rd party API unavailability.
+
+When using `superagentErrorPlugin` it's returned by some errors out-of-the-box.
 
 **Parameters**
 

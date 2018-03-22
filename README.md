@@ -560,6 +560,30 @@ In addition to let the `user:update` handler detect whether it is processing a b
 
 # Connector status
 
+Platform API comes with an endpoint where connector can post it's custom checks performed on settings and/or 3rd party api.
+The resulted should be posted to an endpoint but for testing and debugging purposes we also respond with the results.
+
+Here comes example status implementation:
+
+```javascript
+app.all("/status", (req, res) => {
+  const { ship, client } = req.hull;
+  const messages = [];
+  let status = "ok";
+
+  const requiredSetting = _.get(ship.private_settings, "required_setting");
+  if (code === undefined) {
+    status = "warning";
+    messages.push("Required setting is not set.");
+  }
+
+  res.json({ messages, status });
+  return client.put(`${req.hull.ship.id}/status`, { status, messages });
+});
+```
+
+Then to make it being run in background we can use a schedule entry in `manifest.json`:
+
 ```json
 {
   "schedules": [
@@ -646,7 +670,7 @@ connector.startWorker((queueName = 'queueApp'));
 When using a [flow](https://flow.org) enabled project, we recommend using flow types provided by hull-node. You can import them in your source files directly from `hull` module and use `import type` flow structure:
 
 ```javascript
-/* @flow */
+// @flow
 import type { THullObject } from "hull";
 
 parseHullObject(user: THullObject) {
@@ -660,8 +684,17 @@ See [API REFERENCE](./API.md#types) or `src/lib/types` directory for a full list
 
 # Error handling
 
+All handlers for outgoing traffic are expecting to return a promise. Resolution or rejection of the promise triggers different behavior of error handling.
+Default JS errors are treated as [unhandled errors](#unhandled-error), the same applies for any unhandled exceptions thrown from the handler code.
+
+Hull Connector provides two other error classes [TransientError](#transient-error) and [LogicError](#logic-error) which are handled
+by internals of the SDK in a different way.
+
+The convention is to filter known issues and categorize them into transient or logic errors categories. All unknown errors will default to unhandled errors.
 
 ## Unhandled error
+
+Default, native Javascript error.
 
 context | behavior
 --- | ---
@@ -672,13 +705,10 @@ sentry | yes
 datadog | no
 
 ```javascript
-
 app.use("/smart-notifier-handler", smartNotifierHandler({
   handlers: {
     "user:update": (ctx, messages) => {
       return Promise.reject(new Error("Error message"));
-      // or
-      throw new Error("Error message");
     }
   }
 }));
@@ -687,25 +717,25 @@ app.use("/smart-notifier-handler", smartNotifierHandler({
 
 ## Transient error
 
-TransientError
+This is an error which is known to connector developer. It's an error which is transient and request retry should be able to overcome the issue.
+It comes with 3 subclasses to mark specifc scenarios which are related to time when the error should be resolved.
 
-  RateLimitError
-  ConfigurationError
-  RecoverableError
+- RateLimitError
+- ConfigurationError
+- RecoverableError
+
+The retry strategy is currently the same as for unhandled error, but it's handled better in terms of monitoring.
 
 context | behavior
 --- | ---
 smart-notifier response | retry
 other endpoints | error
-status code | 500
+status code | 400
 sentry | no
 datadog | yes
 
-retry
-but not go to sentry
-go to datadog metrics
-
 ```javascript
+const { TransientError } = require("hull/lib/errors");
 
 app.use("/smart-notifier-handler", smartNotifierHandler({
   handlers: {
@@ -715,14 +745,16 @@ app.use("/smart-notifier-handler", smartNotifierHandler({
       });
 
       return Promise.reject(new TransientError("Error message"));
-      // or
-      throw new TransientError("Error message");
     }
   }
 }));
 ```
 
 ## Logic error
+
+This is an error which needs to be handled by connector implementation and as a result the returned promised **must not be rejected**.
+
+**IMPORTANT:** Rejecting or throwing this error without try/catch block will be treated as unhandled error.
 
 context | behavior
 --- | ---
@@ -732,10 +764,9 @@ status code | 200
 sentry | no
 datadog | no
 
-logs outgoing.user.error
-does not retry
-
 ```javascript
+const { LogicError } = require("hull/lib/errors");
+
 app.use("/smart-notifier-handler", smartNotifierHandler({
   handlers: {
     "user:update": (ctx, messages) => {
@@ -749,16 +780,6 @@ app.use("/smart-notifier-handler", smartNotifierHandler({
         }
         return Promise.reject(err);
       });
-
-      // or
-
-      try {
-        throw new LogicError("Validation error")
-      } catch (LogicError error) {
-        // log outgoing.user.error
-      } catch (error) {
-        throw error;
-      }
     }
   }
 }));

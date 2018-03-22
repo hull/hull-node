@@ -2,7 +2,9 @@
 const TransientError = require("./transient-error");
 
 /**
- * This is an error related to connector configuration.
+ * This is an error related to wrong connector configuration.
+ * It's a transient error, but it makes sense to retry the payload only after the connector settings update.
+ *
  * @public
  * @memberof Errors
  */

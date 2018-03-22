@@ -2,6 +2,9 @@
 
 /**
  * This is a transient error related to either connectivity issues or temporary 3rd party API unavailability.
+ *
+ * When using `superagentErrorPlugin` it's returned by some errors out-of-the-box.
+ *
  * @public
  * @memberof Errors
  */
