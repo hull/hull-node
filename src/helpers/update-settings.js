@@ -4,7 +4,7 @@
  *
  * @public
  * @name updateSettings
- * @memberof Helpers
+ * @memberof Context.helpers
  * @param {Object} ctx The Context Object
  * @param  {Object} newSettings settings to update
  * @return {Promise}

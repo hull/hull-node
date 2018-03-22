@@ -11,7 +11,7 @@ const _ = require("lodash");
  *
  * @name handleExtract
  * @public
- * @memberof Helpers
+ * @memberof Context.helpers
  * @param {Object}   ctx Hull request context
  * @param {Object}   options
  * @param {Object}   options.body       request body object (req.body)

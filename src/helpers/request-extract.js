@@ -7,7 +7,7 @@ const _ = require("lodash");
  *
  * @public
  * @name requestExtract
- * @memberof Helpers
+ * @memberof Context.helpers
  * @param {Object}   ctx Hull request context
  * @param {Object} [options={}]
  * @param {Object} [options.segment=null]
