@@ -41,6 +41,10 @@ jobs:
     <<: *shared
     docker:
       - image: circleci/node:8.9
+  "node-8.10":
+    <<: *shared
+    docker:
+      - image: circleci/node:8.10
 
 workflows:
   version: 2
@@ -50,3 +54,4 @@ workflows:
       - "node-6.11"
       - "node-6.12"
       - "node-8.9"
+      - "node-8.10"

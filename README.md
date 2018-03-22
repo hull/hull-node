@@ -485,8 +485,11 @@ app.use("/smart-notifier", smartNotifierHandler({
       });
       return Promise.resolve();
     }
+  },
+  options: {
+    groupTraits: false
   }
-}))
+}));
 
 connector.startApp(app);
 ```
@@ -544,17 +547,34 @@ The Defaults are the following:
 
 Second way of operating on Hull user base it to process batch extracts.
 
-In addition to event notifications Hull supports sending extracts of the User base. These extracts can be triggered via Dashboard manual user action or can be programatically requested from Connector logic (see [requestExtract helper](./connector-helpers.md#requestextract-segment--null-path-fields---)). The Connector will receive manual batches if your ship's `manifest.json` exposes a `batch` tag in `tags`:
+In addition to event notifications Hull supports sending extracts of users and accounts. These extracts can be triggered via manual user action on the dashboard or can be programmatically requested from the Connector logic (see [requestExtract helper](./API.md#requestextract)). The Connector will expose the manual batches action if your `manifest.json` includes a `batch` or `batch-accounts` tag :
 
 ```json
 {
-  "tags": ["batch"]
+  "tags" : [ "batch", "batch-accounts" ]
 }
 ```
 
-In both cases the batch extract is handled by the `user:update`. The extract is split into smaller chunks using the `userHandlerOptions.maxSize` option. In extract every message will contain only `account`, `user` and `segments` information.
+In both cases the batch extracts are processed by the `user:update` and `account:update` handlers. The extract is split into smaller chunks using `options.maxSize`. Only traits and segments are exposed in the extracted lines, `events` and `changes` are never sent.
 
-In addition to let the `user:update` handler detect whether it is processing a batch extract or notifications there is a third argument passed to that handler - in case of notifications it is `undefined`, otherwise it includes `query` and `body` parameters from req object.
+In addition, to let the handler function detect whether it is processing a batch extract or notifications, a third argument is passed- in case of notifications it is `undefined`, otherwise it includes `query` and `body` parameters from `req` object.
+
+Notification of batches, when the extracts are ready are sent as a `POST` request on the `/batch` and `/batch-accounts` endpoints respectively.
+
+
+```javascript
+app.post("/batch", notifHandler({
+  options: {
+    maxSize: 100,
+    groupTraits: false
+  },
+  handers: {
+    "user:update": ({ hull }, users) => {
+      hull.logger.info("Get users", users);
+    }
+  }
+}));
+```
 
 ---
 

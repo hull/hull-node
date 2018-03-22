@@ -26,10 +26,11 @@ describe("segmentMiddleware", () => {
     cache.contextMiddleware()(req, {}, () => {});
     cache.contextMiddleware()(req2, {}, () => {});
 
-    sinon.stub(req.hull.client, "configuration").returns({ id: "foo", secret: "bar", organization: "localhost"});
+    sinon.stub(req.hull.client, "configuration").returns({ id: "foo", secret: "bar", organization: "localhost" });
     sinon.stub(req2.hull.client, "configuration").returns({ id: "foo2", secret: "bar2", organization: "localhost2" });
 
-    const getStub = sinon.stub(req.hull.client, "get")
+    const userSegmentsGetStub = sinon.stub(req.hull.client, "get")
+      .withArgs("/users_segments", sinon.match.any, sinon.match.any)
       .callsFake(() => {
         return new Promise((resolve, reject) => {
           setTimeout(() => {
@@ -37,13 +38,32 @@ describe("segmentMiddleware", () => {
           }, 100);
         });
       });
+    const accountSegmentsGetStub = userSegmentsGetStub
+      .withArgs("/accounts_segments", sinon.match.any, sinon.match.any)
+      .callsFake(() => {
+        return new Promise((resolve, reject) => {
+          setTimeout(() => {
+            resolve([{ id: "as1", name: "account segment 1" }]);
+          }, 100);
+        });
+      });
 
-    const getStub2 = sinon.stub(req2.hull.client, "get")
+    const userSegmentsGetStub2 = sinon.stub(req2.hull.client, "get")
+      .withArgs("/users_segments", sinon.match.any, sinon.match.any)
       .callsFake(() => {
         return new Promise((resolve, reject) => {
           setTimeout(() => {
             resolve([{ id: "s2", name: "segment 2" }]);
-          }, 200);
+          }, 100);
+        });
+      });
+    const accountSegmentsGetStub2 = userSegmentsGetStub2
+      .withArgs("/accounts_segments", sinon.match.any, sinon.match.any)
+      .callsFake(() => {
+        return new Promise((resolve, reject) => {
+          setTimeout(() => {
+            resolve([{ id: "as2", name: "account segment 2" }]);
+          }, 100);
         });
       });
 
@@ -56,10 +76,19 @@ describe("segmentMiddleware", () => {
     instance(req2, {}, () => {});
     instance(req, {}, () => {
       instance(req2, {}, () => {
-        expect(getStub.callCount).to.equal(1);
-        expect(getStub2.callCount).to.equal(1);
+        expect(userSegmentsGetStub.callCount).to.equal(1);
+        expect(accountSegmentsGetStub.callCount).to.equal(1);
+
         expect(req.hull.segments).to.eql([{ id: "s1", name: "segment 1" }]);
+        expect(req.hull.users_segments).to.eql([{ id: "s1", name: "segment 1" }]);
+        expect(req.hull.accounts_segments).to.eql([{ id: "as1", name: "account segment 1" }]);
+
+        expect(userSegmentsGetStub2.callCount).to.equal(1);
+        expect(accountSegmentsGetStub2.callCount).to.equal(1);
         expect(req2.hull.segments).to.eql([{ id: "s2", name: "segment 2" }]);
+        expect(req2.hull.users_segments).to.eql([{ id: "s2", name: "segment 2" }]);
+        expect(req2.hull.accounts_segments).to.eql([{ id: "as2", name: "account segment 2" }]);
+
         done();
       });
     });

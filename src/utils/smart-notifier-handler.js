@@ -1,5 +1,6 @@
 const express = require("express");
 const requireHullMiddleware = require("./require-hull-middleware");
+const handleExtractFactory = require("./extract-handler-factory");
 const { SmartNotifierError } = require("./smart-notifier-response");
 
 const { defaultSuccessFlowControl, defaultErrorFlowControl, unsupportedChannelFlowControl } = require("./smart-notifier-flow-controls");
@@ -104,10 +105,15 @@ function processHandlersFactory(handlers, userHandlerOptions) {
  * @name smartNotifierHandler
  * @public
  * @memberof Utils
- * @param  {Object} options   [description]
- * @param  {Object} options.handlers   [description]
- * @param  {Object} options.userHandlerOptions [description]
- * @return {[type]}                    [description]
+ * @param  {Object}  params
+ * @param  {Object}  params.handlers
+ * @param  {Object}  [params.options]
+ * @param  {number}  [params.options.maxSize] the size of users/account batch chunk
+ * @param  {number}  [params.options.maxTime] time waited to capture users/account up to maxSize
+ * @param  {string}  [params.options.segmentFilterSetting] setting from connector's private_settings to mark users as whitelisted
+ * @param  {boolean} [params.options.groupTraits=false]
+ * @param  {Object}  [params.userHandlerOptions] deprecated
+ * @return {Function} expressjs router
  * @example
  * const { smartNotifierHandler } = require("hull/lib/utils");
  * const app = express();
@@ -137,7 +143,7 @@ function processHandlersFactory(handlers, userHandlerOptions) {
  *       return Promise.resolve();
  *     }
  *   },
- *   userHandlerOptions: {
+ *   options: {
  *     groupTraits: false
  *   }
  * });
@@ -145,8 +151,10 @@ function processHandlersFactory(handlers, userHandlerOptions) {
  * connector.setupApp(app);
  * app.use('/notify', handler);
  */
-module.exports = function smartNotifierHandler({ handlers = {}, userHandlerOptions = {} }) {
+module.exports = function smartNotifierHandler({ handlers = {}, options = {}, userHandlerOptions = {} }) {
   const app = express.Router();
+  const _options = options || userHandlerOptions;
+  app.use(handleExtractFactory({ handlers, options: _options }));
   app.use((req, res, next) => {
     if (!req.hull.notification) {
       return next(new SmartNotifierError("MISSING_NOTIFICATION", "Missing notification object"));
@@ -154,7 +162,7 @@ module.exports = function smartNotifierHandler({ handlers = {}, userHandlerOptio
     return next();
   });
   app.use(requireHullMiddleware());
-  app.use(processHandlersFactory(handlers, userHandlerOptions));
+  app.use(processHandlersFactory(handlers, _options));
 
   return app;
 };

@@ -736,13 +736,15 @@ NotifHandler is a packaged solution to receive User and Segment Notifications fr
 
 **Parameters**
 
--   `options` **[Object][57]** 
-    -   `options.handlers` **[Object][57]** [description]
-    -   `options.onSubscribe` **[Function][61]** [description]
-    -   `options.userHandlerOptions` **[Object][57]** [description]
-        -   `options.userHandlerOptions.maxSize` **[Object][57]** [description]
-        -   `options.userHandlerOptions.maxTime` **[Object][57]** [description]
-        -   `options.userHandlerOptions.segmentFilterSetting` **[Object][57]** [description]
+-   `params` **[Object][57]** 
+    -   `params.handlers` **[Object][57]** 
+    -   `params.onSubscribe` **[Function][61]?** 
+    -   `params.options` **[Object][57]?** 
+        -   `params.options.maxSize` **[number][59]?** the size of users/account batch chunk
+        -   `params.options.maxTime` **[number][59]?** time waited to capture users/account up to maxSize
+        -   `params.options.segmentFilterSetting` **[string][58]?** setting from connector's private_settings to mark users as whitelisted
+        -   `params.options.groupTraits` **[boolean][60]**  (optional, default `false`)
+    -   `params.userHandlerOptions` **[Object][57]?** deprecated
 
 **Examples**
 
@@ -751,7 +753,7 @@ import { notifHandler } from "hull/lib/utils";
 const app = express();
 
 const handler = NotifHandler({
-  userHandlerOptions: {
+  options: {
     groupTraits: true, // groups traits as in below examples
     maxSize: 6,
     maxTime: 10000,
@@ -896,9 +898,14 @@ When performing operations on notification you can set FlowControl settings usin
 
 **Parameters**
 
--   `options` **[Object][57]** [description]
-    -   `options.handlers` **[Object][57]** [description]
-    -   `options.userHandlerOptions` **[Object][57]** [description]
+-   `params` **[Object][57]** 
+    -   `params.handlers` **[Object][57]** 
+    -   `params.options` **[Object][57]?** 
+        -   `params.options.maxSize` **[number][59]?** the size of users/account batch chunk
+        -   `params.options.maxTime` **[number][59]?** time waited to capture users/account up to maxSize
+        -   `params.options.segmentFilterSetting` **[string][58]?** setting from connector's private_settings to mark users as whitelisted
+        -   `params.options.groupTraits` **[boolean][60]**  (optional, default `false`)
+    -   `params.userHandlerOptions` **[Object][57]?** deprecated
 
 **Examples**
 
@@ -931,7 +938,7 @@ const handler = smartNotifierHandler({
       return Promise.resolve();
     }
   },
-  userHandlerOptions: {
+  options: {
     groupTraits: false
   }
 });
@@ -940,7 +947,7 @@ connector.setupApp(app);
 app.use('/notify', handler);
 ```
 
-Returns **\[type]** [description]
+Returns **[Function][61]** expressjs router
 
 ### superagentErrorPlugin
 

@@ -6,6 +6,8 @@
   - smartNotifierHandler in case of error behaves like notifHandler and pass the error down the middleware stack
 * added `timeout` option to `Hull.Connector` constructor to control the timeout value
 * upgrades `raven` library
+* add support for batch handlers for accounts
+* **deprecation** Renamed `userHandlerOptions` to `options` in notifyHandler
 * flow types fixes
 
 # 0.13.10
