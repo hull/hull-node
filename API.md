@@ -53,7 +53,7 @@
     -   `options.queue` **[Object][37]?** override default QueueAgent
     -   `options.connectorName` **[string][38]?** force connector name - if not provided will be taken from manifest.json
     -   `options.skipSignatureValidation` **[boolean][40]?** skip signature validation on notifications (for testing only)
-    -   `options.timeout` **([number][39] \| [string][38])?** global HTTP server timeout
+    -   `options.timeout` **([number][39] \| [string][38])?** global HTTP server timeout - format is parsed by `ms` npm package
     -   `options.segmentFilterSetting`  
 
 ### setupApp

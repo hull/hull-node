@@ -17,7 +17,7 @@ const { TransientError } = require("../errors");
  * @param {Number|string} [options.port] port on which expressjs application should be started
  * @param {Object}        [options.clientConfig] additional `HullClient` configuration
  * @param {boolean}       [options.skipSignatureValidation] skip signature validation on notifications (for testing only)
- * @param {number|string} [options.timeout] global HTTP server timeout
+ * @param {number|string} [options.timeout] global HTTP server timeout - format is parsed by `ms` npm package
  * @param {Object}        [options.instrumentation] override default InstrumentationAgent
  * @param {Object}        [options.cache] override default CacheAgent
  * @param {Object}        [options.queue] override default QueueAgent
