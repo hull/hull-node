@@ -7,6 +7,7 @@
 * added `timeout` option to `Hull.Connector` constructor to control the timeout value
 * upgrades `raven` library
 * add support for batch handlers for accounts
+* adds `users_segments` and `accounts_segments` to Context Object
 * **deprecation** Renamed `userHandlerOptions` to `options` in notifyHandler
 * flow types fixes
 

@@ -137,6 +137,9 @@ Here is the base structure of the Context Object (we also provide Flow type for 
   // set by Hull.Connector
   connectorConfig: {},
   segments: [],
+  users_segments: [],
+  accounts_segments: [],
+
   cache: {},
   enqueue: () => {},
   metric: {},
@@ -203,7 +206,9 @@ Hash with connector settings, details in Hull.Connector [constructor reference](
 ```
 
 An array of segments defined at the organization, it's being automatically exposed to the context object.
-The segment flow type is specified [here](/API.md#thullsegment).
+The segment flow type is specified [here](./src/types/hull-segment.js).
+
+`users_segments` param is alias to `segments` and `accounts_segments` exposes list of segments for accounts.
 
 ### **cache**
 

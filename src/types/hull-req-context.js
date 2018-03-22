@@ -18,9 +18,10 @@ export type THullReqContext = {
   hostname: string;
   options: Object;
 
-
   connectorConfig: Object;
   segments: Array<THullSegment>;
+  users_segments: Array<THullSegment>;
+  accounts_segments: Array<THullSegment>;
   cache: Object;
   metric: Object;
   enqueue: Function;
