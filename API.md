@@ -99,6 +99,9 @@ Returns **[Function][42]**
 
 ## Context
 
+An object that's available in all action handlers and routers as `req.hull`.
+It's a set of parameters and modules to work in the context of current organization and connector instance.
+
 ### helpers
 
 This is a set of additional helper functions being exposed at `req.hull.helpers`. They allow to perform common operation in the context of current request. They are similar o `req.hull.client.utils`, but operate at higher level, ensure good practises and should be used in the first place before falling back to raw utils.
@@ -129,7 +132,7 @@ This is a method to request an extract of user base to be sent back to the Conne
 -   `options` **[Object][37]**  (optional, default `{}`)
     -   `options.segment` **[Object][37]**  (optional, default `null`)
     -   `options.format` **[Object][37]**  (optional, default `json`)
-    -   `options.path` **[Object][37]**  (optional, default `batch`)
+    -   `options.path` **[Object][37]**  (optional, default `/batch`)
     -   `options.fields` **[Object][37]**  (optional, default `[]`)
     -   `options.additionalQuery` **[Object][37]**  (optional, default `{}`)
 

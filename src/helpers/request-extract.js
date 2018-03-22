@@ -12,7 +12,7 @@ const _ = require("lodash");
  * @param {Object} [options={}]
  * @param {Object} [options.segment=null]
  * @param {Object} [options.format=json]
- * @param {Object} [options.path=batch]
+ * @param {Object} [options.path=/batch]
  * @param {Object} [options.fields=[]]
  * @param {Object} [options.additionalQuery={}]
  * @return {Promise}
