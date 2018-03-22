@@ -719,10 +719,10 @@ Default, native Javascript error.
 context | behavior
 --- | ---
 smart-notifier response | retry
-other endpoints | error
+other endpoints response | error
 status code | 500
-sentry | yes
-datadog | no
+sentry exception report | yes
+datadog metrics | no
 
 ```javascript
 app.use("/smart-notifier-handler", smartNotifierHandler({
@@ -749,10 +749,10 @@ The retry strategy is currently the same as for unhandled error, but it's handle
 context | behavior
 --- | ---
 smart-notifier response | retry
-other endpoints | error
+other endpoints response | error
 status code | 400
-sentry | no
-datadog | yes
+sentry exception report | no
+datadog metrics | yes
 
 ```javascript
 const { TransientError } = require("hull/lib/errors");
@@ -779,10 +779,10 @@ This is an error which needs to be handled by connector implementation and as a 
 context | behavior
 --- | ---
 smart-notifier response | next
-other endpoints | success
+other endpoints response | success
 status code | 200
-sentry | no
-datadog | no
+sentry exception report | no
+datadog metrics | no
 
 ```javascript
 const { LogicError } = require("hull/lib/errors");
