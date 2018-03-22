@@ -2,6 +2,8 @@
 
 /**
  * Object which is passed to `hullClient.asUser(ident: THullUserIdent)``
+ * @public
+ * @memberof Types
  */
 export type THullUserIdent = {
   id?: string;

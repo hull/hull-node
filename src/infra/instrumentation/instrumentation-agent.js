@@ -5,8 +5,25 @@ const url = require("url");
 
 const MetricAgent = require("./metric-agent");
 
+/**
+ * It automatically sends data to DataDog, Sentry and Newrelic if appropriate ENV VARS are set:
+ *
+ * - NEW_RELIC_LICENSE_KEY
+ * - DATADOG_API_KEY
+ * - SENTRY_URL
+ *
+ * It also exposes the `contextMiddleware` which adds `req.hull.metric` agent to add custom metrics to the ship. Right now it doesn't take any custom options, but it's showed here for the sake of completeness.
+ *
+ * @memberof Infra
+ * @public
+ * @example
+ * const { Instrumentation } = require("hull/lib/infra");
+ *
+ * const instrumentation = new Instrumentation();
+ *
+ * const connector = new Connector.App({ instrumentation });
+ */
 class InstrumentationAgent {
-
   constructor(options = {}) {
     this.exitOnError = options.exitOnError || false;
     this.nr = null;
@@ -37,9 +54,10 @@ class InstrumentationAgent {
       this.raven = Raven.config(process.env.SENTRY_URL, {
         environment: process.env.HULL_ENV || "production",
         release: this.manifest.version,
-        captureUnhandledRejections: true
-      }).install((loggedInSentry, err = {}) => {
-        console.error("connector.error", { loggedInSentry, err: err.stack || err });
+        captureUnhandledRejections: false,
+        sampleRate: parseFloat(process.env.SENTRY_SAMPLE_RATE) || 1.0
+      }).install((err) => {
+        console.error("connector.error", { err: err.stack || err });
         if (this.exitOnError) {
           if (process.listenerCount("gracefulExit") > 0) {
             process.emit("gracefulExit");
@@ -47,6 +65,20 @@ class InstrumentationAgent {
             process.exit(1);
           }
         }
+      });
+
+      global.process.on("unhandledRejection", (reason, promise) => {
+        const context = promise.domain && promise.domain.sentryContext;
+        this.raven.captureException(reason, context || {}, () => {
+          console.error("connector.error", { reason });
+          if (this.exitOnError) {
+            if (process.listenerCount("gracefulExit") > 0) {
+              process.emit("gracefulExit");
+            } else {
+              process.exit(1);
+            }
+          }
+        });
       });
     }
 

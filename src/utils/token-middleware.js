@@ -1,7 +1,5 @@
 /**
- * @param  {Object}   req
- * @param  {Object}   res
- * @param  {Function} next
+ * @return {Function} middleware
  */
 module.exports = function tokenMiddlewareFactory() {
   return function tokenMiddleware(req, res, next) {

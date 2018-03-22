@@ -7,9 +7,10 @@ const { SmartNotifierResponse, SmartNotifierError } = require("./smart-notifier-
 const SmartNofifierValidator = require("./smart-notifier-validator");
 
 /**
- * @param  {Object}   req
- * @param  {Object}   res
- * @param  {Function} next
+ * @param  {Object}   options
+ * @param  {Object}   [options.skipSignatureValidation=false]
+ * @param  {Object}   [options.httpClient=null]
+ * @return  {Function} middleware
  */
 module.exports = function smartNotifierMiddlewareFactory({ skipSignatureValidation = false, httpClient = null }) {
   return function notifMiddleware(req, res, next) {

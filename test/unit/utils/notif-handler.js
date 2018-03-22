@@ -17,7 +17,7 @@ const notifMiddleware = require("../../../src/utils/notif-middleware");
 
 const reqStub = {
   url: "http://localhost/",
-  body: '{"test":"test"}',
+  body: "{\"test\":\"test\"}",
   query: {
     organization: "local",
     secret: "secret",
@@ -26,16 +26,16 @@ const reqStub = {
 };
 
 function post({ port, body }) {
-  return Promise.fromCallback(function(callback) {
+  return Promise.fromCallback((callback) => {
     const client = http.request({
       path: "/notify?organization=local&secret=secret&ship=ship_id",
-      method: 'POST',
+      method: "POST",
       port,
       headers: {
         "x-amz-sns-message-type": "test"
       }
-    })
-    client.end(JSON.stringify(body))
+    });
+    client.end(JSON.stringify(body));
     client.on("response", () => callback());
   });
 }
@@ -44,7 +44,7 @@ function mockHullMiddleware(req, res, next) {
   req.hull = req.hull || {};
   req.hull.client = new HullStub();
   req.hull.client.get()
-    .then(ship => {
+    .then((ship) => {
       req.hull.ship = ship;
       next();
     });
@@ -54,17 +54,17 @@ describe("NotifHandler", () => {
   beforeEach(function beforeEachHandler() {
     this.getStub = sinon.stub(HullStub.prototype, "get");
     this.getStub.onCall(0).returns(Promise.resolve({
-        id: "ship_id",
-        private_settings: {
-          value: "test"
-        }
-      }))
-      .onCall(1).returns(Promise.resolve({
-        id: "ship_id",
-        private_settings: {
-          value: "test1"
-        }
-      }));
+      id: "ship_id",
+      private_settings: {
+        value: "test"
+      }
+    }))
+    .onCall(1).returns(Promise.resolve({
+      id: "ship_id",
+      private_settings: {
+        value: "test1"
+      }
+    }));
   });
 
   afterEach(function afterEachHandler() {
@@ -84,9 +84,7 @@ describe("NotifHandler", () => {
     const server = app.listen(() => {
       const port = server.address().port;
       post({ port, body: shipUpdate })
-        .then(() => {
-          return post({ port, body: shipUpdate })
-        })
+        .then(() => post({ port, body: shipUpdate }))
         .then(() => {
           expect(handler.calledTwice).to.be.ok;
           expect(handler.getCall(0).args[0].ship.private_settings.value).to.equal("test");
@@ -195,7 +193,7 @@ describe("NotifHandler", () => {
     app.use(notifMiddleware());
     app.use(mockHullMiddleware);
     app.use((req, res, next) => {
-      req.hull.segments = [{ id: "b", name: "Foo" }];
+      req.hull.users_segments = [{ id: "b", name: "Foo" }];
       req.hull.helpers = {
         handleExtract: extractHandler
       };

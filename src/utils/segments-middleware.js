@@ -2,50 +2,67 @@
 const _ = require("lodash");
 const Promise = require("bluebird");
 
+function fetchSegments(client, entityType = "users") {
+  const { id } = client.configuration();
+  return client.get(
+    `/${entityType}_segments`,
+    { shipId: id },
+    {
+      timeout: 5000,
+      retry: 1000
+    }
+  );
+}
+
 /**
- * @param  {Object}   req
- * @param  {Object}   res
- * @param  {Function} next
+ * @return {Function} middleware
  */
 module.exports = function segmentsMiddlewareFactory() {
   return function segmentsMiddleware(req: Object, res: Object, next: Function) {
-    req.hull = req.hull || {};
+    const hull = req.hull || {};
 
-    if (!req.hull.client) {
+    if (!hull.client) {
       return next();
     }
-    const { cache, message, notification, connectorConfig } = req.hull;
+    const { cache, message, notification, connectorConfig } = hull;
 
     if (notification && notification.segments) {
-      req.hull.segments = notification.segments;
+      hull.segments = notification.segments;
       return next();
     }
 
-    const bust = (message
-      && (message.Subject === "users_segment:update" || message.Subject === "users_segment:delete"));
+    const bust =
+      message && message.Subject && message.Subject.includes("segment");
 
     return (() => {
       if (bust) {
         return cache.del("segments");
       }
       return Promise.resolve();
-    })().then(() => {
-      return cache.wrap("segments", () => {
-        return req.hull.client.get("/segments", { per_page: 200 }, {
-          timeout: 5000,
-          retry: 1000
-        });
-      });
-    }).then((segments) => {
-      req.hull.segments = _.map(segments, (s) => {
-        const fieldName = connectorConfig.segmentFilterSetting;
-        const fieldPath = `ship.private_settings.${fieldName}`;
-        if (_.has(req.hull, fieldPath)) {
-          s.filtered = _.includes(_.get(req.hull, fieldPath, []), s.id);
-        }
-        return s;
-      });
-      return next();
-    }, () => next());
+    })()
+      .then(() =>
+        cache.wrap("segments", () =>
+          Promise.all([
+            fetchSegments(hull.client, "users"),
+            fetchSegments(hull.client, "accounts")
+          ])
+        )
+      )
+      .then(
+        ([users_segments, accounts_segments]) => {
+          hull.users_segments = _.map(users_segments, (segment) => {
+            const fieldName = connectorConfig.segmentFilterSetting;
+            const fieldPath = `ship.private_settings.${fieldName}`;
+            if (_.has(hull, fieldPath)) {
+              segment.filtered = _.includes(_.get(hull, fieldPath, []), segment.id);
+            }
+            return segment;
+          });
+          hull.segments = hull.users_segments;
+          hull.accounts_segments = accounts_segments;
+          return next();
+        },
+        () => next()
+      );
   };
 };

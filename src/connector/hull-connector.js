@@ -5,13 +5,28 @@ const _ = require("lodash");
 const setupApp = require("./setup-app");
 const Worker = require("./worker");
 const { Instrumentation, Cache, Queue, Batcher } = require("../infra");
-const { exitHandler, segmentsMiddleware, requireHullMiddleware, helpersMiddleware, smartNotifierErrorMiddleware } = require("../utils");
+const { exitHandler, segmentsMiddleware, requireHullMiddleware, helpersMiddleware } = require("../utils");
+const { TransientError } = require("../errors");
 
+/**
+ * @public
+ * @param {HullClient}    HullClient
+ * @param {Object}        [options={}]
+ * @param {string}        [options.connectorName] force connector name - if not provided will be taken from manifest.json
+ * @param {string}        [options.hostSecret] secret to sign req.hull.token
+ * @param {Number|string} [options.port] port on which expressjs application should be started
+ * @param {Object}        [options.clientConfig] additional `HullClient` configuration
+ * @param {boolean}       [options.skipSignatureValidation] skip signature validation on notifications (for testing only)
+ * @param {number|string} [options.timeout] global HTTP server timeout - format is parsed by `ms` npm package
+ * @param {Object}        [options.instrumentation] override default InstrumentationAgent
+ * @param {Object}        [options.cache] override default CacheAgent
+ * @param {Object}        [options.queue] override default QueueAgent
+ */
 class HullConnector {
-  constructor(Hull, {
-    hostSecret, port, clientConfig = {}, instrumentation, cache, queue, connectorName, segmentFilterSetting, skipSignatureValidation
+  constructor(HullClient, {
+    hostSecret, port, clientConfig = {}, instrumentation, cache, queue, connectorName, segmentFilterSetting, skipSignatureValidation, timeout
   } = {}) {
-    this.Hull = Hull;
+    this.HullClient = HullClient;
     this.instrumentation = instrumentation || new Instrumentation();
     this.cache = cache || new Cache();
     this.queue = queue || new Queue();
@@ -40,6 +55,10 @@ class HullConnector {
       this.connectorConfig.skipSignatureValidation = skipSignatureValidation;
     }
 
+    if (timeout) {
+      this.connectorConfig.timeout = timeout;
+    }
+
     exitHandler(() => {
       return Promise.all([
         Batcher.exit(),
@@ -48,41 +67,82 @@ class HullConnector {
     });
   }
 
+  /**
+   * This method applies all features of `Hull.Connector` to the provided application:
+   *   - serving `/manifest.json`, `/readme` and `/` endpoints
+   *   - serving static assets from `/dist` and `/assets` directiories
+   *   - rendering `/views/*.html` files with `ejs` renderer
+   *   - timeouting all requests after 25 seconds
+   *   - adding Newrelic and Sentry instrumentation
+   *   - initiating the wole [Context Object](#context)
+   *   - handling the `hullToken` parameter in a default way
+   * @public
+   * @param  {express} app expressjs application
+   * @return {express}     expressjs application
+   */
   setupApp(app) {
     setupApp({
       app,
       instrumentation: this.instrumentation,
       cache: this.cache,
       queue: this.queue,
-      connectorConfig: this.connectorConfig
+      connectorConfig: this.connectorConfig,
+      clientMiddleware: this.clientMiddleware(),
+      middlewares: this.middlewares
     });
-    app.use((req, res, next) => {
-      req.hull = req.hull || {};
-      req.hull.connectorConfig = this.connectorConfig;
-      next();
-    });
-    app.use(this.clientMiddleware());
-    app.use(this.instrumentation.ravenContextMiddleware());
-    app.use(helpersMiddleware());
-    app.use(segmentsMiddleware());
-    this.middlewares.map(middleware => app.use(middleware));
-
-
     return app;
   }
 
+  /**
+   * This is a supplement method which calls `app.listen` internally and also terminates instrumentation of the application calls.
+   * @public
+   * @param  {express} app expressjs application
+   * @return {http.Server}
+   */
   startApp(app) {
+    /**
+     * Transient Middleware
+     */
+    app.use((err, req, res, next) => {
+      if (err instanceof TransientError || (err.name === "ServiceUnavailableError" && err.message === "Response timeout")) {
+        req.hull.metric.increment("connector.transient_error", 1, [
+          `error_name:${_.snakeCase(err.name)}`,
+          `error_message:${_.snakeCase(err.message)}`
+        ]);
+        if (req.hull.smartNotifierResponse) {
+          const response = req.hull.smartNotifierResponse;
+          return res.status(err.status || 503).json(response.toJSON());
+        }
+        return res.status(err.status || 503).send("transient-error");
+      }
+      // pass the error
+      return next(err);
+    });
+
+    /**
+     * Instrumentation Middleware
+     */
     app.use(this.instrumentation.stopMiddleware());
-    app.use(smartNotifierErrorMiddleware());
+
+    /**
+     * Unhandled error middleware
+     */
+    app.use((err, req, res, next) => { // eslint-disable-line no-unused-vars
+      if (req.hull.smartNotifierResponse) {
+        const response = req.hull.smartNotifierResponse;
+        return res.status(500).json(response.toJSON());
+      }
+      return res.status(500).send("unhandled-error");
+    });
 
     return app.listen(this.port, () => {
-      this.Hull.logger.info("connector.server.listen", { port: this.port });
+      this.HullClient.logger.info("connector.server.listen", { port: this.port });
     });
   }
 
   worker(jobs) {
     this._worker = this._worker || new Worker({
-      Hull: this.Hull,
+      Hull: this.HullClient,
       instrumentation: this.instrumentation,
       cache: this.cache,
       queue: this.queue
@@ -108,7 +168,7 @@ class HullConnector {
   }
 
   clientMiddleware() {
-    this._middleware = this._middleware || this.Hull.Middleware({
+    this._middleware = this._middleware || this.HullClient.Middleware({
       hostSecret: this.hostSecret,
       clientConfig: this.clientConfig
     });
@@ -119,7 +179,7 @@ class HullConnector {
     this.instrumentation.exitOnError = true;
     if (this._worker) {
       this._worker.process(queueName);
-      this.Hull.logger.info("connector.worker.process", { queueName });
+      this.HullClient.logger.info("connector.worker.process", { queueName });
     }
   }
 }

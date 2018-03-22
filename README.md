@@ -3,10 +3,10 @@
 ## [Hull Client](https://github.com/hull/hull-client-node)
 
 ```javascript
-const hull = new Hull({ configuration });
+const hullClient = new Hull.Client({ configuration });
 ```
 
-Most low level Hull Platform API client
+This is an example of the bare bones API client. Please refer to [it's own Github repository](https://github.com/hull/hull-client-node) for documentation.
 
 ## [Hull Middleware](#hullmiddleware)
 
@@ -14,7 +14,8 @@ Most low level Hull Platform API client
 app.use(Hull.Middleware({ configuration }));
 ```
 
-A bridge between Hull Client and a NodeJS HTTP application (e.g. express) which initializes context for every HTTP request
+A bridge between Hull Client and a NodeJS HTTP application (e.g. express) which initializes HullClient a context for every HTTP request. See example usage below.
+A standalone usage is possible (it's a strandard ExpressJS middleware), but if there is no specific reason to do so, the recommended way of building connectors is [Hull Connector](#hullconnector).
 
 ## [Hull Connector](#hullconnector)
 
@@ -22,299 +23,123 @@ A bridge between Hull Client and a NodeJS HTTP application (e.g. express) which 
 const connector = new Hull.Connector({ configuration });
 ```
 
-A complete toolkit to operate with Hull Client in request handlers. Includes Hull Middleware and a set of official patterns to build highly scalable and efficient Connectors
+A complete toolkit which is created next to ExpressJS server instance. Includes Hull Middleware and a set of official patterns to build highly scalable and efficient Connectors.
 
-![hull node core components](/assets/docs/hull-node-components.png)
+To get started see few chapters of this README first:
 
---------------------------------------------------------------------------------
+1. start with [Initialization](#initialization) and [Setup Helpers](#setup-helpers)
+2. then have a quick look what you hava available in [Context Object](#context-object)
+3. proceed to [Incoming data flow](#incoming-data-flow) or [Outgoing data flow](#outgoing-data-flow) depending on your use case
+
+![hull node core components](/docs/assets/hull-node-components.png)
+
+---
 
 # Hull.Middleware
 
 > Example usage
 
 ```javascript
-import Hull from 'hull';
-import express from 'express';
+const Hull = require("hull");
+const express = require("express");
 
 const app = express();
-app.use(Hull.Middleware({ hostSecret: 'secret' }));
-app.post('/show-segments', (req, res) => {
-  req.hull.client.get('/segments').then(segments => {
+app.use(Hull.Middleware({ hostSecret: "secret" }));
+app.post("/show-segments", (req, res) => {
+  req.hull.client.get("/segments").then(segments => {
     res.json(segments);
   });
 });
 ```
 
-This middleware standardizes the instantiation of a [Hull Client](https://github.com/hull/hull-client-node) in the context of authorized HTTP request. It also fetches the entire ship's configuration.
+This middleware standardizes the instantiation of a [Hull Client](https://github.com/hull/hull-client-node) in the context of authorized HTTP request. It also fetches the entire Connector's configuration. As a result it's responsible for creating and exposing a [Context Object](#base-context), another important part is how this middleware decide where to look for configuration settings (connector ID, SECRET and ORGANIZATION) which then are applied to HullClient, for details please refer to [configuration resolve strategy](#configuration-resolve-strategy).
 
-## Options
+For configuration options refer to [API REFERENCE](./API.md#hullmiddleware).
 
-### **hostSecret**
-
-The ship hosted secret - consider this as a private key which is used to encrypt and decrypt `req.hull.token`. The token is useful for exposing it outside the Connector <-> Hull Platform communication. For example the OAuth flow or webhooks. Thanks to the encryption no 3rd party will get access to Hull Platform credentials.
-
-### **clientConfig**
-
-Additional config which will be passed to the new instance of Hull Client
-
-## Basic Context Object
-
-The Hull Middleware operates on `req.hull` object. It uses it to setup the Hull Client and decide which configuration to pick - this are the core parameters the Middleware touches:
-
-### **req.hull.requestId**
-
-unique identifier for a specific request. Will be used to enrich the context of all the logs emitted by the the Hull.Client logger. This value is automatically added by the `notifHandler` and `smartNotifierHandler` with the SNS `MessageId` or SmartNotifier `notification_id`.
-
-### **req.hull.config**
-
-an object carrying `id`, `secret` and `organization`. You can setup it prior to the Hull Middleware execution (via custom middleware) to ovewrite default configuration strategy
-
-### **req.hull.token**
-
-an encrypted version of configuration. If it's already set in the request, Hull Middleware will try to decrypt it and get configuration from it. If it's not available at the beginning and middleware resolved the configuration from other sources it will encrypt it and set `req.hull.token` value.
-
-When the connector needs to send the information outside the Hull ecosystem it must use the token, not to expose the raw credentials. The usual places where it happens are:
-
-- dashboard pane links
-- oAuth flow (callback url)
-- external webhooks
-
-### **req.hull.client**
-
-[Hull API client](https://github.com/hull/hull-client-node) initialized to work with current organization.
-
-### **req.hull.ship**
-
-ship object with manifest information and `private_settings` fetched from Hull Platform.
-
-### **req.hull.hostname**
-
-Hostname of the current request. Since the connector are stateless services this information allows the connector to know it's public address.
-
-## Operations - configuration resolve strategy
-
-Here is what happens when your Express app receives a query.
-
-1. If a config object is found in `req.hull.config` steps **2** and **3** are skipped.
-2. If a token is present in `req.hull.token`, the middleware will try to use the `hostSecret` to decrypt it and set `req.hull.config`.
-3. If the query string (`req.query`) contains `id`, `secret`, `organization`, they will be stored in `req.hull.config`.
-4. After this, if a valid configuration is available in `req.hull.config`, a Hull Client instance will be created and stored in `req.hull.client`.
-5. When this is done, then the Ship will be fetched and stored in `req.hull.ship`
-
-  If there is a `req.hull.cache` registered in the Request Context Object, it will be used to cache the ship object. For more details see [Context Object Documentation](#context)
-
-6. If the configuration or the secret is invalid, an error will be thrown that you can catch using express error handlers.
-
---------------------------------------------------------------------------------
+---
 
 # Hull.Connector
 
+This is the smallest possible Nodejs connector implementation:
+
 ```javascript
 const app = express();
-app.get('/manifest.json', serveTheManifestJson);
+app.get("/manifest.json", serveTheManifestJson);
 app.listen(port);
 ```
 
-The connector is a simple HTTP application served from public address. It could be implemented in any way and in any technological stack unless it implements the same API:
-
-Yet to ease the connector development and to extract common code base the `hull-node` library comes with the **Hull.Connector** toolkit which simplify the process of building new connector by a set of helpers and utilities which follows the same convention.
+As you can see connector is a simple HTTP application served from public address. It can be implemented in any way and in any technological stack as long as it implements the same API. You can find more details on connector's structure [here](https://www.hull.io/docs/apps/ships/).
 
 ## Initialization
 
 ```javascript
-import Hull from 'hull';
+const Hull = require("hull");
 
 const connector = new Hull.Connector({
   port: 1234, // port to start express app on
-  hostSecret: 'secret', // a secret generated random string used as a private key
-  segmentFilterSetting: 'synchronized_segments' // name of the connector private setting which has information about filtered segments
+  hostSecret: "secret", // a secret generated random string used as a private key
 });
 ```
 
-This is the instance of the `Connector` module which exposes a set of utilities which can be applied to the main [express](http://expressjs.com/) app. The utilities can be taken one-by-one and applied the the application manually or there are two helper method exposed which applies everything be default:
+This is the instance of the `Connector` module which exposes a set of utilities which can be applied to the main [express](http://expressjs.com/) app. All configuration options are listen in [API REFERENCE](./API.md#hullconnector)
 
-## Setup Helpers
+The utilities and special middlewares can be taken one-by-one from the library and applied to the application manually, but to make the whole process easier, there are two helper methods that set everything up for you:
+
+### Setup Helpers
 
 ```javascript
-import express from 'express';
-import Hull from 'hull';
+const express = require("express");
+const Hull = require("hull");
 
 const app = express();
-const connector = new Hull.Connector({ hostSecret });
+const connector = new Hull.Connector({ hostSecret, port });
 
 connector.setupApp(app); // apply connector related features to the application
-app.post('/fetch-all', (req, res) => {
-  res.end('ok');
+app.post("/fetch-all", (req, res) => {
+  // req.hull is the full Context Object!
+  req.hull.client.get("/segments")
+    .then((segments) => {
+      res.json(segments);
+    });
 });
-connector.startApp(app, port); // internally calls app.listen
+connector.startApp(app); // apply termination middlewares and internally calls `app.listen`
 ```
 
-Setup Helpers are two high-level methods exposed by initialized Connector instance to apply custom middlewares to the Express application. Those middlewares enrich the application with connector features.
+Setup Helpers are two high-level methods exposed by initialized Connector instances to apply custom middlewares to the Express application. Those middlewares enrich the request object with full [Context Object](#context-object).
 
-### setupApp(express app)
+To get more details on how those helpers methods work please see [API REFERENCE](./API.md#setupapp)
 
-This method applies all features of `Hull.Connector` to the provided application:
+---
 
-- serving `/manifest.json`, `/readme` and `/` endpoints
-- serving static assets from `/dist` and `/assets` directiories
-- rendering `/views/*.html` files with `ejs` renderer
-- timeouting all requests after 25 seconds
-- adding Newrelic and Sentry instrumentation
-- initiating the wole [Context Object](#context)
-- handling the `hullToken` parameter in a default way
+# Context Object
 
-### startApp(express app)
+[Hull.Connector](#hullconnector) apply multiple middlewares to the request handler, including [Hull.Middleware](#hullmiddleware). The result is a **Context Object** that's available in all action handlers and routers as `req.hull`. It's a set of parameters and modules to work in the context of current organization and connector instance. This Context is divided into a base set by `Hull.Middleware` (if you use it standalone) and an extended set applied when using `Hull.Connector` and helpers method described above.
 
-This is a supplement method which calls `app.listen` internally and also terminates instrumentation of the application calls.
-
-## Bare express application
-
-```javascript
-import { renderFile } from 'ejs';
-import timeout from 'connect-timeout';
-import { staticRouter } from 'hull/lib/utils';
-
-app.engine('html', renderFile); // render engine
-app.set('views', `${process.cwd()}/views`);
-app.set('view engine', 'ejs');
-
-app.use(timeout('25s')); // make sure that we will close the connection before heroku does
-app.use(connector.instrumentation.startMiddleware()); // starts express app instrumentation
-app.use(connector.instrumentation.contextMiddleware()); // adds `req.hull.metric`
-app.use(connector.queue.contextMiddleware()); // adds `req.hull.enqueue`
-app.use(connector.cache.contextMiddleware()); // adds `req.hull.cache`
-app.use((req, res, next) => {
-  // must set `req.hull.token` from request
-  req.hull.token = req.query.hullToken;
-});
-app.use(connector.notifMiddleware()); // parses the incoming sns message, so the clientMiddleware knows if to bust the cache
-app.use(connector.clientMiddleware()); // sets `req.hull.client` and `req.hull.ship`
-app.use('/', staticRouter());
-
-// add your routes here:
-app.post('/fetch-all', (req, res) => {
-  res.end('ok');
-});
-
-app.use(connector.instrumentation.stopMiddleware()); // stops instrumentation
-// start the application
-app.listen(port, () => {});
-```
-
-If you prefer working with the express app directly and have full control over how modules from `Hull.Connector` alter the behaviour of the application, you can pick them directly. Calling the `setupApp` and `startApp` is effectively equal to the following setup:
-
-## Utilities
-
-Here's some the detailed description of the utilities.
-
-### notifMiddleware()
-
-Runs `bodyParser.json()` and if the incoming requests is a Hull notification it verifies the incoming data and set `req.hull.message` with the raw information and `req.hull.notification` with parsed data.
-
-### clientMiddleware()
-
-This is a wrapper over `Hull.Middleware` whith `hostSecret` and other configuration options bound. The middleware initializes the Hull API client: `req.hull.client = new Hull({});` using credentials from (in order) `req.hull.config`, `req.hull.token` `req.hull.query`.
-
-### instrumentation.contextMiddleware()
-
-Adds `req.hull.metric`.
-
-For details see [Context Object](#context) documentation.
-
-### queue.contextMiddleware()
-
-Adds `req.hull.enqueue`.
-
-For details see [Context Object](#context) documentation.
-
-### cache.contextMiddleware()
-
-Adds `req.hull.cache`.
-
-For details see [Context Object](#context) documentation.
-
-### instrumentation.startMiddleware()
-
-Instrument the requests in case of exceptions. More details about instrumentation [here](#infrastructure).
-
-### instrumentation.stopMiddleware()
-
-Instrument the requests in case of exceptions. More details about instrumentation [here](#infrastructure).
-
-## Worker
-
-```javascript
-import express from 'express';
-import Hull from 'hull';
-
-const app = express();
-
-const connector = new Hull.Connector({ hostSecret });
-// apply connector related features to the application
-connector.setupApp(app);
-
-connector.worker({
-  customJob: (ctx, payload) => {
-    // process payload.users
-  }
-});
-app.post('/fetch-all', (req, res) => {
-  req.hull.enqueue('customJob', { users: [] });
-});
-connector.startApp(app, port);
-connector.startWorker((queueName = 'queueApp'));
-```
-
-More complex connector usually need a background worker to split its operation into smaller tasks to spread the workload:
-
-## Infrastructure
-
-The connector internally uses infrastructure modules to support its operation:
-
-- Instrumentation (for metrics)
-- Queue (for internal queueing purposes)
-- Cache (for caching ship object and segment lists)
-- Batcher (for internal incoming traffing grouping)
-
-[Read more](#infrastructure) how configure them.
-
-## Utilities
-
-Above documentation shows the basic how to setup and run the `Hull.Connector` and the express application. To implement the custom connector logic, this library comes with a set of utilities to perform most common operations.
-
-[Here is the full list >>](#utils)
-
-## Custom middleware
-
-The `Hull.Connector` architecture gives a developer 3 places to inject custom middleware:
-
-1. At the very beginning of the middleware stack - just after `const app = express();` - this is a good place to initialy modify the incoming request, e.g. set the `req.hull.token` from custom property
-2. After the [Context Object](#context) is built - after calling `setupApp(app)` - all context object would be initiated, but `req.hull.client`, `req.hull.segments` and `req.hull.ship` will be present **only if** credentials are passed. To ensure the presence of these properties [requireHullMiddleware](#requirehullmiddleware) can be used.
-3. Before the closing `startApp(app)` call which internally calls `app.listen()`
-
-**NOTE:** every `Handler` provided by this library internally uses [requireHullMiddleware](#requirehullmiddleware) and [responseMiddleware](#responsemiddleware) to wrap the provided callback function. Have it in mind while adding custom middlewares at the app and router level.
-
---------------------------------------------------------------------------------
-
-# Context object
-
-[Hull.Connector](#hullconnector) and [Hull.Middleware](#hullmiddleware) applies multiple middlewares to the request handler. The result is `req.hull` object which is the **Context Object** - a set of modules to work in the context of current organization and connector instance.
+Here is the base structure of the Context Object (we also provide Flow type for this object [here](./src/types/hull-req-context.js)).
 
 ```javascript
 {
   // set by Hull.Middleware
+  requestId: "",
   config: {},
   token: "",
-  client: {
+  client: { // Instance of "new Hull.Client()"
     logger: {},
   },
-  ship: {},
+  ship: {
+    //The values for the settings defined in the Connector's settings tab
+    private_settings: {},
+    settings: {}
+  },
   hostname: req.hostname,
-  params: req.query + req.body,
+  options: req.query + req.body,
 
   // set by Hull.Connector
   connectorConfig: {},
   segments: [],
+  users_segments: [],
+  accounts_segments: [],
+
   cache: {},
   enqueue: () => {},
   metric: {},
@@ -326,41 +151,85 @@ The `Hull.Connector` architecture gives a developer 3 places to inject custom mi
 }
 ```
 
-> The core part of the **Context Object** is described in [Hull Middleware documentation](#hullmiddleware).
+## Base Context - set by Hull.Middleware
 
-## **connectorConfig**
+### **requestId**
 
-Hash with connector settings, details [here](#hullconnector)
+unique identifier for a specific request. Will be used to enrich the context of all the logs emitted by the the [Hull.Client logger](https://github.com/hull/hull-client-node/#setting-a-requestid-in-the-logs-context). This value is automatically added by the `notifHandler` and `smartNotifierHandler` with the SNS `MessageId` or SmartNotifier `notification_id`.
 
-## **segments**
+### **config**
+
+an object carrying `id`, `secret` and `organization`. You can setup it prior to the Hull Middleware execution (via custom middleware) to override default [configuration strategy](#configuration-resolve-strategy).
+
+### **token**
+
+an encrypted version of configuration. If it's already set in the request, Hull Middleware will try to decrypt it and get the configuration from it. If it's not available at the beginning and middleware resolved the configuration from other sources it will encrypt it and set `req.hull.token` value.
+
+When the connector needs to send the information outside the Hull ecosystem it has to use the token, not to expose the raw credentials. The usual places where this happens are:
+
+- dashboard links
+- oAuth flow (callback url)
+- external incoming webhooks
+
+### **client**
+
+[Hull API client](https://github.com/hull/hull-client-node) initialized to work with current organization and connector.
+
+### **ship**
+
+ship object with manifest information and `private_settings` fetched from the Hull Platform.
+`ship` is the legacy name for Connectors.
+
+### **hostname**
+
+Hostname of the current request. Since the connector are stateless services this information allows the connector to know it's public address.
+
+### **options**
+
+Is the object including data from `query` and `body` of the request
+
+## Extended Context - set by `Hull.Connector`
+
+### **connectorConfig**
+
+Hash with connector settings, details in Hull.Connector [constructor reference](./API.md#hullconnector).
+
+### **segments**
 
 ```json
 [
   {
-    name: "Segment name",
-    id: "123abc"
+    "name": "Segment name",
+    "id": "123abc"
   }
 ]
 ```
 
-An array of segments defined at the organization, it's being automatically exposed to the context object
+An array of segments defined at the organization, it's being automatically exposed to the context object.
+The segment flow type is specified [here](./src/types/hull-segment.js).
 
-## **cache**
+`users_segments` param is alias to `segments` and `accounts_segments` exposes list of segments for accounts.
 
-```javascript
-ctx.cache.get('object_name');
-ctx.cache.set('object_name', object_value);
-ctx.cache.wrap('object_name', () => {
-  return Promise.resolve(object_value);
-});
-```
+### **cache**
 
 Since every connector can possibly work on high volumes of data performing and handling big number of requests. Internally the cache is picked by the `Hull Middleware` to store the `ship object` and by `segmentsMiddleware` to store `segments list`. The cache can be also used for other purposes, e.g. for minimizing the External API calls. `Caching Module` is exposing three public methods:
 
-## **enqueue**
+```javascript
+ctx.cache.get("object_name");
+ctx.cache.set("object_name", objectValue);
+ctx.cache.wrap("object_name", (objectValue) => {
+  return Promise.resolve(objectValue);
+});
+```
+
+[Full API reference](./API.md#cache)
+
+### **enqueue**
+
+**This is generally a deprecated idea and should not be implemented in new connectors. Fluent flow control and smartNotifierHandler should be used instead.**
 
 ```javascript
-req.hull.enqueue('jobName', { user: [] }, (options = {}));
+req.hull.enqueue("jobName", { user: [] }, options = {});
 ```
 
 A function added to context by `Queue Module`. It allows to perform tasks in an async manner. The queue is processed in background in a sequential way, it allows to:
@@ -369,9 +238,11 @@ A function added to context by `Queue Module`. It allows to perform tasks in an 
 - split the workload into smaller chunks (e.g. for extract parsing)
 - control the concurrency - most of the SERVICE APIs have rate limits
 
-- **options.queueName** - when you start worker with a different queue name, you can explicitly set it here to queue specific jobs to that queue
+[Full API reference](./API.md#enqueue)
 
-## **metric**
+### **metric**
+
+An object added to context by `Instrumentation Module`. It allows to send data to metrics service. It's being initiated in the right context, and expose following methods:
 
 ```javascript
 req.hull.metric.value("metricName", metricValue = 1);
@@ -379,21 +250,33 @@ req.hull.metric.increment("metricName", incrementValue = 1); // increments the m
 req.hull.metric.event("eventName", { text = "", properties = {} });
 ```
 
-An object added to context by `Instrumentation Module`. It allows to send data to metrics service. It's being initiated in the right context, and expose following methods:
+An object added to context by the `Instrumentation Module`. It allows to send data to the metrics service. [Full API reference](./API.md#metric)
 
-## **helpers**
+### **helpers**
+
+Helpers are just a set of simple functions added to the Context Object which make common operation easier to perform. They all follow [context management convention](#context-management-convention) but the functions can be also used in a standalone manner:
 
 ```javascript
-req.hull.helpers.filterUserSegments();
-req.hull.helpers.requestExtract();
-req.hull.helpers.setUserSegments();
+const { updateSettings } = require("hull/lib/helpers");
+
+app.post("/request", (req, res) => {
+  updateSettings(req.hull, { called: true });
+  // or:
+  req.hull.helpers.updateSettings({ called: true });
+});
 ```
 
-A set of functions from `connector/helpers` bound to current Context Object. More details [here](#helpers).
 
-## **service**
+Beside of connector setting updating, they also simplify working with [outgoing extracts](#batch-extracts).
+
+All helpers are listed in [API REFERENCE](./API.md#helpers)
+
+### **service**
+
+A namespace reserved for connector developer to inject a custom modules. When the connector base code evolves, the best technique to keep it maintainable is to split it into a set of functions or classes. The `service` namespace is reserved for the purpose and should be used together with `use` method on connector instance to apply custom middleware. That should be an object with custom structure adjusted to specific connector needs and scale:
 
 ```javascript
+// custom middleware creating the `service` param
 connector.use((req, res, next) => {
   req.hull.service = {
     customFunction: customFunction.bind(req.hull),
@@ -404,7 +287,7 @@ connector.use((req, res, next) => {
 
 connector.setupApp(app);
 
-app.get('/action', (req, res) => {
+app.get("/action", (req, res) => {
   const { service } = req.hull;
   service.customFunction(req.query.user_id);
   // or
@@ -412,9 +295,13 @@ app.get('/action', (req, res) => {
 });
 ```
 
-A namespace reserved for connector developer to inject a custom logic. When the connector base code evolves, the best technique to keep it maintainable is to split it into a set of functions or classes. To make it even simpler and straightforward the connector toolkit uses [one convention](#context) to pass the context into the functions and classes. The `service` namespace is reserved for the purpose and should be used together with `use` method on connector instance to apply custom middleware. That should be an object with custom structure adjusted to specific connector needs and scale:
+We strongly advice to follow our [context management convention](#context-management-convention) which make it easy to keep functions and classes signatures clean and standard.
 
-## **message**
+### **message**
+
+Optional - set if there is a sns message incoming.
+
+It contains the raw, message object - should not be used directly by the connector, `req.hull.notification` is added for that purpose.
 
 ```javascript
 Type: "Notification",
@@ -422,11 +309,9 @@ Subject: "user_report:update",
 Message: "{\"user\":{}}"
 ```
 
-> Optional - set if there is a sns message incoming.
+### **notification**
 
-It contains the raw, message object - should not be used directly by the connector, `req.hull.notification` is added for that purpose.
-
-## **notification**
+Optional - if the incoming message type if `Notification`, then the messaged is parsed and set to notification.
 
 ```javascript
 subject: "user_report:update",
@@ -434,9 +319,9 @@ timestamp: new Date(message.Timestamp),
 paload: { user: {} }
 ```
 
-> Optional - if the incoming message type if `Notification`, then the messaged is parsed and set to notification.
+### **smartNotifierResponse**
 
-## **smartNotifierResponse**
+Use setFlowControl to instruct the Smart notifier how to handle backpressure.
 
 ```javascript
 ctx.smartNotifierResponse.setFlowControl({
@@ -446,15 +331,39 @@ ctx.smartNotifierResponse.setFlowControl({
 });
 ```
 
-> use setFlowControl to instruct the Smart notifier how to handle backpressure.
+## Configuration resolve strategy
+
+During `Context Object` building important step is how Hull Client configuration is read. The whole strategy is descibed below step-by-step.
+
+Here is what happens when your Express app receives a query:
+
+1. If a config object is found in `req.hull.config` steps **2** and **3** are skipped.
+2. If a token is present in `req.hull.token`, the middleware will try to use the `hostSecret` to decrypt it and set `req.hull.config`.
+3. If the query string (`req.query`) contains `id`, `secret`, `organization`, they will be stored in `req.hull.config`.
+4. After this, if a valid configuration is available in `req.hull.config`, a Hull Client instance will be created and stored in `req.hull.client`.
+5. When this is done, then the Ship will be fetched and stored in `req.hull.ship`
+
+  If there is a `req.hull.cache` registered in the Request Context Object, it will be used to cache the ship object. For more details see [Context Object Documentation](#context)
+
+6. If the configuration or the secret is invalid, an error will be thrown that you can catch using express error handlers.
+
+## Custom middleware
+
+The `Hull.Connector` architecture gives a developer 3 places to inject custom middleware:
+
+1. At the very beginning of the middleware stack - just after `const app = express();` - this is a good place to initialy modify the incoming request, e.g. set the `req.hull.token` from custom property
+2. After the [Context Object](#context) is built - after calling `setupApp(app)` - all context object would be initiated, but `req.hull.client`, `req.hull.segments` and `req.hull.ship` will be present **only if** credentials are passed.
+3. Before the closing `startApp(app)` call which internally calls `app.listen()`
 
 ## Context management convention
 
-The context object is treated by the `Hull.Connector` as a [dependency injection](https://en.wikipedia.org/wiki/Dependency_injection) container which carries on all required dependencies to be used in actions, jobs or custom methods.
+The [context object](#context-object) is treated by the `Hull.Connector` as a [dependency injection](https://en.wikipedia.org/wiki/Dependency_injection) container which carries on all required dependencies to be used in actions, jobs or custom methods.
 
 This library sticks to a the following convention of managing the context object:
 
 ### Functions
+
+All functions take context as a first argument:
 
 ```javascript
 function getProperties(context, prop) {
@@ -463,12 +372,16 @@ function getProperties(context, prop) {
 }
 ```
 
-> This allow binding functions to the context and using bound version
+This allow binding such functions to the context and using bound version
 
 ```javascript
 const getProp = getProperties.bind(null, context);
-getProp('test') === getProperties(context, 'test');
+getProp("test") === getProperties(context, "test");
 ```
+
+### Classes
+
+In case of a class the context is the one and only argument:
 
 ```javascript
 class ServiceAgent {
@@ -478,288 +391,127 @@ class ServiceAgent {
 }
 ```
 
-> In case of a class the context is the one and only argument:
+All functions and classes listed in [API reference](./API.md) and available in the [context object](#context-object) follow this convention when used from contex object they will be already bound, so you don't need to provide the first argument when using them.
 
-Every "pure" function which needs context to operate takes it as a first argument:
+---
 
---------------------------------------------------------------------------------
+# Incoming data flow
 
-# Helpers
+To get data into platform we need to use `traits` or `track` methods from `HullClient` (see details [here](https://github.com/hull/hull-client-node/#methods-for-user-or-account-scoped-instance)). When using `Hull.Connector` we have the client initialized in the correct context so we can use it right away in side any HTTP request handler.
 
-This is a set of additional helper functions being exposed at `req.hull.helpers`. They allow to perform common operation in the context of current request. They are similar o `req.hull.client.utils`, but operate at higher level, ensure good practises and should be used in the first place before falling back to raw utils.
-
-## updateSettings()
+Let's write the simplest possible HTTP endpoint on the connector to fetch some users:
 
 ```javascript
-req.hull.helpers.updateSettings({ newSettings });
-```
-
-Allows to update selected settings of the ship `private_settings` object. This is a wrapper over `hull.utils.settings.update()` call. On top of that it makes sure that the current context ship object is updated, and the ship cache is refreshed.
-
-## requestExtract()
-
-```javascript
-req.hull.helpers.requestExtract({ segment = null, path, fields = [], additionalQuery = {} });
-```
-
-This is a method to request an extract of user base to be sent back to the Connector to a selected `path` which should be handled by `notifHandler`.
-
-## Context
-
-```javascript
-import { updateSettings } from 'hull/lib/helpers';
-
-app.post('/request', (req, res) => {
-  updateSettings(req.hull, { called: true });
-  // or:
-  req.hull.helpers.updateSettings({ called: true });
-});
-```
-
-Helpers are just a set of simple functions which take [Context Object](context.md) as a first argument. When being initialized by `Hull.Middleware` their are all bound to the proper object, but the functions can be also used in a standalone manner:
-
---------------------------------------------------------------------------------
-
-# Infrastructure
-
-```javascript
-const instrumentation = new Instrumentation();
-const cache = new Cache();
-const queue = new Queue();
-
-const connector = new Hull.Connector({ instrumentation, cache, queue });
-```
-
-Production ready connectors need some infrastructure modules to support their operation, allow instrumentation, queueing and caching. The [Hull.Connector](#hullconnector) comes with default settings, but also allows to initiate them and set a custom configuration:
-
-## Queue
-
-```javascript
-import { Queue } from 'hull/lib/infra';
-import BullAdapter from 'hull/lib/infra/queue/adapter/bull'; // or KueAdapter
-
-const queueAdapter = new BullAdapter(options);
-const queue = new Queue(queueAdapter);
-
-const connector = new Hull.Connector({ queue });
-```
-
-By default it's initiated inside `Hull.Connector` as a very simplistic in-memory queue, but in case of production grade needs, it comes with a [Kue](https://github.com/Automattic/kue) or [Bull](https://github.com/OptimalBits/bull) adapters which you can initiate in a following way:
-
-`Options` from the constructor of the `BullAdapter` or `KueAdapter` are passed directly to the internal init method and can be set with following parameters:
-
-<https://github.com/Automattic/kue#redis-connection-settings> <https://github.com/OptimalBits/bull/blob/master/REFERENCE.md#queue>
-
-The `queue` instance has a `contextMiddleware` method which adds `req.hull.enqueue` method to queue jobs - this is done automatically by `Hull.Connector().setupApp(app)`:
-
-```javascript
-req.hull.enqueue((jobName = ''), (jobPayload = {}), (options = {}));
-```
-
-**options:**
-
-1. **ttl** - milliseconds
-
-  > Job producers can set an expiry value for the time their job can live in active state, so that if workers didn't reply in timely fashion, Kue will fail it with TTL exceeded error message preventing that job from being stuck in active state and spoiling concurrency.
-
-2. **delay** - milliseconds
-
-  > Delayed jobs may be scheduled to be queued for an arbitrary distance in time by invoking the .delay(ms) method, passing the number of milliseconds relative to now. Alternatively, you can pass a JavaScript Date object with a specific time in the future. This automatically flags the Job as "delayed".
-
-3. **priority** - integer / string:
-
-  ```javascript
-  {
-  low: 10,
-  normal: 0,
-  medium: -5,
-  high: -10,
-  critical: -15
-  }
-  ```
-
-By default the job will be retried 3 times and the payload would be removed from queue after successfull completion.
-
-Then the handlers to work on a specific jobs is defined in following way:
-
-```javascript
-connector.worker({
-  jobsName: (ctx, jobPayload) => {
-    // process Payload
-    // this === job (kue job object)
-    // return Promise
-  }
-});
-connector.startWorker();
-```
-
-## Cache
-
-```javascript
-import redisStore from 'cache-manager-redis';
-import { Cache } from 'hull/lib/infra';
-
-const cache = new Cache({
-  store: redisStore,
-  url: 'redis://:XXXX@localhost:6379/0?ttl=600'
-});
-
-const connector = new Hull.Connector({ cache });
-```
-
-> The `req.hull.cache` can be used by the connector developer for any other caching purposes:
-
-```javascript
-ctx.cache.get('object_name');
-ctx.cache.set('object_name', object_value);
-ctx.cache.wrap('object_name', () => {
-  return Promise.resolve(object_value);
-});
-```
-
-The default comes with the basic in-memory store, but in case of distributed connectors being run in multiple processes for reliable operation a shared cache solution should be used. The `Cache` module internally uses [node-cache-manager](https://github.com/BryanDonovan/node-cache-manager), so any of it's compatibile store like `redis` or `memcache` could be used:
-
-The `cache` instance also exposes `contextMiddleware` whch adds `req.hull.cache` to store the ship and segments information in the cache to not fetch it for every request. The `req.hull.cache` is automatically picked and used by the `Hull.Middleware` and `segmentsMiddleware`.
-
-<aside class="warning">
-There are two <code>object names</code> which are reserved and cannot be used here:
-
-- any ship id
-- "segments"
-</aside>
-
-<aside class="success"><strong>IMPORTANT</strong> internal caching of <code>ctx.ship</code> object is refreshed on <code>ship:update</code> notifications, if the connector doesn't subscribe for notification at all the cache won't be refreshed automatically. In such case disable caching, set short TTL or add <a href="./connector-utils.md#notifhandler">notifHandler</a>.
-</aside>
-
-## Instrumentation
-
-```javascript
-import { Instrumentation } from 'hull/lib/infra';
-
-const instrumentation = new Instrumentation();
-
-const connector = new Connector.App({ instrumentation });
-```
-
-It automatically sends data to DataDog, Sentry and Newrelic if appropriate ENV VARS are set:
-
-- NEW_RELIC_LICENSE_KEY
-- DATADOG_API_KEY
-- SENTRY_URL
-
-It also exposes the `contextMiddleware` which adds `req.hull.metric` agent to add custom metrics to the ship. Right now it doesn't take any custom options, but it's showed here for the sake of completeness.
-
-## Handling the process shutdown
-
-Two infrastrcture services needs to be notified about the exit event:
-
-- `Queue` - to drain and stop the current queue processing
-- `Batcher` - to flush all pending data.
-
---------------------------------------------------------------------------------
-
-# Connector Utilities
-
-In addition to the [Connector toolkit](connector.md) the library provides a variety of the utilities to perform most common actions of the ship. Following list of handlers and middleware helps in performing most common connector operations.
-
-## actionHandler()
-
-```javascript
-import { actionHandler } from 'hull/lib/utils';
 const app = express();
+const connector = new Hull.Connector();
 
-app.use(
-  '/fetch-all',
-  actionHandler((ctx, { query, body }) => {
-    const { client, ship } = ctx;
+connector.setupApp(app);
 
-    const { api_token } = ship.private_settings;
-    const serviceClient = new ServiceClient(api_token);
-    return serviceClient.getHistoricalData().then(users => {
-      users.map(u => {
-        client.asUser({ email: u.email }).traits({
-          new_trait: u.custom_value
-        });
+app.get("/fetch-users", (req, res) => {
+  const ctx = req.hull;
+  const { api_key } = ctx.ship.private_settings;
+
+  // let's try to get some data from 3rd party API
+  const customApiClient = new CustomApiClient(api_key);
+
+  customApiClient.fetchUsers()
+    .then(users => {
+      return users.map((user) => {
+        return ctx.client.asUser(user.ident).traits(user.attributes);
       });
+    })
+    .then(() => {
+      res.end("ok");
     });
-  })
-);
+});
+
+connector.startApp(app);
 ```
 
-This is the simplest requests handler to expose custom logic through an API POST endpoint. The possible usage is triggering a custom operation (like fetching historical data) or a webhook. Both cases handle incoming flow data into Hull platform.
+Then we can create a button on the connector dashboard to run it or call it from any other place. The only requirement is that the enpoint is called with credentials according to the [configuration resolve strategy](#configuration-resolve-strategy).
 
-## smartNotifierHandler()
+## Schedules
+
+If you want to run specific endpoint with a selected interval you can use `schedules` param of the manifest.json:
 
 ```json
 {
-  "tags": ["smart-notifier"],
-  "subscriptions": [
+ "schedules": [
     {
-      "url": "/notify"
+      "url": "/fetch-users",
+      "type": "cron",
+      "value": "*/5 * * * *"
     }
   ]
 }
 ```
 
-> To enable the smartNotifier for a connector, the `smart-notifier` tag should be present in `manifest.json` file. Otherwise, regular, unthrottled notifications will be sent without the possibility of flow control.
+This way selected connector endpoint would be run at every 5th minute.
 
-`smartNotifierHandler` is a next generation `notifHandler` cooperating with our internal notification tool. It handles Backpressure, throttling and retries for you and lets you adapt to any external rate limiting pattern.
+---
+
+# Outgoing data flow
+
+To peform operations on in response to new data coming in or being updated on Hull Platform we use two means of communications - [notifications](#notifications) which are triggered on per user/event/change basis or [batch extracts](#batch-extracts) which can be sent manually from the dashboard UI or requested by the connector.
+
+## Notifications
+
+All events triggered on user base result in a notification hitting specified connector endpoint. Current Hull Connector version supports two generations of those notifications - legacy and new "smart-notifier". Following guide assume you are using the new generation.
+
+To subscribe to platform notifications, define the endpoint in connector manifest.json:
+
+```json
+{
+  "tags": ["smart-notifier"],
+  "subscriptions": [{
+    "url": "/smart-notifier"
+  }]
+}
+```
+
+Then in ExpressJS server definition we need to pick `smartNotifierHandler` from `utils` directory:
 
 ```javascript
-import { smartNotifierHandler } from 'hull/lib/utils';
-const app = express();
+const { smartNotifierHandler } = require("hull/lib/utils");
 
-const handler = smartNotifierHandler({
+const app = express();
+const connector = new Hull.Connector();
+
+connector.setupApp(app);
+
+app.use("/smart-notifier", smartNotifierHandler({
   handlers: {
-    'ship:update': function(ctx, messages = []) {},
-    'segment:update': function(ctx, messages = []) {},
-    'segment:delete': function(ctx, messages = []) {},
-    'account:update': function(ctx, messages = []) {},
-    'user:update': function(ctx, messages = []) {
-      console.log('Event Handler here', ctx, messages);
-      // ctx: Context Object
-      // messages: [{
-      //   user: { id: '123', ... },
-      //   segments: [{}],
-      //   changes: {},
-      //   events: [{}, {}]
-      //   matchesFilter: true | false
-      // }]
+    "user:update": (ctx, messages = []) => {
       // more about `smartNotifierResponse` below
       ctx.smartNotifierResponse.setFlowControl({
-        type: 'next',
+        type: "next",
         size: 100,
         in: 5000
       });
       return Promise.resolve();
     }
   },
-  userHandlerOptions: {
+  options: {
     groupTraits: false
   }
-});
+}));
 
-connector.setupApp(app);
-app.use('/notify', handler);
+connector.startApp(app);
 ```
 
-```javascript
-function userUpdateHandler(ctx, messages = []) {
-  ctx.smartNotifierResponse.setFlowControl({
-    type: 'next',
-    in: 1000
-  });
-  return Promise.resolve();
-}
-```
+The `user:update` handler will be run with batches of notification messages coming from platform. User update message is a json object which is grouping together all events and changes which happened on the specic user since the previous notification. The structure of the single message is defined in [this Flow Type](./src/types/hull-user-update-message.js).
 
-When performing operations on notification you can set FlowControl settings using `ctx.smartNotifierResponse` helper.
+Inside the handler you can use any object from the [Context Object](#context-object). Remember that the handler needs to return a valid promise at the end of it's operations.
 
-## FlowControl
+Full information on `smartNotifierHandler` is available in [API REFERENCE](./API.md#smartnotifierhandler).
+
+### FlowControl
+
+`Smart-notifier` generation of notifications delivery allows us to setup `flow control ` which define pace at which connector will be called with new messages:
 
 ```javascript
 ctx.smartNotifierResponse.setFlowControl({
-  type: 'next', // `next` or `retry`, defines next flow action
+  type: "next", // `next` or `retry`, defines next flow action
   size: 1000, // only for `next` - number of messages for next notification
   in: 1000, // delay for next flow step in ms
   at: 1501062782 // time to trigger next flow step
@@ -779,7 +531,7 @@ FlowControl is an element of the `SmartNotifierResponse`. When the HTTP response
 }
 ```
 
-> The Defaults are the following:
+The Defaults are the following:
 
 ```javascript
 // for a resolved, successful promise:
@@ -796,259 +548,154 @@ FlowControl is an element of the `SmartNotifierResponse`. When the HTTP response
 }
 ```
 
-## Batch Jobs (Extracts)
+## Batch extracts
+
+Second way of operating on Hull user base it to process batch extracts.
+
+In addition to event notifications Hull supports sending extracts of users and accounts. These extracts can be triggered via manual user action on the dashboard or can be programmatically requested from the Connector logic (see [requestExtract helper](./API.md#requestextract)). The Connector will expose the manual batches action if your `manifest.json` includes a `batch` or `batch-accounts` tag :
 
 ```json
 {
-  "tags": ["batch"]
+  "tags" : [ "batch", "batch-accounts" ]
 }
 ```
 
-> To mark a connector as supporting Batch processing, the `batch` tag should be present in `manifest.json` file.
+In both cases the batch extracts are processed by the `user:update` and `account:update` handlers. The extract is split into smaller chunks using `options.maxSize`. Only traits and segments are exposed in the extracted lines, `events` and `changes` are never sent.
 
-In addition to event notifications Hull supports sending extracts of the User base. These extracts can be triggered via Dashboard manual user action or can be programatically requested from Connector logic (see [requestExtract helper](./connector-helpers.md#requestextract-segment--null-path-fields---)). The Connector will receive manual batches if your ship's `manifest.json` exposes a `batch` tag in `tags`:
+In addition, to let the handler function detect whether it is processing a batch extract or notifications, a third argument is passed- in case of notifications it is `undefined`, otherwise it includes `query` and `body` parameters from `req` object.
 
-In both cases the batch extract is handled by the `user:update`. The extract is split into smaller chunks using the `userHandlerOptions.maxSize` option. In extract every message will contain only `account`, `user` and `segments` information.
+Notification of batches, when the extracts are ready are sent as a `POST` request on the `/batch` and `/batch-accounts` endpoints respectively.
 
-In addition to let the `user:update` handler detect whether it is processing a batch extract or notifications there is a third argument passed to that handler - in case of notifications it is `undefined`, otherwise it includes `query` and `body` parameters from req object.
-
-## notifHandler()
-
-**Note** : The Smart notifier is the newer, more powerful way to handle data flows. We recommend using it instead of the NotifHandler. This handler is there to support Batch extracts.
-
-NotifHandler is a packaged solution to receive User and Segment Notifications from Hull. It's built to be used as an express route. Hull will receive notifications if your ship's `manifest.json` exposes a `subscriptions` key:
-
-```json
-{
-  "subscriptions": [{ "url": "/notify" }]
-}
-```
-
-Here's how to use it.
 
 ```javascript
-import { notifHandler } from "hull/lib/utils";
-const app = express();
-
-const handler = NotifHandler({
-  userHandlerOptions: {
-    groupTraits: true, // groups traits as in below examples
-    maxSize: 6,
-    maxTime: 10000,
-    segmentFilterSetting: "synchronized_segments"
+app.post("/batch", notifHandler({
+  options: {
+    maxSize: 100,
+    groupTraits: false
   },
-  onSubscribe() {} // called when a new subscription is installed
-  handlers: {
-    "ship:update": function(ctx, message) {},
-    "segment:update": function(ctx, message) {},
-    "segment:delete": function(ctx, message) {},
-    "account:update": function(ctx, message) {},
-    "user:update": function(ctx, messages = []) {
-      console.log('Event Handler here', ctx, messages);
-      // ctx: Context Object
-      // messages: [{
-      //   user: { id: '123', ... },
-      //   segments: [{}],
-      //   changes: {},
-      //   events: [{}, {}]
-      //   matchesFilter: true | false
-      // }]
+  handers: {
+    "user:update": ({ hull }, users) => {
+      hull.logger.info("Get users", users);
     }
   }
-})
-
-connector.setupApp(app);
-app.use('/notify', handler);
+}));
 ```
 
-For example of the notifications payload [see details](./notifications.md)
+---
 
-## oAuthHandler()
+# Connector status
+
+Platform API comes with an endpoint where connector can post it's custom checks performed on settings and/or 3rd party api.
+The resulted should be posted to an endpoint but for testing and debugging purposes we also respond with the results.
+
+Here comes example status implementation:
 
 ```javascript
-import { oAuthHandler } from 'hull/lib/utils';
-import { Strategy as HubspotStrategy } from 'passport-hubspot';
+app.all("/status", (req, res) => {
+  const { ship, client } = req.hull;
+  const messages = [];
+  let status = "ok";
 
-const app = express();
-
-app.use(
-  '/auth',
-  oAuthHandler({
-    name: 'Hubspot',
-    tokenInUrl: true,
-    Strategy: HubspotStrategy,
-    options: {
-      clientID: 'xxxxxxxxx',
-      clientSecret: 'xxxxxxxxx', //Client Secret
-      scope: ['offline', 'contacts-rw', 'events-rw'] //App Scope
-    },
-    isSetup(req) {
-      if (!!req.query.reset) return Promise.reject();
-      const { token } = req.hull.ship.private_settings || {};
-      return !!token
-      ? Promise.resolve({ valid: true, total: 2 })
-      : Promise.reject({ valid: false, total: 0 });
-    },
-    onLogin: req => {
-      req.authParams = { ...req.body, ...req.query };
-      return req.hull.client.updateSettings({
-        portalId: req.authParams.portalId
-      });
-    },
-    onAuthorize: req => {
-      const { refreshToken, accessToken } = req.account || {};
-      return req.hull.client.updateSettings({
-        refresh_token: refreshToken,
-        token: accessToken
-      });
-    },
-    views: {
-      login: 'login.html',
-      home: 'home.html',
-      failure: 'failure.html',
-      success: 'success.html'
-    }
-  })
-);
-```
-
-OAuthHandler is a packaged authentication handler using [Passport](http://passportjs.org/). You give it the right parameters, it handles the entire auth scenario for you.
-
-It exposes hooks to check if the ship is Set up correctly, inject additional parameters during login, and save the returned settings during callback.
-
-To make it working in Hull dashboard set following line in **manifest.json** file:
-
-```json
-{
-  "admin": "/auth/"
-}
-```
-
-### parameters:
-
-#### name
-
-The name displayed to the User in the various screens.
-
-#### tokenInUrl
-
-Some services (like Stripe) require an exact URL match. Some others (like Hubspot) don't pass the state back on the other hand.
-
-Setting this flag to false (default: true) removes the `token` Querystring parameter in the URL to only rely on the `state` param.
-
-#### Strategy
-
-A Passport Strategy.
-
-#### options
-
-Hash passed to Passport to configure the OAuth Strategy. (See [Passport OAuth Configuration](http://passportjs.org/docs/oauth))
-
-#### isSetup()
-
-A method returning a Promise, resolved if the ship is correctly setup, or rejected if it needs to display the Login screen.
-
-Lets you define in the Ship the name of the parameters you need to check for.
-
-You can return parameters in the Promise resolve and reject methods, that will be passed to the view. This lets you display status and show buttons and more to the customer
-
-#### onLogin()
-
-A method returning a Promise, resolved when ready.
-
-Best used to process form parameters, and place them in `req.authParams` to be submitted to the Login sequence. Useful to add strategy-specific parameters, such as a portal ID for Hubspot for instance.
-
-#### onAuthorize()
-
-A method returning a Promise, resolved when complete. Best used to save tokens and continue the sequence once saved.
-
-#### views
-
-> Each view will receive the following data
-
-```javascript
-views: {
-  login: "login.html",
-  home: "home.html",
-  failure: "failure.html",
-  success: "success.html"
-}
-//each view will receive the following data:
-{
-  name: "The name passed as handler",
-  urls: {
-    login: '/auth/login',
-    success: '/auth/success',
-    failure: '/auth/failure',
-    home: '/auth/home',
-  },
-  ship: ship //The entire Ship instance's config
-}
-```
-
-Required, A hash of view files for the different screens.
-
-## requireHullMiddleware
-
-```javascript
-import { requireHullMiddleware } from 'hull/lib/utils';
-const app = express();
-
-app.post(
-  '/fetch',
-  Hull.Middleware({ hostSecret }),
-  requireHullMidlleware,
-  (req, res) => {
-    // we have a guarantee that the req.hull.client
-    // is properly set.
-    // In case of missing credentials the `requireHullMidlleware`
-    // will respond with 403 error
+  const requiredSetting = _.get(ship.private_settings, "required_setting");
+  if (code === undefined) {
+    status = "warning";
+    messages.push("Required setting is not set.");
   }
-);
-```
 
-The middleware which ensures that the Hull Client was successfully setup by the Hull.Middleware:
-
-## responseMiddleware
-
-> Normally one would need to do
-
-```javascript
-const app = express();
-
-app.post('fetch', ...middleware, (req, res) => {
-  performSomeAction().then(
-    () => res.end('ok'),
-    err => {
-      req.hull.client.logger.error('fetch.error', err.stack || err);
-      res.status(500).end();
-    }
-  );
+  res.json({ messages, status });
+  return client.put(`${req.hull.ship.id}/status`, { status, messages });
 });
 ```
 
-This middleware helps sending a HTTP response and can be easily integrated with Promise based actions:
+Then to make it being run in background we can use a schedule entry in `manifest.json`:
 
-```javascript
-import { responseMiddleware } from 'hull/lib/utils';
-const app = express();
-
-app.post(
-  'fetch',
-  ...middleware,
-  (req, res, next) => {
-    performSomeAction().then(next, next);
-  },
-  responseMiddleware
-);
+```json
+{
+  "schedules": [
+    {
+      "url": "/status",
+      "type": "cron",
+      "value": "*/30 * * * *"
+    }
+  ]
+}
 ```
 
-The response middleware takes that instrastructure related code outside, so the action handler can focus on the logic only. It also makes sure that both Promise resolution are handled properly
+---
 
-## Flow annotations
+# Installation & Authorization
+
+First step of connector installation is done automatically by the platform and the only needed part from connector end is manifest.json file.
+
+However typically after the installation we want that the connector is authorized with the 3rd party API.
+
+Hull Node comes with packaged authentication handler using Passport - the utility is called oAuthHandler and you can find documentation [here](./API.md#oauthhandler).
+
+---
+
+# Utilities
+
+Beside of `Hull.Connector` class and `Context Object` all other public API elements of this library is exposed as `Utils` which are standalone functions to be picked one-by-one and used in custom connector code.
+
+List of all utilities are available [here](./API.md#utils)
+
+## Superagent plugins
+
+Hull Node promotes using [SuperAgent](http://visionmedia.github.io/superagent/) as a core HTTP client. We provide two plugins to add more instrumentation over the requests.
+
+- [superagentErrorPlugin](./API.md#superagenterrorplugin)
+- [superagentInstrumentationPlugin](./API.md#superagentinstrumentationplugin)
+- [superagentUrlTemplatePlugin](./API.md#superagenturltemplateplugin)
+
+---
+
+# Infrastructure
+
+The connector internally uses infrastructure modules to support its operation on application process level and provide some of the [Context Object](#context-object) elements like `cache`, `metric` and `enqueue`. See following API REFERENCE docs to see what is the default behavior and how to change it:
+
+- [Instrumentation](./API.md#instrumentationagent) (for gathering metrics)
+- [Cache](./API.md#cacheagent) (for caching ship object, segment lists and custom elements)
+- [Queue](./API.md#queueagent) (for internal queueing purposes)
+- Batcher (for internal incoming traffing grouping)
+
+---
+
+# Worker
+
+More complex connectors usually need a background worker to split its operation into smaller tasks to spread the workload.
+
+**This is generally a deprecated idea and should not be implemented in new connectors. Fluent flow control and smartNotifierHandler should be used instead.**
 
 ```javascript
-/* @flow */
+const express = require("express");
+const Hull = require("hull");
+
+const app = express();
+
+const connector = new Hull.Connector({ hostSecret });
+// apply connector related features to the application
+connector.setupApp(app);
+
+connector.worker({
+  customJob: (ctx, payload) => {
+    // process payload.users
+  }
+});
+app.post("/fetch-all", (req, res) => {
+  req.hull.enqueue('customJob', { users: [] });
+});
+connector.startApp(app, port);
+connector.startWorker((queueName = 'queueApp'));
+```
+
+---
+
+# Flow annotations
+
+When using a [flow](https://flow.org) enabled project, we recommend using flow types provided by hull-node. You can import them in your source files directly from `hull` module and use `import type` flow structure:
+
+```javascript
+// @flow
 import type { THullObject } from "hull";
 
 parseHullObject(user: THullObject) {
@@ -1056,96 +703,111 @@ parseHullObject(user: THullObject) {
 }
 ```
 
-> See `src/lib/types` directory for a full list of available types.
+See [`src/lib/types`](./src/lib/types) directory for a full list of available types.
 
-When using a [flow](https://flow.org) enabled project, we recommend using flow types provided by hull-node. You can import them in your source files directly from `hull` module and use `import type` flow structure:
+---
 
-## Superagent plugins
+# Error handling
 
-Hull Node promotes using [SuperAgent](http://visionmedia.github.io/superagent/) as a core HTTP client. We provide two plugins to add more instrumentation over the requests.
+All handlers for outgoing traffic are expecting to return a promise. Resolution or rejection of the promise triggers different behavior of error handling.
+Default JS errors are treated as [unhandled errors](#unhandled-error), the same applies for any unhandled exceptions thrown from the handler code.
 
-### superagentUrlTemplatePlugin
+Hull Connector provides two other error classes [TransientError](#transient-error) and [LogicError](#logic-error) which are handled
+by internals of the SDK in a different way.
 
-```javascript
-const superagent = require('superagent');
-const { superagentUrlTemplatePlugin } = require('hull/lib/utils');
+The convention is to filter known issues and categorize them into transient or logic errors categories. All unknown errors will default to unhandled errors.
 
-const agent = superagent.agent().use(
-  urlTemplatePlugin({
-    defaultVariable: 'mainVariable'
-  })
-);
+## Unhandled error
 
-agent
-.get('https://api.url/{{defaultVariable}}/resource/{{resourceId}}')
-.tmplVar({
-  resourceId: 123
-})
-.then(res => {
-  assert(res.request.url === 'https://api.url/mainVariable/resource/123');
-});
-```
+Default, native Javascript error.
 
-This plugin allows to pass generic url with variables - this allows better instrumentation and logging on the same REST API endpoint when resource ids varies.
-
-### superagentInstrumentationPlugin
+context | behavior
+--- | ---
+smart-notifier response | retry
+other endpoints response | error
+status code | 500
+sentry exception report | yes
+datadog metrics | no
 
 ```javascript
-const superagent = require('superagent');
-const { superagentInstrumentationPlugin } = require('hull/lib/utils');
-
-// const ctx is a Context Object here
-
-const agent = superagent
-.agent()
-.use(
-  urlTemplatePlugin({
-    defaultVariable: 'mainVariable'
-  })
-)
-.use(
-  superagentInstrumentationPlugin({
-    logger: ctx.client.logger,
-    metric: ctx.metric
-  })
-);
-
-agent
-.get('https://api.url/{{defaultVariable}}/resource/{{resourceId}}')
-.tmplVar({
-  resourceId: 123
-})
-.then(res => {
-  assert(res.request.url === 'https://api.url/mainVariable/resource/123');
-});
+app.use("/smart-notifier-handler", smartNotifierHandler({
+  handlers: {
+    "user:update": (ctx, messages) => {
+      return Promise.reject(new Error("Error message"));
+    }
+  }
+}));
 ```
 
-This plugin takes `client.logger` and `metric` params from the `Context Object` and logs following log line:
 
-- `ship.service_api.request` with params:
+## Transient error
 
-  - `url` - the original url passed to agent (use with `superagentUrlTemplatePlugin`)
-  - `responseTime` - full response time in ms
-  - `method` - HTTP verb
-  - `status` - response status code
-  - `vars` - when using `superagentUrlTemplatePlugin` it will contain all provided variables
+This is an error which is known to connector developer. It's an error which is transient and request retry should be able to overcome the issue.
+It comes with 3 subclasses to mark specifc scenarios which are related to time when the error should be resolved.
 
-The plugin also issue a metric with the same name `ship.service_api.request`.
+- RateLimitError
+- ConfigurationError
+- RecoverableError
 
-> Above code will produce following log line:
+The retry strategy is currently the same as for unhandled error, but it's handled better in terms of monitoring.
 
-```sh
-connector.service_api.call {
-  responseTime: 880.502444,
-  method: 'GET',
-  url: 'https://api.url/{{defaultVariable}}/resource/{{resourceId}}',
-  status: 200
-}
-```
-
-> and following metrics:
+context | behavior
+--- | ---
+smart-notifier response | retry
+other endpoints response | error
+status code | 400
+sentry exception report | no
+datadog metrics | yes
 
 ```javascript
-- `ship.service_api.call` - should be migrated to `connector.service_api.call`
-- `connector.service_api.responseTime`
+const { TransientError } = require("hull/lib/errors");
+
+app.use("/smart-notifier-handler", smartNotifierHandler({
+  handlers: {
+    "user:update": (ctx, messages) => {
+      ctx.smartNotifierResponse.setFlowControl({
+
+      });
+
+      return Promise.reject(new TransientError("Error message"));
+    }
+  }
+}));
 ```
+
+## Logic error
+
+This is an error which needs to be handled by connector implementation and as a result the returned promised **must not be rejected**.
+
+**IMPORTANT:** Rejecting or throwing this error without try/catch block will be treated as unhandled error.
+
+context | behavior
+--- | ---
+smart-notifier response | next
+other endpoints response | success
+status code | 200
+sentry exception report | no
+datadog metrics | no
+
+```javascript
+const { LogicError } = require("hull/lib/errors");
+
+app.use("/smart-notifier-handler", smartNotifierHandler({
+  handlers: {
+    "user:update": (ctx, messages) => {
+      return (() => {
+        return Promise.reject(new LogicError("Validation error"));
+      })
+      .catch((err) => {
+        if (err.name === "LogicError") {
+          // log outgoing.user.error
+          return Promise.resolve();
+        }
+        return Promise.reject(err);
+      });
+    }
+  }
+}));
+```
+
+

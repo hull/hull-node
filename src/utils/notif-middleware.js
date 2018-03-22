@@ -3,9 +3,7 @@ const MessageValidator = require("sns-validator");
 const _ = require("lodash");
 
 /**
- * @param  {Object}   req
- * @param  {Object}   res
- * @param  {Function} next
+ * @return {Function}
  */
 module.exports = function notifMiddlewareFactory() {
   const validator = new MessageValidator(/sns\.us-east-1\.amazonaws\.com/, "utf8");

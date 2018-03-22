@@ -1,12 +1,10 @@
 const _ = require("lodash");
 const Promise = require("bluebird");
 
-
+/**
+ * Memory adapter
+ */
 class MemoryAdapter {
-
-  /**
-   * @param {Object} queue Kue instance
-   */
   constructor() {
     this.queue = {};
     this.processors = {};
@@ -16,7 +14,7 @@ class MemoryAdapter {
   }
 
   /**
-   * @param {String} jobName queue name
+   * @param {string} jobName queue name
    * @param {Object} jobPayload
    * @return {Promise}
    */
@@ -41,8 +39,8 @@ class MemoryAdapter {
   }
 
   /**
-   * @param {String} jobName
-   * @param {Function -> Promise} jobCallback
+   * @param {string} jobName
+   * @param {Function} jobCallback
    * @return {Object} this
    */
   process(jobName, jobCallback) {
