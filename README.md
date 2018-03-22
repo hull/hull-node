@@ -547,7 +547,7 @@ The Defaults are the following:
 
 Second way of operating on Hull user base it to process batch extracts.
 
-In addition to event notifications Hull supports sending extracts of users and accounts. These extracts can be triggered via manual user action on the dashboard or can be programmatically requested from the Connector logic (see [requestExtract helper](#requestextract)). The Connector will expose the manual batches action if your `manifest.json` includes a `batch` or `batch-accounts` tag :
+In addition to event notifications Hull supports sending extracts of users and accounts. These extracts can be triggered via manual user action on the dashboard or can be programmatically requested from the Connector logic (see [requestExtract helper](./API.md#requestextract)). The Connector will expose the manual batches action if your `manifest.json` includes a `batch` or `batch-accounts` tag :
 
 ```json
 {
