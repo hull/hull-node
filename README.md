@@ -115,7 +115,7 @@ To get more details on how those helpers methods work please see [API REFERENCE]
 
 [Hull.Connector](#hullconnector) apply multiple middlewares to the request handler, including [Hull.Middleware](#hullmiddleware). The result is a **Context Object** that's available in all action handlers and routers as `req.hull`. It's a set of parameters and modules to work in the context of current organization and connector instance. This Context is divided into a base set by `Hull.Middleware` (if you use it standalone) and an extended set applied when using `Hull.Connector` and helpers method descibed above.
 
-Here is the base structure of the Context Object (we also provide Flow type for this object [here](./API.md#thullreqcontext)).
+Here is the base structure of the Context Object (we also provide Flow type for this object [here](./src/types/hull-req-context.js)).
 
 ```javascript
 {
@@ -494,7 +494,7 @@ app.use("/smart-notifier", smartNotifierHandler({
 connector.startApp(app);
 ```
 
-The `user:update` handler will be run with batches of notification messages coming from platform. User update message is a json object which is grouping together all events and changes which happened on the specic user since the previous notification. The structure of the single message is defined in [this Flow Type](./API.md#thulluserupdatemessage).
+The `user:update` handler will be run with batches of notification messages coming from platform. User update message is a json object which is grouping together all events and changes which happened on the specic user since the previous notification. The structure of the single message is defined in [this Flow Type](./src/types/hull-user-update-message.js).
 
 Inside the handler you can use any object from the [Context Object](#context-object). Remember that the handler needs to return a valid promise at the end of it's operations.
 
@@ -698,7 +698,7 @@ parseHullObject(user: THullObject) {
 }
 ```
 
-See [API REFERENCE](./API.md#types) or `src/lib/types` directory for a full list of available types.
+See [`src/lib/types`](./src/lib/types) directory for a full list of available types.
 
 ---
 

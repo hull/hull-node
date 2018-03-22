@@ -2,7 +2,6 @@
 
 /**
  * @namespace Types
- * @public
  */
 
 /*::
