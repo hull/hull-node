@@ -13,8 +13,8 @@ const _ = require("lodash");
  *
  * @param  {Object} ctx The Context Object
  * @param  {Object} notification Hull user:update notification
- * @param  {String} fieldName the name of settings name
- * @return {Boolean}
+ * @param  {string} fieldName the name of settings name
+ * @return {boolean}
  */
 module.exports = function filterNotification(ctx: THullReqContext, notification: THullUserUpdateMessage, fieldName: ?string): boolean {
   fieldName = fieldName || _.get(ctx, "connectorConfig.segmentFilterSetting");

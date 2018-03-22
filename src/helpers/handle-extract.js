@@ -7,12 +7,19 @@ const BatchStream = require("batch-stream");
 const _ = require("lodash");
 
 /**
- * @param {Object} body Request Body Object
- * @param {Object} batchSize
- * @param {Function} callback returning a Promise
- * @return {Promise}
+ * Helper function to handle JSON extract sent to batch endpoint
  *
- * return handleExtract(req, 100, (users) => Promise.resolve())
+ * @name handleExtract
+ * @public
+ * @memberof Helpers
+ * @param {Object}   ctx Hull request context
+ * @param {Object}   options
+ * @param {Object}   options.body       request body object (req.body)
+ * @param {Object}   options.batchSize  size of the chunk we want to pass to handler
+ * @param {Function} options.handler    callback returning a Promise (will be called with array of elements)
+ * @param {Function} options.onResponse callback called on successful inital response
+ * @param {Function} options.onError    callback called during error
+ * @return {Promise}
  */
 module.exports = function handleExtract(ctx, { body, batchSize, handler, onResponse, onError }) {
   const { logger } = ctx.client;

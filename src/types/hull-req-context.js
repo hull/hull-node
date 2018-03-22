@@ -5,28 +5,29 @@ import type { THullSegment, THullConnector } from "./";
 /**
  * Context added to the express app request by hull-node connector sdk.
  * Accessible via `req.hull` param.
+ * @public
+ * @memberof Types
  */
 export type THullReqContext = {
+  requestId: string;
   config: Object;
-  token: String;
+  token: string;
   client: Object;
-
-  service: Object;
-  shipApp: Object;
-
-  segments: Array<THullSegment>;
   ship: THullConnector; // since ship name is deprated we move it to connector param
   connector: THullConnector;
-
-  hostname: String;
+  hostname: string;
   options: Object;
+
+
   connectorConfig: Object;
-
+  segments: Array<THullSegment>;
+  cache: Object;
   metric: Object;
-  helpers: Object;
-  notification: Object;
-  message?: Object;
-
-  smartNotifierResponse: ?Object;
   enqueue: Function;
+  helpers: Object;
+  service: Object;
+  shipApp: Object;
+  message?: Object;
+  notification: Object;
+  smartNotifierResponse: ?Object;
 };

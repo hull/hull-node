@@ -5,8 +5,8 @@
 module.exports = {
   defaultSuccessFlowControl: {
     type: "next",
-    size: 1,
-    in: 1000
+    size: 50,
+    in: 1
   },
 
   defaultErrorFlowControl: {

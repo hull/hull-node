@@ -1,4 +1,10 @@
 /* @flow */
+
+/**
+ * @namespace Types
+ * @public
+ */
+
 /*::
 export type { THullAccountAttributes } from "./hull-account-attributes";
 export type { THullAccountIdent } from "./hull-account-ident";

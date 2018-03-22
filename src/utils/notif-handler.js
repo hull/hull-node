@@ -90,13 +90,69 @@ function processHandlersFactory(handlers, options = {}) {
       return next();
     } catch (err) {
       err.status = 400;
-      console.error(err.stack || err);
       return next(err);
     }
   };
 }
 
-
+/**
+ * NotifHandler is a packaged solution to receive User and Segment Notifications from Hull. It's built to be used as an express route. Hull will receive notifications if your ship's `manifest.json` exposes a `subscriptions` key:
+ *
+ * **Note** : The Smart notifier is the newer, more powerful way to handle data flows. We recommend using it instead of the NotifHandler. This handler is there to support Batch extracts.
+ *
+ *```json
+ * {
+ *   "subscriptions": [{ "url": "/notify" }]
+ * }
+ * ```
+ *
+ * @name notifHandler
+ * @public
+ * @memberof Utils
+ * @param  {Object}   params
+ * @param  {Object}   params.handlers
+ * @param  {Function} [params.onSubscribe]
+ * @param  {Object}   [params.options]
+ * @param  {number}   [params.options.maxSize] the size of users/account batch chunk
+ * @param  {number}   [params.options.maxTime] time waited to capture users/account up to maxSize
+ * @param  {string}   [params.options.segmentFilterSetting] setting from connector's private_settings to mark users as whitelisted
+ * @param  {boolean}  [param.options.groupTraits=false]
+ * @param  {Object}   [params.userHandlerOptions] deprecated
+ * @return {Function} expressjs router
+ * @example
+ * import { notifHandler } from "hull/lib/utils";
+ * const app = express();
+ *
+ * const handler = NotifHandler({
+ *   options: {
+ *     groupTraits: true, // groups traits as in below examples
+ *     maxSize: 6,
+ *     maxTime: 10000,
+ *     segmentFilterSetting: "synchronized_segments"
+ *   },
+ *   onSubscribe() {} // called when a new subscription is installed
+ *   handlers: {
+ *     "ship:update": function(ctx, message) {},
+ *     "segment:update": function(ctx, message) {},
+ *     "segment:delete": function(ctx, message) {},
+ *     "account:update": function(ctx, message) {},
+ *     "user:update": function(ctx, messages = []) {
+ *       console.log('Event Handler here', ctx, messages);
+ *       // ctx: Context Object
+ *       // messages: [{
+ *       //   user: { id: '123', ... },
+ *       //   segments: [{}],
+ *       //   changes: {},
+ *       //   events: [{}, {}]
+ *       //   matchesFilter: true | false
+ *       // }]
+ *     }
+ *   }
+ * })
+ *
+ * connector.setupApp(app);
+ * app.use('/notify', handler);
+ */
 module.exports = function notifHandler({ handlers = {}, onSubscribe, userHandlerOptions, options }) {
   if (userHandlerOptions) {
     console.warn("deprecation: userHandlerOptions has been deprecated in favor of options in notifHandler params. This will be a breaking change in 0.14.x");

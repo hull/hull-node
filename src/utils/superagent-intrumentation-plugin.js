@@ -1,4 +1,68 @@
-function superagentUnstrumentationPluginFactory({ logger, metric }) {
+/**
+ * This plugin takes `client.logger` and `metric` params from the `Context Object` and logs following log line:
+ * - `ship.service_api.request` with params:
+ *   - `url` - the original url passed to agent (use with `superagentUrlTemplatePlugin`)
+ *   - `responseTime` - full response time in ms
+ *   - `method` - HTTP verb
+ *   - `status` - response status code
+ *   - `vars` - when using `superagentUrlTemplatePlugin` it will contain all provided variables
+ *
+ * The plugin also issue a metric with the same name `ship.service_api.request`.
+ *
+ * @public
+ * @memberof Utils
+ * @name superagentInstrumentationPlugin
+ * @param  {Object}   options
+ * @param  {Object}   options.logger Logger from HullClient
+ * @param  {Object}   options.metric Metric from Hull.Connector
+ * @return {Function} function to use as superagent plugin
+ * @example
+ * const superagent = require('superagent');
+ * const { superagentInstrumentationPlugin } = require('hull/lib/utils');
+ *
+ * // const ctx is a Context Object here
+ *
+ * const agent = superagent
+ * .agent()
+ * .use(
+ *   urlTemplatePlugin({
+ *     defaultVariable: 'mainVariable'
+ *   })
+ * )
+ * .use(
+ *   superagentInstrumentationPlugin({
+ *     logger: ctx.client.logger,
+ *     metric: ctx.metric
+ *   })
+ * );
+ *
+ * agent
+ * .get('https://api.url/{{defaultVariable}}/resource/{{resourceId}}')
+ * .tmplVar({
+ *   resourceId: 123
+ * })
+ * .then(res => {
+ *   assert(res.request.url === 'https://api.url/mainVariable/resource/123');
+ * });
+ *
+ * > Above code will produce following log line:
+ * ```sh
+ * connector.service_api.call {
+ *   responseTime: 880.502444,
+ *   method: 'GET',
+ *   url: 'https://api.url/{{defaultVariable}}/resource/{{resourceId}}',
+ *   status: 200
+ * }
+ * ```
+ *
+ * > and following metrics:
+ *
+ * ```javascript
+ * - `ship.service_api.call` - should be migrated to `connector.service_api.call`
+ * - `connector.service_api.responseTime`
+ * ```
+ */
+function superagentInstrumentationPluginFactory({ logger, metric }) {
   return function superagentInstrumentationPlugin(request) {
     const url = request.url;
     const method = request.method;
@@ -45,4 +109,4 @@ function superagentUnstrumentationPluginFactory({ logger, metric }) {
   };
 }
 
-module.exports = superagentUnstrumentationPluginFactory;
+module.exports = superagentInstrumentationPluginFactory;

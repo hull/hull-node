@@ -2,6 +2,8 @@
 
 /**
  * Connector (also called ship) object with settings, private settings and manifest.json
+ * @public
+ * @memberof Types
  */
 export type THullConnector = {
   id: string;

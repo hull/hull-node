@@ -15,9 +15,7 @@ function fetchSegments(client, entityType = "users") {
 }
 
 /**
- * @param  {Object}   req
- * @param  {Object}   res
- * @param  {Function} next
+ * @return {Function} middleware
  */
 module.exports = function segmentsMiddlewareFactory() {
   return function segmentsMiddleware(req: Object, res: Object, next: Function) {

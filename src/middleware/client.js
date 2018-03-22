@@ -27,8 +27,17 @@ function parseToken(token, secret) {
   }
 }
 
-
-module.exports = function hullClientMiddlewareFactory(Client, { hostSecret, clientConfig = {} }) {
+/**
+ * This middleware standardizes the instantiation of a [Hull Client](https://github.com/hull/hull-client-node) in the context of authorized HTTP request. It also fetches the entire ship's configuration.
+ * @function Hull.Middleware
+ * @public
+ * @param  {HullClient} HullClient                Hull Client - the version exposed by this library comes with HullClient argument bound
+ * @param  {Object}     options
+ * @param  {string}     options.hostSecret        The ship hosted secret - consider this as a private key which is used to encrypt and decrypt `req.hull.token`. The token is useful for exposing it outside the Connector <-> Hull Platform communication. For example the OAuth flow or webhooks. Thanks to the encryption no 3rd party will get access to Hull Platform credentials.
+ * @param  {Object}     [options.clientConfig={}] Additional config which will be passed to the new instance of Hull Client
+ * @return {Function}
+ */
+module.exports = function hullClientMiddlewareFactory(HullClient, { hostSecret, clientConfig = {} }) {
   function getCurrentShip(id, client, cache, bust, notification) {
     if (notification && notification.connector) {
       return Promise.resolve(notification.connector);
@@ -73,7 +82,7 @@ module.exports = function hullClientMiddlewareFactory(Client, { hostSecret, clie
       const requestId = req.hull.requestId || headers["x-hull-request-id"];
 
       if (organization && id && secret) {
-        req.hull.client = new Client(_.merge({ id, secret, organization, requestId }, clientConfig));
+        req.hull.client = new HullClient(_.merge({ id, secret, organization, requestId }, clientConfig));
         req.hull.client.utils = req.hull.client.utils || {};
         req.hull.client.utils.extract = {
           handle: (options) => {

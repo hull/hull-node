@@ -3,9 +3,21 @@ const URI = require("urijs");
 const _ = require("lodash");
 
 /**
- * Start an extract job and be notified with the url when complete.
- * @param  {Object} options
+ * This is a method to request an extract of user base to be sent back to the Connector to a selected `path` which should be handled by `notifHandler`.
+ *
+ * @public
+ * @name requestExtract
+ * @memberof Helpers
+ * @param {Object}   ctx Hull request context
+ * @param {Object} [options={}]
+ * @param {Object} [options.segment=null]
+ * @param {Object} [options.format=json]
+ * @param {Object} [options.path=batch]
+ * @param {Object} [options.fields=[]]
+ * @param {Object} [options.additionalQuery={}]
  * @return {Promise}
+ * @example
+ * req.hull.helpers.requestExtract({ segment = null, path, fields = [], additionalQuery = {} });
  */
 module.exports = function requestExtract(ctx, { segment = null, format = "json", path = "batch", fields = [], additionalQuery = {} } = {}) {
   const { client, hostname } = ctx;

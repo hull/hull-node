@@ -1,4 +1,3 @@
-const Client = require("hull-client");
 const express = require("express");
 const requireHullMiddleware = require("./require-hull-middleware");
 const handleExtractFactory = require("./extract-handler-factory");
@@ -70,33 +69,94 @@ function processHandlersFactory(handlers, userHandlerOptions) {
         // we enrich the response with the underlying error
         req.hull.smartNotifierResponse.addError(new SmartNotifierError("N/A", err.message));
 
-        if (!req.hull.smartNotifierResponse.isValid()) {
-          ctx.client.logger.debug("connector.smartNotifierHandler.responseInvalid", req.hull.smartNotifierResponse.toJSON());
-          req.hull.smartNotifierResponse.setFlowControl(defaultErrorFlowControl);
-        }
-        const response = req.hull.smartNotifierResponse.toJSON();
+        // if (!req.hull.smartNotifierResponse.isValid()) {
+          // ctx.client.logger.debug("connector.smartNotifierHandler.responseInvalid", req.hull.smartNotifierResponse.toJSON());
+        req.hull.smartNotifierResponse.setFlowControl(defaultErrorFlowControl);
+        // }
         err = err || new Error("Error while processing notification");
-        ctx.client.logger.error("connector.smartNotifierHandler.error", err.stack || err);
-        ctx.client.logger.debug("connector.smartNotifierHandler.response", response);
-        return res.status(err.status || 500).json(response);
+        return next(err);
       });
     } catch (err) {
       err.status = 500;
-      console.error(err.stack || err);
       req.hull.smartNotifierResponse.setFlowControl(defaultErrorFlowControl);
-      const response = req.hull.smartNotifierResponse.toJSON();
-      Client.logger.debug("connector.smartNotifierHandler.response", response);
-      return res.status(err.status).json(response);
+      return next(err);
     }
   };
 }
 
-module.exports = function smartNotifierHandler({ handlers = {}, options = {} }) {
+/**
+ * `smartNotifierHandler` is a next generation `notifHandler` cooperating with our internal notification tool. It handles Backpressure, throttling and retries for you and lets you adapt to any external rate limiting pattern.
+ *
+ * > To enable the smartNotifier for a connector, the `smart-notifier` tag should be present in `manifest.json` file. Otherwise, regular, unthrottled notifications will be sent without the possibility of flow control.
+ *
+ * ```json
+ * {
+ *   "tags": ["smart-notifier"],
+ *   "subscriptions": [
+ *     {
+ *       "url": "/notify"
+ *     }
+ *   ]
+ * }
+ * ```
+ *
+ * When performing operations on notification you can set FlowControl settings using `ctx.smartNotifierResponse` helper.
+ *
+ * @name smartNotifierHandler
+ * @public
+ * @memberof Utils
+ * @param  {Object}  params
+ * @param  {Object}  params.handlers
+ * @param  {Object}  [param.options]
+ * @param  {number}  [param.options.maxSize] the size of users/account batch chunk
+ * @param  {number}  [param.options.maxTime] time waited to capture users/account up to maxSize
+ * @param  {string}  [params.options.segmentFilterSetting] setting from connector's private_settings to mark users as whitelisted
+ * @param  {boolean} [param.options.groupTraits=false]
+ * @param  {Object}  [param.userHandlerOptions] deprecated
+ * @return {Function} expressjs router
+ * @example
+ * const { smartNotifierHandler } = require("hull/lib/utils");
+ * const app = express();
+ *
+ * const handler = smartNotifierHandler({
+ *   handlers: {
+ *     'ship:update': function(ctx, messages = []) {},
+ *     'segment:update': function(ctx, messages = []) {},
+ *     'segment:delete': function(ctx, messages = []) {},
+ *     'account:update': function(ctx, messages = []) {},
+ *     'user:update': function(ctx, messages = []) {
+ *       console.log('Event Handler here', ctx, messages);
+ *       // ctx: Context Object
+ *       // messages: [{
+ *       //   user: { id: '123', ... },
+ *       //   segments: [{}],
+ *       //   changes: {},
+ *       //   events: [{}, {}]
+ *       //   matchesFilter: true | false
+ *       // }]
+ *       // more about `smartNotifierResponse` below
+ *       ctx.smartNotifierResponse.setFlowControl({
+ *         type: 'next',
+ *         size: 100,
+ *         in: 5000
+ *       });
+ *       return Promise.resolve();
+ *     }
+ *   },
+ *   options: {
+ *     groupTraits: false
+ *   }
+ * });
+ *
+ * connector.setupApp(app);
+ * app.use('/notify', handler);
+ */
+module.exports = function smartNotifierHandler({ handlers = {}, options = {}, userHandlerOptions = {} }) {
   const app = express.Router();
   app.use(handleExtractFactory({ handlers, options }));
   app.use((req, res, next) => {
     if (!req.hull.notification) {
-      return next(new SmartNotifierError("MISSING_NOTIFICATION", "Missing notification object = require( payload"));
+      return next(new SmartNotifierError("MISSING_NOTIFICATION", "Missing notification object"));
     }
     return next();
   });
