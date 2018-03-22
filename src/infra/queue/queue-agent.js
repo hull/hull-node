@@ -28,7 +28,7 @@ const MemoryAdapter = require("./adapter/memory");
  * });
  * connector.startWorker();
  * ```
- *
+ * @deprecated internal connector queue is considered an antipattern, this class is kept only for backward compatiblity
  * @memberof Infra
  * @public
  * @param {Object} adapter

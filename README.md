@@ -221,7 +221,7 @@ ctx.cache.wrap("object_name", (objectValue) => {
 
 ### **enqueue**
 
-**This is generally a deprecated idea and should not be implemented in new connectors. Fluent flow control should be used instead.**
+**This is generally a deprecated idea and should not be implemented in new connectors. Fluent flow control and smartNotifierHandler should be used instead.**
 
 ```javascript
 req.hull.enqueue("jobName", { user: [] }, options = {});
@@ -659,7 +659,7 @@ The connector internally uses infrastructure modules to support its operation on
 
 More complex connectors usually need a background worker to split its operation into smaller tasks to spread the workload.
 
-**This is generally a deprecated idea and should not be implemented in new connectors. Fluent flow control should be used instead.**
+**This is generally a deprecated idea and should not be implemented in new connectors. Fluent flow control and smartNotifierHandler should be used instead.**
 
 ```javascript
 const express = require("express");

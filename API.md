@@ -225,7 +225,8 @@ Returns **[Promise][42]**
 
 ### cache
 
-Cache available as `req.hull.cache` object
+Cache available as `req.hull.cache` object. This class is being intiated and added to Context Object by QueueAgent.
+If you want to customize cache behavior (for example ttl, storage etc.) please @see Infra.QueueAgent
 
 #### wrap
 
@@ -277,7 +278,17 @@ Returns **any** Promise
 
 ### metric
 
-Metric agent available as `req.hull.metric` object
+Metric agent available as `req.hull.metric` object.
+This class is being initiated by InstrumentationAgent.
+If you want to change or override metrics behavior please @see Infra.InstrumentationAgent
+
+**Examples**
+
+```javascript
+req.hull.metric.value("metricName", metricValue = 1);
+req.hull.metric.increment("metricName", incrementValue = 1); // increments the metric value
+req.hull.metric.event("eventName", { text = "", properties = {} });
+```
 
 #### value
 
@@ -341,6 +352,11 @@ app.get((req, res) => {
 ```
 
 Returns **[Promise][42]** which is resolved when job is successfully enqueued
+
+**Meta**
+
+-   **deprecated**: internal connector queue is considered an antipattern, this function is kept only for backward compatiblity
+
 
 ## Infra
 
@@ -472,6 +488,11 @@ const connector = new Hull.Connector({ queue });
 ```
 ````
 
+**Meta**
+
+-   **deprecated**: internal connector queue is considered an antipattern, this class is kept only for backward compatiblity
+
+
 ## Hull.Middleware
 
 This middleware standardizes the instantiation of a [Hull Client][51] in the context of authorized HTTP request. It also fetches the entire ship's configuration.
@@ -551,6 +572,11 @@ app.use('/notify', handler);
 ```
 
 Returns **[Function][41]** expressjs router
+
+**Meta**
+
+-   **deprecated**: use smartNotifierHandler instead, this module is kept for backward compatibility
+
 
 ### oAuthHandler
 

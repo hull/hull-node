@@ -106,6 +106,7 @@ function processHandlersFactory(handlers, options = {}) {
  * }
  * ```
  *
+ * @deprecated use smartNotifierHandler instead, this module is kept for backward compatibility
  * @name notifHandler
  * @public
  * @memberof Utils

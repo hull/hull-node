@@ -1,10 +1,17 @@
 const _ = require("lodash");
 
 /**
- * Metric agent available as `req.hull.metric` object
+ * Metric agent available as `req.hull.metric` object.
+ * This class is being initiated by InstrumentationAgent.
+ * If you want to change or override metrics behavior please @see Infra.InstrumentationAgent
+ *
  * @public
  * @name metric
  * @memberof Context
+ * @example
+ * req.hull.metric.value("metricName", metricValue = 1);
+ * req.hull.metric.increment("metricName", incrementValue = 1); // increments the metric value
+ * req.hull.metric.event("eventName", { text = "", properties = {} });
  */
 class MetricAgent {
   constructor(ctx, instrumentationAgent) {

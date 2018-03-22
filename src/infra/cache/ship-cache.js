@@ -5,7 +5,9 @@ const jwt = require("jwt-simple");
 const Promise = require("bluebird");
 
 /**
- * Cache available as `req.hull.cache` object
+ * Cache available as `req.hull.cache` object. This class is being intiated and added to Context Object by QueueAgent.
+ * If you want to customize cache behavior (for example ttl, storage etc.) please @see Infra.QueueAgent
+ *
  * @public
  * @name cache
  * @memberof Context

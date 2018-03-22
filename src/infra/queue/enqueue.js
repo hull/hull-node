@@ -1,4 +1,5 @@
 /**
+ * @deprecated internal connector queue is considered an antipattern, this function is kept only for backward compatiblity
  * @name enqueue
  * @public
  * @memberof Context
