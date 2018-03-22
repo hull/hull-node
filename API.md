@@ -743,6 +743,7 @@ NotifHandler is a packaged solution to receive User and Segment Notifications fr
         -   `params.options.maxSize` **[number][59]?** the size of users/account batch chunk
         -   `params.options.maxTime` **[number][59]?** time waited to capture users/account up to maxSize
         -   `params.options.segmentFilterSetting` **[string][58]?** setting from connector's private_settings to mark users as whitelisted
+        -   `params.options.groupTraits` **[boolean][60]**  (optional, default `false`)
     -   `params.userHandlerOptions` **[Object][57]?** deprecated
 
 **Examples**
@@ -899,6 +900,12 @@ When performing operations on notification you can set FlowControl settings usin
 
 -   `params` **[Object][57]** 
     -   `params.handlers` **[Object][57]** 
+    -   `params.options` **[Object][57]?** 
+        -   `params.options.maxSize` **[number][59]?** the size of users/account batch chunk
+        -   `params.options.maxTime` **[number][59]?** time waited to capture users/account up to maxSize
+        -   `params.options.segmentFilterSetting` **[string][58]?** setting from connector's private_settings to mark users as whitelisted
+        -   `params.options.groupTraits` **[boolean][60]**  (optional, default `false`)
+    -   `params.userHandlerOptions` **[Object][57]?** deprecated
 
 **Examples**
 

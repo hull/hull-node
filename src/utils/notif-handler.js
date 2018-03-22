@@ -116,7 +116,7 @@ function processHandlersFactory(handlers, options = {}) {
  * @param  {number}   [params.options.maxSize] the size of users/account batch chunk
  * @param  {number}   [params.options.maxTime] time waited to capture users/account up to maxSize
  * @param  {string}   [params.options.segmentFilterSetting] setting from connector's private_settings to mark users as whitelisted
- * @param  {boolean}  [param.options.groupTraits=false]
+ * @param  {boolean}  [params.options.groupTraits=false]
  * @param  {Object}   [params.userHandlerOptions] deprecated
  * @return {Function} expressjs router
  * @example

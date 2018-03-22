@@ -107,12 +107,12 @@ function processHandlersFactory(handlers, userHandlerOptions) {
  * @memberof Utils
  * @param  {Object}  params
  * @param  {Object}  params.handlers
- * @param  {Object}  [param.options]
- * @param  {number}  [param.options.maxSize] the size of users/account batch chunk
- * @param  {number}  [param.options.maxTime] time waited to capture users/account up to maxSize
+ * @param  {Object}  [params.options]
+ * @param  {number}  [params.options.maxSize] the size of users/account batch chunk
+ * @param  {number}  [params.options.maxTime] time waited to capture users/account up to maxSize
  * @param  {string}  [params.options.segmentFilterSetting] setting from connector's private_settings to mark users as whitelisted
- * @param  {boolean} [param.options.groupTraits=false]
- * @param  {Object}  [param.userHandlerOptions] deprecated
+ * @param  {boolean} [params.options.groupTraits=false]
+ * @param  {Object}  [params.userHandlerOptions] deprecated
  * @return {Function} expressjs router
  * @example
  * const { smartNotifierHandler } = require("hull/lib/utils");
@@ -153,7 +153,8 @@ function processHandlersFactory(handlers, userHandlerOptions) {
  */
 module.exports = function smartNotifierHandler({ handlers = {}, options = {}, userHandlerOptions = {} }) {
   const app = express.Router();
-  app.use(handleExtractFactory({ handlers, options }));
+  const _options = options || userHandlerOptions;
+  app.use(handleExtractFactory({ handlers, options: _options }));
   app.use((req, res, next) => {
     if (!req.hull.notification) {
       return next(new SmartNotifierError("MISSING_NOTIFICATION", "Missing notification object"));
@@ -161,7 +162,7 @@ module.exports = function smartNotifierHandler({ handlers = {}, options = {}, us
     return next();
   });
   app.use(requireHullMiddleware());
-  app.use(processHandlersFactory(handlers, options));
+  app.use(processHandlersFactory(handlers, _options));
 
   return app;
 };
