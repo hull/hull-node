@@ -1,3 +1,6 @@
+# 0.13.12
+* render docs without a TOC so the Website can display them properly.
+
 # 0.13.11
 * this release brings bigger changes to error handling:
   - it cleans up a little middleware stack including smart-notifier errors
