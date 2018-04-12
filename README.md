@@ -1,6 +1,7 @@
 # Overview
 
 ## [Hull Client](https://github.com/hull/hull-client-node)
+A low level Hull Platform API client. Refer to it's documentation for more details
 
 ```javascript
 const hullClient = new Hull.Client({ configuration });
