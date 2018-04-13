@@ -1,3 +1,6 @@
+# 0.13.14
+* Fix flow type for THullEvent
+
 # 0.13.13
 * set unsupportedFlowControl default size to 10
 
