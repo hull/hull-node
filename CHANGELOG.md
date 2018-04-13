@@ -1,3 +1,6 @@
+# 0.13.13
+* set unsupportedFlowControl default size to 10
+
 # 0.13.12
 * render docs without a TOC so the Website can display them properly.
 
