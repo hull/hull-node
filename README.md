@@ -38,7 +38,7 @@ To get started see few chapters of this README first:
 
 # Hull.Middleware
 
-> Example usage
+Example usage:
 
 ```javascript
 const Hull = require("hull");
@@ -55,7 +55,7 @@ app.post("/show-segments", (req, res) => {
 
 This middleware standardizes the instantiation of a [Hull Client](https://github.com/hull/hull-client-node) in the context of authorized HTTP request. It also fetches the entire Connector's configuration. As a result it's responsible for creating and exposing a [Context Object](#base-context), another important part is how this middleware decide where to look for configuration settings (connector ID, SECRET and ORGANIZATION) which then are applied to HullClient, for details please refer to [configuration resolve strategy](#configuration-resolve-strategy).
 
-For configuration options refer to [API REFERENCE](./API.md#hullmiddleware).
+For configuration options, refer to [API REFERENCE](./API.md#hullmiddleware).
 
 ---
 
@@ -112,11 +112,11 @@ To get more details on how those helpers methods work please see [API REFERENCE]
 
 ---
 
-# Context Object
+# The Context Object
 
 [Hull.Connector](#hullconnector) apply multiple middlewares to the request handler, including [Hull.Middleware](#hullmiddleware). The result is a **Context Object** that's available in all action handlers and routers as `req.hull`. It's a set of parameters and modules to work in the context of current organization and connector instance. This Context is divided into a base set by `Hull.Middleware` (if you use it standalone) and an extended set applied when using `Hull.Connector` and helpers method described above.
 
-Here is the base structure of the Context Object (we also provide Flow type for this object [here](./src/types/hull-req-context.js)).
+Here is the base structure of the Context Object (we also provide a Flow type for this object [here](./src/types/hull-req-context.js)).
 
 ```javascript
 {
@@ -124,9 +124,7 @@ Here is the base structure of the Context Object (we also provide Flow type for 
   requestId: "",
   config: {},
   token: "",
-  client: { // Instance of "new Hull.Client()"
-    logger: {},
-  },
+  client: {} // Instance of "new Hull.Client()"
   ship: {
     //The values for the settings defined in the Connector's settings tab
     private_settings: {},
@@ -148,11 +146,11 @@ Here is the base structure of the Context Object (we also provide Flow type for 
   service: {},
   message: {},
   notification: {}
-  smartNotifierResponse: {}
+  smartNotifierResponse: {} //smartNotifierResponse object
 }
 ```
 
-## Base Context - set by Hull.Middleware
+## Base Context - set by `Hull.Middleware`
 
 ### **requestId**
 
@@ -195,7 +193,7 @@ Is the object including data from `query` and `body` of the request
 
 Hash with connector settings, details in Hull.Connector [constructor reference](./API.md#hullconnector).
 
-### **segments**
+### **user_segments** and **account_segments**
 
 ```json
 [
@@ -209,7 +207,7 @@ Hash with connector settings, details in Hull.Connector [constructor reference](
 An array of segments defined at the organization, it's being automatically exposed to the context object.
 The segment flow type is specified [here](./src/types/hull-segment.js).
 
-`users_segments` param is alias to `segments` and `accounts_segments` exposes list of segments for accounts.
+`users_segments` (aliased to `segments`, deprecated) and `accounts_segments` expose a list of all the segments defined in Hull for both Users and Accounts.
 
 ### **cache**
 
@@ -731,7 +729,7 @@ sentry exception report | yes
 datadog metrics | no
 
 ```javascript
-app.use("/smart-notifier-handler", smartNotifierHandler({
+app.use("/smart-notifier", smartNotifierHandler({
   handlers: {
     "user:update": (ctx, messages) => {
       return Promise.reject(new Error("Error message"));
@@ -763,7 +761,7 @@ datadog metrics | yes
 ```javascript
 const { TransientError } = require("hull/lib/errors");
 
-app.use("/smart-notifier-handler", smartNotifierHandler({
+app.use("/smart-notifier", smartNotifierHandler({
   handlers: {
     "user:update": (ctx, messages) => {
       ctx.smartNotifierResponse.setFlowControl({
@@ -782,7 +780,7 @@ This is an error which needs to be handled by connector implementation and as a 
 
 **IMPORTANT:** Rejecting or throwing this error without try/catch block will be treated as unhandled error.
 
-context | behavior
+context | behavior 
 --- | ---
 smart-notifier response | next
 other endpoints response | success
@@ -793,7 +791,7 @@ datadog metrics | no
 ```javascript
 const { LogicError } = require("hull/lib/errors");
 
-app.use("/smart-notifier-handler", smartNotifierHandler({
+app.use("/smart-notifier", smartNotifierHandler({
   handlers: {
     "user:update": (ctx, messages) => {
       return (() => {
@@ -810,5 +808,4 @@ app.use("/smart-notifier-handler", smartNotifierHandler({
   }
 }));
 ```
-
 
