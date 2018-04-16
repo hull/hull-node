@@ -87,6 +87,7 @@ module.exports = class SmartNotifierValidator {
           return reject(error);
         }
         if (!body.match("-----BEGIN PUBLIC KEY-----")) {
+          console.warn("InvalidCertificateError", { certUrl, headers: this.request.headers, body });
           return reject(new Error("Invalid certificate"));
         }
         certCache[certUrl] = body;
