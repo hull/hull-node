@@ -1,5 +1,5 @@
 /* @flow */
-import type { THullReqContext } from "../../types";
+import type { HullReqContext } from "../../types";
 
 const jwt = require("jwt-simple");
 const Promise = require("bluebird");
@@ -13,11 +13,11 @@ const Promise = require("bluebird");
  * @memberof Context
  */
 class ConnectorCache {
-  ctx: THullReqContext;
+  ctx: HullReqContext;
   cache: Object;
   promiseReuser: Object;
 
-  constructor(ctx: THullReqContext, cache: Object, promiseReuser: Object) {
+  constructor(ctx: HullReqContext, cache: Object, promiseReuser: Object) {
     this.ctx = ctx;
     this.cache = cache;
     this.promiseReuser = promiseReuser;

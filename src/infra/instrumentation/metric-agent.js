@@ -1,3 +1,6 @@
+// @flow
+import type { HullReqContext } from "../../types";
+
 const _ = require("lodash");
 
 /**
@@ -14,7 +17,13 @@ const _ = require("lodash");
  * req.hull.metric.event("eventName", { text = "", properties = {} });
  */
 class MetricAgent {
-  constructor(ctx, instrumentationAgent) {
+  ctx: HullReqContext;
+  manifest: Object;
+  dogapi: Object;
+  logFunction: Function;
+  metrics: Object;
+
+  constructor(ctx: HullReqContext, instrumentationAgent: Object) {
     this.metrics = instrumentationAgent.metrics;
     this.dogapi = instrumentationAgent.dogapi;
     this.manifest = instrumentationAgent.manifest;
@@ -33,7 +42,7 @@ class MetricAgent {
    * @param  {Array}  [additionalTags=[]] additional tags in form of `["tag_name:tag_value"]`
    * @return {mixed}
    */
-  value(metric, value = 1, additionalTags = []) {
+  value(metric: string, value: number = 1, additionalTags: Array<string> = []) {
     this.logFunction("metric.value", { metric, value, additionalTags });
     if (!this.metrics) {
       return null;
@@ -55,7 +64,7 @@ class MetricAgent {
    * @param  {Array}  [additionalTags=[]] additional tags in form of `["tag_name:tag_value"]`
    * @return {mixed}
    */
-  increment(metric, value = 1, additionalTags = []) {
+  increment(metric: string, value: number = 1, additionalTags: Array<string> = []) {
     this.logFunction("metric.increment", { metric, value, additionalTags });
     if (!this.metrics) {
       return null;
@@ -77,7 +86,7 @@ class MetricAgent {
    * @param  {Object} [options.properties={}]
    * @return {mixed}
    */
-  event({ title, text = "", properties = {} }) {
+  event({ title, text = "", properties = {} }: { title: string, text?: string, properties?: Object }) {
     this.logFunction("metric.event", { title, text, properties });
     if (!this.dogapi) {
       return null;
