@@ -100,6 +100,7 @@ module.exports = function hullClientMiddlewareFactory(HullClient, { hostSecret, 
         // Promise<ship>
         return getCurrentShip(id, req.hull.client, req.hull.cache, bust, notification).then((ship = {}) => {
           req.hull.ship = ship;
+          req.hull.connector = ship;
           req.hull.hostname = req.hostname;
           req.hull.options = _.merge({}, req.query, req.body);
           return next();

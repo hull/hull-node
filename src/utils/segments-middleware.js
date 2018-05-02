@@ -26,8 +26,11 @@ module.exports = function segmentsMiddlewareFactory() {
     }
     const { cache, message, notification, connectorConfig } = hull;
 
-    if (notification && notification.segments) {
+    // if we have notification we take segments
+    if (notification && notification.segments && notification.accounts_segments) {
       hull.segments = notification.segments;
+      hull.users_segments = notification.segments;
+      hull.accounts_segments = notification.accounts_segments;
       return next();
     }
 

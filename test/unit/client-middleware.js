@@ -86,9 +86,9 @@ describe("Client Middleware", () => {
 
   it("should fetch ship every time without caching", function (done) {
     const instance = Middleware(HullStub, { hostSecret: "secret" });
-    instance(this.reqStub, {}, () => {
+    instance(_.cloneDeep(this.reqStub), {}, () => {
       expect(this.reqStub.hull.ship.private_settings.value).to.equal("test");
-      instance(this.reqStub, {}, () => {
+      instance(_.cloneDeep(this.reqStub), {}, () => {
         expect(this.reqStub.hull.ship.private_settings.value).to.equal("test1");
         expect(this.getStub.calledTwice).to.be.true;
         done();
@@ -125,12 +125,12 @@ describe("Client Middleware", () => {
 
   it("should bust the cache for specific requests", function (done) {
     const instance = Middleware(HullStub, { hostSecret: "secret" });
-    instance(this.reqStub, {}, () => {
+    instance(_.cloneDeep(this.reqStub), {}, () => {
       expect(this.reqStub.hull.ship.private_settings.value).to.equal("test");
       this.reqStub.hull.message = {
         Subject: "ship:update"
       };
-      instance(this.reqStub, {}, () => {
+      instance(_.cloneDeep(this.reqStub), {}, () => {
         expect(this.reqStub.hull.ship.private_settings.value).to.equal("test1");
         expect(this.getStub.calledTwice).to.be.true;
         done();

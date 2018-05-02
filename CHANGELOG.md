@@ -1,3 +1,6 @@
+# 0.13.15
+* make sure we are not fetching connector object when it's available in notification payload
+
 # 0.13.14
 * Fix flow type for THullEvent
 

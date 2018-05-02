@@ -132,6 +132,7 @@ Here is the base structure of the Context Object (we also provide Flow type for 
     private_settings: {},
     settings: {}
   },
+  connector: ship // alias
   hostname: req.hostname,
   options: req.query + req.body,
 
@@ -178,8 +179,11 @@ When the connector needs to send the information outside the Hull ecosystem it h
 
 ### **ship**
 
-ship object with manifest information and `private_settings` fetched from the Hull Platform.
-`ship` is the legacy name for Connectors.
+Connector object with manifest information and `private_settings` fetched from the Hull Platform. `ship` is the legacy name for connector. 
+
+### **connector**
+
+An alias to `ship`.
 
 ### **hostname**
 
