@@ -2,6 +2,7 @@ const Promise = require("bluebird");
 const fs = require("fs");
 const _ = require("lodash");
 
+const clientMiddleware = require("../middleware/client");
 const setupApp = require("./setup-app");
 const Worker = require("./worker");
 const { Instrumentation, Cache, Queue, Batcher } = require("../infra");
@@ -168,7 +169,7 @@ class HullConnector {
   }
 
   clientMiddleware() {
-    this._middleware = this._middleware || this.HullClient.Middleware({
+    this._middleware = this._middleware || clientMiddleware(this.HullClient, {
       hostSecret: this.hostSecret,
       clientConfig: this.clientConfig
     });

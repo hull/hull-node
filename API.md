@@ -470,116 +470,6 @@ This middleware standardizes the instantiation of a [Hull Client][17] in the con
 
 Returns **[Function][6]** 
 
-## HullAttributesChanges
-
-Attributes (traits) changes is an object map where keys are attribute (trait) names and value is an array
-where first element is an old value and second element is the new value.
-This object contain information about changes on one or multiple attributes (that's thy attributes and changes are plural).
-
-Type: {}
-
-## HullSegment
-
-An object representing the Hull Segment
-
-Type: {id: [string][2], name: [string][2], stats: {users: [Number][3]}}
-
-**Properties**
-
--   `id` **[string][2]** 
--   `name` **[string][2]** 
--   `stats` **{users: [Number][3]}** 
--   `stats.users` **[Number][3]** 
-
-## HullSegmentsChanges
-
-Represents segment changes in TUserChanges.
-The object contains two params which mark which segments user left or entered.
-It may contain none, one or multiple HullSegment in both params.
-
-Type: {entered: [Array][9]&lt;[HullSegment][18]>, left: [Array][9]&lt;[HullSegment][18]>}
-
-**Properties**
-
--   `entered` **[Array][9]&lt;[HullSegment][18]>** 
--   `left` **[Array][9]&lt;[HullSegment][18]>** 
-
-## HullUserChanges
-
-Object containing all changes related to User in HullUserUpdateMessage
-
-Type: {user: [HullAttributesChanges][19], account: [HullAttributesChanges][19], segments: [HullSegmentsChanges][20]}
-
-**Properties**
-
--   `user` **[HullAttributesChanges][19]** 
--   `account` **[HullAttributesChanges][19]** 
--   `segments` **[HullSegmentsChanges][20]** 
-
-## HullUserUpdateMessage
-
-A message sent by the platform when any event, attribute (trait) or segment change happens.
-
-Type: {user: HullUser, changes: [HullUserChanges][21], segments: [Array][9]&lt;[HullSegment][18]>, events: [Array][9]&lt;HullEvent>, account: HullAccount}
-
-**Properties**
-
--   `user` **HullUser** 
--   `changes` **[HullUserChanges][21]** 
--   `segments` **[Array][9]&lt;[HullSegment][18]>** 
--   `events` **[Array][9]&lt;HullEvent>** 
--   `account` **HullAccount** 
-
-## HullConnector
-
-Connector (also called ship) object with settings, private settings and manifest.json
-
-Type: {id: [string][2], updated_at: [string][2], created_at: [string][2], name: [string][2], description: [string][2], tags: [Array][9]&lt;[string][2]>, manifest: [Object][1], settings: [Object][1], private_settings: [Object][1], status: [Object][1]}
-
-**Properties**
-
--   `id` **[string][2]** 
--   `updated_at` **[string][2]** 
--   `created_at` **[string][2]** 
--   `name` **[string][2]** 
--   `description` **[string][2]** 
--   `tags` **[Array][9]&lt;[string][2]>** 
--   `manifest` **[Object][1]** 
--   `settings` **[Object][1]** 
--   `private_settings` **[Object][1]** 
--   `status` **[Object][1]** 
-
-## HullReqContext
-
-Context added to the express app request by hull-node connector sdk.
-Accessible via `req.hull` param.
-
-Type: {requestId: [string][2], config: [Object][1], token: [string][2], client: HullClient, ship: [HullConnector][22], connector: [HullConnector][22], hostname: [string][2], options: [Object][1], connectorConfig: [Object][1], segments: [Array][9]&lt;[HullSegment][18]>, users_segments: [Array][9]&lt;[HullSegment][18]>, accounts_segments: [Array][9]&lt;[HullSegment][18]>, cache: ShipCache, metric: [Object][1], enqueue: [Function][6], helpers: [Object][1], service: [Object][1], shipApp: [Object][1], message: [Object][1]?, notification: HullUserUpdateNotification, smartNotifierResponse: [Object][1]?}
-
-**Properties**
-
--   `requestId` **[string][2]** 
--   `config` **[Object][1]** 
--   `token` **[string][2]** 
--   `client` **HullClient** 
--   `ship` **[HullConnector][22]** 
--   `connector` **[HullConnector][22]** 
--   `hostname` **[string][2]** 
--   `options` **[Object][1]** 
--   `connectorConfig` **[Object][1]** 
--   `segments` **[Array][9]&lt;[HullSegment][18]>** 
--   `users_segments` **[Array][9]&lt;[HullSegment][18]>** 
--   `accounts_segments` **[Array][9]&lt;[HullSegment][18]>** 
--   `cache` **ShipCache** 
--   `metric` **[Object][1]** 
--   `enqueue` **[Function][6]** 
--   `helpers` **[Object][1]** 
--   `service` **[Object][1]** 
--   `shipApp` **[Object][1]** 
--   `message` **[Object][1]?** 
--   `notification` **HullUserUpdateNotification** 
--   `smartNotifierResponse` **[Object][1]?** 
-
 ## Utils
 
 General utilities
@@ -654,7 +544,7 @@ Returns **[Function][6]** expressjs router
 
 ### oAuthHandler
 
-OAuthHandler is a packaged authentication handler using [Passport][23]. You give it the right parameters, it handles the entire auth scenario for you.
+OAuthHandler is a packaged authentication handler using [Passport][18]. You give it the right parameters, it handles the entire auth scenario for you.
 
 It exposes hooks to check if the ship is Set up correctly, inject additional parameters during login, and save the returned settings during callback.
 
@@ -666,7 +556,7 @@ To make it working in Hull dashboard set following line in **manifest.json** fil
 }
 ```
 
-For example of the notifications payload [see details][24]
+For example of the notifications payload [see details][19]
 
 **Parameters**
 
@@ -679,7 +569,7 @@ For example of the notifications payload [see details][24]
     -   `options.onLogin` **[Function][6]** A method returning a Promise, resolved when ready. Best used to process form parameters, and place them in `req.authParams` to be submitted to the Login sequence. Useful to add strategy-specific parameters, such as a portal ID for Hubspot for instance.
     -   `options.Strategy` **[Function][6]** A Passport Strategy.
     -   `options.views` **[Object][1]** Required, A hash of view files for the different screens: login, home, failure, success
-    -   `options.options` **[Object][1]** Hash passed to Passport to configure the OAuth Strategy. (See [Passport OAuth Configuration][25])
+    -   `options.options` **[Object][1]** Hash passed to Passport to configure the OAuth Strategy. (See [Passport OAuth Configuration][20])
 
 **Examples**
 
@@ -996,18 +886,8 @@ Returns **[Function][6]** function to use as superagent plugin
 
 [17]: https://github.com/hull/hull-client-node
 
-[18]: #hullsegment
+[18]: http://passportjs.org/
 
-[19]: #hullattributeschanges
+[19]: ./notifications.md
 
-[20]: #hullsegmentschanges
-
-[21]: #hulluserchanges
-
-[22]: #hullconnector
-
-[23]: http://passportjs.org/
-
-[24]: ./notifications.md
-
-[25]: http://passportjs.org/docs/oauth
+[20]: http://passportjs.org/docs/oauth
