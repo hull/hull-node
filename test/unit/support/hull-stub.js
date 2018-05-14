@@ -19,12 +19,6 @@ class HullStub {
   configuration() {
     return _.merge({ id: this.id, secret: "shutt", organization: "xxx.hulltest.rocks" }, this._configuration);
   }
-
-  static Middleware() {
-    return (req, res, next) => {
-
-    };
-  }
 }
 
 HullStub.logger = {

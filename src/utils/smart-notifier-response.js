@@ -41,7 +41,7 @@ class SmartNotifierMetric {
     this.name = metric.name;
   }
 
-  toJSON() {
+  toJSON(): Object {
     return this;
   }
 }
@@ -61,7 +61,7 @@ class SmartNotifierError extends Error {
     this.flowControl = flowControl;
   }
 
-  toJSON() {
+  toJSON(): Object {
     return { code: this.code, reason: this.reason };
   }
 
@@ -96,7 +96,7 @@ class SmartNotifierResponse {
     return this.flowControl && this.flowControl.isValid();
   }
 
-  toJSON() {
+  toJSON(): Object {
     return {
       flow_control: this.flowControl && this.flowControl.toJSON(),
       metrics: this.metrics.map(m => m.toJSON()),

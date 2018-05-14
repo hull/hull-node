@@ -1,8 +1,6 @@
 const Promise = require("bluebird");
 const fs = require("fs");
 const _ = require("lodash");
-
-const clientMiddleware = require("../middleware/client");
 const setupApp = require("./setup-app");
 const Worker = require("./worker");
 const { Instrumentation, Cache, Queue, Batcher } = require("../infra");
@@ -12,6 +10,7 @@ const { TransientError } = require("../errors");
 /**
  * @public
  * @param {HullClient}    HullClient
+ * @param {Object}        HullMiddleware
  * @param {Object}        [options={}]
  * @param {string}        [options.connectorName] force connector name - if not provided will be taken from manifest.json
  * @param {string}        [options.hostSecret] secret to sign req.hull.token
@@ -24,10 +23,11 @@ const { TransientError } = require("../errors");
  * @param {Object}        [options.queue] override default QueueAgent
  */
 class HullConnector {
-  constructor(HullClient, {
+  constructor(HullClient, HullMiddleware, {
     hostSecret, port, clientConfig = {}, instrumentation, cache, queue, connectorName, segmentFilterSetting, skipSignatureValidation, timeout
   } = {}) {
     this.HullClient = HullClient;
+    this.HullMiddleware = HullMiddleware;
     this.instrumentation = instrumentation || new Instrumentation();
     this.cache = cache || new Cache();
     this.queue = queue || new Queue();
@@ -169,7 +169,7 @@ class HullConnector {
   }
 
   clientMiddleware() {
-    this._middleware = this._middleware || clientMiddleware(this.HullClient, {
+    this._middleware = this._middleware || this.HullMiddleware({
       hostSecret: this.hostSecret,
       clientConfig: this.clientConfig
     });

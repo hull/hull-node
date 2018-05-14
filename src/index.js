@@ -9,13 +9,15 @@
  * @public
  */
 
-const Client = require("hull-client");
+const HullClient = require("hull-client");
 
 const clientMiddleware = require("./middleware/client");
 const HullConnector = require("./connector/hull-connector");
 
+const boundClientMiddleware = clientMiddleware.bind(undefined, HullClient);
+
 module.exports = {
-  Client,
-  Middleware: clientMiddleware.bind(undefined, Client),
-  Connector: HullConnector.bind(undefined, Client)
+  Client: HullClient,
+  Middleware: boundClientMiddleware,
+  Connector: HullConnector.bind(undefined, HullClient, boundClientMiddleware)
 };
