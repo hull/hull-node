@@ -8,7 +8,7 @@ const HullClient = require("hull-client");
 const ShipCache = require("./infra/cache/ship-cache");
 const MetricAgent = require("./infra/instrumentation/metric-agent");
 const enqueue = require("./infra/queue/enqueue");
-const SmartNotifierResponse = require("./utils/smart-notifier-response");
+const { SmartNotifierResponse } = require("./utils/smart-notifier-response");
 
 /**
  * @module Types
@@ -36,13 +36,13 @@ export type HullReqContext = {
   accounts_segments: Array<HullSegment>;
   cache: ShipCache;
   metric: MetricAgent;
-  enqueue: enqueue;
+  enqueue: typeof enqueue;
   helpers: Object;
   service: Object;
   shipApp: Object;
   message?: Object;
   notification?: HullNotification;
-  smartNotifierResponse: ?typeof SmartNotifierResponse;
+  smartNotifierResponse: ?SmartNotifierResponse;
 };
 
 /*
