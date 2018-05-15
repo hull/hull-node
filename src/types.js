@@ -1,7 +1,7 @@
 // @flow
 import type { $Request } from "express";
 import type {
-  HullSegment, HullNotification, HullConnector
+  HullSegment, HullNotification, HullConnector, HullUserUpdateMessage, HullAccountUpdateMessage
 } from "hull-client";
 
 const HullClient = require("hull-client");
@@ -55,3 +55,22 @@ export type HullRequest = {
   ...$Request,
   hull: HullReqContext
 };
+
+// TODO: evolve this introducing envelope etc.
+export type HullSendResponse = Promise<*>;
+export type HullSyncResponse = Promise<*>;
+
+// functional types
+export type HullSendUserUpdateMessages = (ctx: HullReqContext, messages: Array<HullUserUpdateMessage>) => HullSendResponse;
+export type HullSendAccountUpdateMessages = (ctx: HullReqContext, messages: Array<HullAccountUpdateMessage>) => HullSendResponse;
+export type syncConnectorUpdateMessage = (ctx: HullReqContext) => HullSyncResponse;
+export type syncSegmentUpdateMessage = (ctx: HullReqContext) => HullSyncResponse;
+
+// OOP types
+export interface HullSyncAgent {
+  constructor(ctx: HullReqContext): void;
+  sendUserUpdateMessages(messages: Array<HullUserUpdateMessage>): HullSendResponse;
+  sendAccountUpdateMessages(messages: Array<HullAccountUpdateMessage>): HullSendResponse;
+  syncConnectorUpdateMessage(): HullSyncResponse;
+  syncSegmentUpdateMessage(): HullSyncResponse;
+}
