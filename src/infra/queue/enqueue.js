@@ -1,3 +1,6 @@
+// @flow
+import type { HullReqContext } from "../../types";
+
 /**
  * @deprecated internal connector queue is considered an antipattern, this function is kept only for backward compatiblity
  * @name enqueue
@@ -22,7 +25,7 @@
  *     });
  * });
  */
-module.exports = function enqueue(queueAdapter, ctx, jobName, jobPayload, options = {}) {
+module.exports = function enqueue(queueAdapter: Object, ctx: HullReqContext, jobName: string, jobPayload: Object, options: Object = {}): Promise<*> {
   const { id, secret, organization } = ctx.client.configuration();
   const context = {
     hostname: ctx.hostname,

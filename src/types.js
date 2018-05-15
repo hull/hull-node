@@ -1,97 +1,18 @@
 // @flow
 import type { $Request } from "express";
-import type { HullUser, HullAccount, HullEvent, HullAttributeName, HullAttributeValue } from "hull-client";
+import type {
+  HullSegment, HullNotification, HullConnector
+} from "hull-client";
 
 const HullClient = require("hull-client");
 const ShipCache = require("./infra/cache/ship-cache");
+const MetricAgent = require("./infra/instrumentation/metric-agent");
+const enqueue = require("./infra/queue/enqueue");
+const SmartNotifierResponse = require("./utils/smart-notifier-response");
 
 /**
  * @module Types
  */
-
-/**
- * Attributes (traits) changes is an object map where keys are attribute (trait) names and value is an array
- * where first element is an old value and second element is the new value.
- * This object contain information about changes on one or multiple attributes (that's thy attributes and changes are plural).
- * @public
- * @memberof Types
- */
-export type HullAttributesChanges = { [HullAttributeName]: [HullAttributeValue, HullAttributeValue] };
-
-/**
- * An object representing the Hull Segment
- * @public
- * @memberof Types
- */
-export type HullSegment = {
-  id: string;
-  name: string;
-  stats: {
-    users: Number
-  };
-};
-
-/**
- * Represents segment changes in TUserChanges.
- * The object contains two params which mark which segments user left or entered.
- * It may contain none, one or multiple HullSegment in both params.
- * @public
- * @memberof Types
- */
-export type HullSegmentsChanges = {
-  entered: Array<HullSegment>;
-  left: Array<HullSegment>;
-};
-
-/**
- * Object containing all changes related to User in HullUserUpdateMessage
- * @public
- * @memberof Types
- */
-export type HullUserChanges = {
-  user: HullAttributesChanges;
-  account: HullAttributesChanges;
-  segments: HullSegmentsChanges;
-};
-
-/**
- * A message sent by the platform when any event, attribute (trait) or segment change happens.
- * @public
- * @memberof Types
- */
-export type HullUserUpdateMessage = {
-  user: HullUser;
-  changes: HullUserChanges;
-  segments: Array<HullSegment>;
-  events: Array<HullEvent>;
-  account: HullAccount;
-};
-
-export type HullUserUpdateNotification = {
-  notification_id: string,
-  segments: Array<HullSegment>,
-  accounts_segments: Array<HullSegment>,
-  messages: Array<HullUserUpdateMessage>
-};
-
-/**
- * Connector (also called ship) object with settings, private settings and manifest.json
- * @public
- * @memberof Types
- */
-export type HullConnector = {
-  id: string;
-  updated_at: string;
-  created_at: string;
-  name: string;
-  description: string;
-  tags: Array<string>;
-  manifest: Object;
-  settings: Object;
-  private_settings: Object;
-  status: Object;
-};
-
 
 /**
  * Context added to the express app request by hull-node connector sdk.
@@ -114,14 +35,14 @@ export type HullReqContext = {
   users_segments: Array<HullSegment>;
   accounts_segments: Array<HullSegment>;
   cache: ShipCache;
-  metric: Object;
-  enqueue: Function;
+  metric: MetricAgent;
+  enqueue: enqueue;
   helpers: Object;
   service: Object;
   shipApp: Object;
   message?: Object;
-  notification: HullUserUpdateNotification;
-  smartNotifierResponse: ?Object;
+  notification?: HullNotification;
+  smartNotifierResponse: ?typeof SmartNotifierResponse;
 };
 
 /*

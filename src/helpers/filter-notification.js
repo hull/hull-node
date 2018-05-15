@@ -1,5 +1,6 @@
 /* @flow */
-import type { HullReqContext, HullUserUpdateMessage } from "../types";
+import type { HullUserUpdateMessage } from "hull-client";
+import type { HullReqContext } from "../types";
 
 const _ = require("lodash");
 
