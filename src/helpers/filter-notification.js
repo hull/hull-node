@@ -1,5 +1,6 @@
 /* @flow */
-import type { THullReqContext, THullUserUpdateMessage } from "../types";
+import type { HullUserUpdateMessage } from "hull-client";
+import type { HullReqContext } from "../types";
 
 const _ = require("lodash");
 
@@ -16,7 +17,7 @@ const _ = require("lodash");
  * @param  {string} fieldName the name of settings name
  * @return {boolean}
  */
-module.exports = function filterNotification(ctx: THullReqContext, notification: THullUserUpdateMessage, fieldName: ?string): boolean {
+module.exports = function filterNotification(ctx: HullReqContext, notification: HullUserUpdateMessage, fieldName: ?string): boolean {
   fieldName = fieldName || _.get(ctx, "connectorConfig.segmentFilterSetting");
   if (!_.has(ctx.ship.private_settings, fieldName)) {
     return true;

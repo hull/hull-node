@@ -5,6 +5,7 @@
 **Parameters**
 
 -   `HullClient` **HullClient** 
+-   `HullMiddleware` **[Object][1]** 
 -   `options` **[Object][1]**  (optional, default `{}`)
     -   `options.hostSecret` **[string][2]?** secret to sign req.hull.token
     -   `options.port` **([Number][3] \| [string][2])?** port on which expressjs application should be started
