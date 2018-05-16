@@ -35,7 +35,7 @@ export type HullReqContext = {
   accounts_segments: Array<HullSegment>;
   cache: ShipCache;
   metric: MetricAgent;
-  enqueue: (jobName: string, jobPayload: Object, options?: Object) => Promise<*>;
+  enqueue: (jobName: string, jobPayload?: Object, options?: Object) => Promise<*>;
   helpers: Object;
   service: Object;
   shipApp: Object;
