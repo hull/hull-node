@@ -1,5 +1,5 @@
 // @flow
-import type { $Request } from "express";
+import type { $Request, $Application } from "express";
 import type {
   HullSegment, HullNotification, HullConnector, HullUserUpdateMessage, HullAccountUpdateMessage
 } from "hull-client";
@@ -73,3 +73,5 @@ export interface HullSyncAgent {
   syncConnectorUpdateMessage(): HullSyncResponse;
   syncSegmentUpdateMessage(): HullSyncResponse;
 }
+
+export type HullServerFunction = (app: $Application, extra?: Object) => $Application
