@@ -1,3 +1,6 @@
+# 0.14.00
+* Upgrade hull-client-node to v2.0.0
+
 # 0.13.15
 * Explicitly handle too large kraken notification payloads
 
