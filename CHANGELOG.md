@@ -1,3 +1,6 @@
+# 0.13.15
+* Explicitly handle too large kraken notification payloads
+
 # 0.13.14
 * Fix flow type for THullEvent
 

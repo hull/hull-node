@@ -37,7 +37,15 @@ module.exports = function smartNotifierMiddlewareFactory({ skipSignatureValidati
       }
     }
 
-    return bodyParser.json({ limit: "10mb" })(req, res, () => {
+    return bodyParser.json({ limit: "10mb" })(req, res, (err) => {
+      if (err !== undefined && err.type === "entity.too.large") {
+        Client.logger.error("connector.smartNotifierHandler.error", { error: err.toString() });
+        return next(new SmartNotifierError("ENTITY_TOO_LARGE", "Payload size bigger than 10mb", err.statusCode, {
+          type: "retry",
+          size: 1
+        }));
+      }
+
       Client.logger.debug("connector.smartNotifierHandler", _.pick(req.body, "channel", "notification_id"));
 
       if (!smartNotifierValidator.validatePayload()) {
