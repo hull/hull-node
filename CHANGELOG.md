@@ -1,4 +1,4 @@
-# 0.14.00
+# 0.14.0-beta.1
 * Upgrade hull-client-node to v2.0.0
 
 # 0.13.15
