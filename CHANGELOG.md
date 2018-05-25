@@ -1,5 +1,9 @@
-# 0.13.15
+# 0.13.16
 * Explicitly handle too large kraken notification payloads
+
+# 0.13.15
+* Bump hull-client version to 1.2.2
+* Adds support for Account anonymous_id claim
 
 # 0.13.14
 * Fix flow type for THullEvent
