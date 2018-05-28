@@ -60,10 +60,10 @@ export type HullSendResponse = Promise<*>;
 export type HullSyncResponse = Promise<*>;
 
 // functional types
-export type HullSendUserUpdateMessages = (ctx: HullReqContext, messages: Array<HullUserUpdateMessage>) => HullSendResponse;
-export type HullSendAccountUpdateMessages = (ctx: HullReqContext, messages: Array<HullAccountUpdateMessage>) => HullSendResponse;
-export type syncConnectorUpdateMessage = (ctx: HullReqContext) => HullSyncResponse;
-export type syncSegmentUpdateMessage = (ctx: HullReqContext) => HullSyncResponse;
+export type HullUserUpdateHandlerCallback = (ctx: HullReqContext, messages: Array<HullUserUpdateMessage>) => HullSendResponse;
+export type HullAccountUpdateHandlerCallback = (ctx: HullReqContext, messages: Array<HullAccountUpdateMessage>) => HullSendResponse;
+export type HullConnectorUpdateHandlerCallback = (ctx: HullReqContext) => HullSyncResponse;
+export type HullSegmentUpdateHandlerCallback = (ctx: HullReqContext) => HullSyncResponse;
 
 // OOP types
 export interface HullSyncAgent {
@@ -74,4 +74,29 @@ export interface HullSyncAgent {
   syncSegmentUpdateMessage(): HullSyncResponse;
 }
 
-export type HullServerFunction = (app: $Application, extra?: Object) => $Application
+export type HullServerFunction = (app: $Application, extra?: Object) => $Application;
+
+export type HullNotificationHandlerCallback =
+  HullUserUpdateHandlerCallback |
+  HullAccountUpdateHandlerCallback |
+  HullConnectorUpdateHandlerCallback |
+  HullSegmentUpdateHandlerCallback |
+  $PropertyType<HullSyncAgent, 'sendUserUpdateMessages'> |
+  $PropertyType<HullSyncAgent, 'sendAccountUpdateMessages'> |
+  $PropertyType<HullSyncAgent, 'syncConnectorUpdateMessage'> |
+  $PropertyType<HullSyncAgent, 'syncSegmentUpdateMessage'>;
+
+export type HullNotificationChannelName =
+  "user:update"
+  | "account:update"
+  | "ship:update"
+  | "connector:update"
+  | "segment:update"
+  | "segment:delete";
+
+export type HullNotificationHandlerConfiguration = {
+  [HullNotificationChannelName]: HullNotificationHandlerCallback | {
+    callback: HullNotificationHandlerCallback,
+    options: Object
+  }
+};

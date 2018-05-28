@@ -144,7 +144,6 @@ Here is the base structure of the Context Object (we also provide a Flow type fo
   metric: {},
   helpers: {},
   service: {},
-  message: {},
   notification: {}
   smartNotifierResponse: {} //smartNotifierResponse object
 }
@@ -296,26 +295,17 @@ app.get("/action", (req, res) => {
 
 We strongly advice to follow our [context management convention](#context-management-convention) which make it easy to keep functions and classes signatures clean and standard.
 
-### **message**
-
-Optional - set if there is a sns message incoming.
-
-It contains the raw, message object - should not be used directly by the connector, `req.hull.notification` is added for that purpose.
-
-```javascript
-Type: "Notification",
-Subject: "user_report:update",
-Message: "{\"user\":{}}"
-```
 
 ### **notification**
 
-Optional - if the incoming message type if `Notification`, then the messaged is parsed and set to notification.
+Optional - if in the context of kraken notification, scheduler call or batch call it will contain `req.body`
 
 ```javascript
-subject: "user_report:update",
-timestamp: new Date(message.Timestamp),
-paload: { user: {} }
+{
+  connector: {}
+  notification_id: ""
+  messages: []
+}
 ```
 
 ### **smartNotifierResponse**

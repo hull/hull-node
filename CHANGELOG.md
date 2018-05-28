@@ -1,3 +1,8 @@
+# 0.14.0-beta.2
+* Remove notif handler and middleware
+* Introduce new notification handler
+* Add option to respond with metrics, logs and firehose events
+
 # 0.14.0-beta.1
 * Upgrade hull-client-node to v2.0.0
 

@@ -129,7 +129,7 @@ class HullConnector {
      * Unhandled error middleware
      */
     app.use((err, req, res, next) => { // eslint-disable-line no-unused-vars
-      if (req.hull.smartNotifierResponse) {
+      if (req.hull && req.hull.smartNotifierResponse) {
         const response = req.hull.smartNotifierResponse;
         return res.status(500).json(response.toJSON());
       }

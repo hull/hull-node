@@ -2,7 +2,7 @@ const { renderFile } = require("ejs");
 const timeout = require("connect-timeout");
 
 const {
-  staticRouter, tokenMiddleware, notifMiddleware, smartNotifierMiddleware, helpersMiddleware, segmentsMiddleware
+  staticRouter, tokenMiddleware, smartNotifierMiddleware, helpersMiddleware, segmentsMiddleware
 } = require("../utils");
 
 function haltOnTimedout(req, res, next) {
@@ -46,7 +46,6 @@ module.exports = function setupApp({ instrumentation, queue, cache, app, connect
   app.use("/", staticRouter());
 
   app.use(tokenMiddleware());
-  app.use(notifMiddleware());
   app.use(haltOnTimedout);
   app.use(smartNotifierMiddleware({ skipSignatureValidation: connectorConfig.skipSignatureValidation }));
   app.use(haltOnTimedout);
