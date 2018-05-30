@@ -23,7 +23,7 @@
   HullUser
 } from "hull-client" */
 
-/*:: import type { HullReqContext, HullRequest } from "./types" */
+/*:: import type { HullContext, HullRequest } from "./types" */
 
 /*:: export type THullAccountAttributes = HullAccountAttributes; */
 /*:: export type THullAccountIdent = HullAccountClaims; */
@@ -36,7 +36,7 @@
 /*:: export type THullObjectAttributes = HullEntityAttributes; */
 /*:: export type THullObjectIdent = HullEntityClaims */
 /*:: export type THullObject = HullEntity */
-/*:: export type THullReqContext = HullReqContext; */
+/*:: export type THullReqContext = HullContext; */
 /*:: export type THullRequest = HullRequest; */
 /*:: export type THullSegment = HullSegment; */
 /*:: export type THullSegmentsChanges = HullSegmentsChanges; */
@@ -59,10 +59,8 @@ const HullClient = require("hull-client");
 const clientMiddleware = require("./middleware/client");
 const HullConnectorClass = require("./connector/hull-connector");
 
-const boundClientMiddleware = clientMiddleware.bind(undefined, HullClient);
-
 module.exports = {
   Client: HullClient,
-  Middleware: boundClientMiddleware,
-  Connector: HullConnectorClass.bind(undefined, HullClient, boundClientMiddleware)
+  Middleware: clientMiddleware,
+  Connector: HullConnectorClass
 };

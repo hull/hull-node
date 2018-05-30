@@ -6,20 +6,19 @@ const _ = require("lodash");
  * Background worker using QueueAdapter.
  */
 class Worker {
-  constructor({ Hull, queue, instrumentation, cache }) {
-    if (!Hull || !queue) {
-      throw new Error("Worker initialized without all required dependencies: Hull, queue");
+  constructor({ queue, instrumentation }) {
+    if (!queue) {
+      throw new Error("Worker initialized without all required dependencies: queue");
     }
     this.queueAdapter = queue.adapter;
     this.instrumentation = instrumentation;
-    this.Hull = Hull;
 
     this.supply = new Supply();
 
-    this.use(queue.contextMiddleware());
-    this.use(cache.contextMiddleware());
+    // this.use(queue.contextMiddleware());
+    // this.use(cache.contextMiddleware());
 
-    this.use(instrumentation.contextMiddleware());
+    // this.use(instrumentation.contextMiddleware());
     // instrument jobs between 1 and 5 minutes
     setInterval(this.metricJobs.bind(this), _.random(60000, 300000));
 

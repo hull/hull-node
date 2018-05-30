@@ -8,6 +8,7 @@
     "comma-dangle": [0],
     "max-len": [0],
     "camelcase": [0],
+    "class-methods-use-this": [0],
     "quotes": [2, "double"],
     "prefer-arrow-callback": [0],
     "new-cap": [0],
@@ -16,7 +17,8 @@
     "no-param-reassign" : [0],
     "no-console": [0],
     "eqeqeq": [1],
-    "spaced-comment": ["error", "always", { "markers": [":", "::"] }]
+    "spaced-comment": ["error", "always", { "markers": [":", "::"] }],
+    "no-unused-vars": ["error", { "argsIgnorePattern": "^_" }]
   },
   "extends": [
     "airbnb-base",

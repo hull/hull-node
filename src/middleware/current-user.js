@@ -10,12 +10,14 @@ function parseSignedCookie(signedCookie) {
   return null;
 }
 
-module.exports = function CurrentUser(config = {}, req, res, next) {
+function currentUserMiddleware(config = {}, req, res, next) {
   req.hull = req.hull || {};
   const cookies = req.cookies || {};
   const { id } = config;
   const cookieName = `hull_${id}`;
-  if (!(cookieName in cookies)) { return next(); }
+  if (!(cookieName in cookies)) {
+    return next();
+  }
 
   const signedUser = parseSignedCookie(cookies[cookieName]);
   const userId = signedUser["Hull-User-Id"];
@@ -27,5 +29,7 @@ module.exports = function CurrentUser(config = {}, req, res, next) {
       req.hull.userId = userId;
     }
   }
-  next();
-};
+  return next();
+}
+
+module.exports = currentUserMiddleware;

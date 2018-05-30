@@ -1,10 +1,10 @@
 const _ = require("lodash");
-const express = require("express");
+const { Router } = require("express");
 const passport = require("passport");
 const bodyParser = require("body-parser");
 const querystring = require("querystring");
 
-const requireHullMiddleware = require("./require-hull-middleware");
+const { queryConfigurationMiddleware, clientMiddleware, fetchFullContextMiddleware, timeoutMiddleware, haltOnTimedoutMiddleware } = require("../middleware");
 
 const HOME_URL = "/";
 const LOGIN_URL = "/login";
@@ -132,10 +132,14 @@ module.exports = function oauth({
     };
   }
 
-  const router = express.Router();
+  const router = Router();
 
-  router.use(requireHullMiddleware());
   router.use(fetchToken);
+  router.use(queryConfigurationMiddleware()); // parse config from token
+  router.use(clientMiddleware()); // initialize client
+  router.use(timeoutMiddleware());
+  router.use(fetchFullContextMiddleware({ requestName: "oAuth" }));
+  router.use(haltOnTimedoutMiddleware());
   router.use(passport.initialize());
   router.use(bodyParser.urlencoded({ extended: true }));
 

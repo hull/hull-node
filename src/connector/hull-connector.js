@@ -1,16 +1,22 @@
+// @flow
+import type { $Application, $Response, NextFunction, Middleware } from "express";
+import type { HullConnectorOptions, HullRequest, HullRequestBase } from "../types";
+
 const Promise = require("bluebird");
 const fs = require("fs");
 const _ = require("lodash");
-const setupApp = require("./setup-app");
+const { renderFile } = require("ejs");
+const debug = require("debug")("hull-connector");
+
+const { staticRouter } = require("../utils");
+const { queryConfigurationMiddleware, contextBaseMiddleware, clientMiddleware, fetchFullContextMiddleware } = require("../middleware");
 const Worker = require("./worker");
 const { Instrumentation, Cache, Queue, Batcher } = require("../infra");
-const { exitHandler, segmentsMiddleware, requireHullMiddleware, helpersMiddleware } = require("../utils");
+const { exitHandler } = require("../utils");
 const { TransientError } = require("../errors");
 
 /**
  * @public
- * @param {HullClient}    HullClient
- * @param {Object}        HullMiddleware
  * @param {Object}        [options={}]
  * @param {string}        [options.connectorName] force connector name - if not provided will be taken from manifest.json
  * @param {string}        [options.hostSecret] secret to sign req.hull.token
@@ -23,11 +29,18 @@ const { TransientError } = require("../errors");
  * @param {Object}        [options.queue] override default QueueAgent
  */
 class HullConnector {
-  constructor(HullClient, HullMiddleware, {
-    hostSecret, port, clientConfig = {}, instrumentation, cache, queue, connectorName, segmentFilterSetting, skipSignatureValidation, timeout
-  } = {}) {
-    this.HullClient = HullClient;
-    this.HullMiddleware = HullMiddleware;
+  port: $PropertyType<HullConnectorOptions, 'port'>;
+  middlewares: Array<Function>;
+  connectorConfig: {};
+  cache: $PropertyType<HullConnectorOptions, 'cache'>;
+  queue: $PropertyType<HullConnectorOptions, 'queue'>;
+  instrumentation: $PropertyType<HullConnectorOptions, 'instrumentation'>;
+  hostSecret: $PropertyType<HullConnectorOptions, 'hostSecret'>;
+  clientConfig: $PropertyType<HullConnectorOptions, 'clientConfig'>;
+  worker: Worker;
+  constructor({
+    hostSecret, port, clientConfig = {}, instrumentation, cache, queue, connectorName, skipSignatureValidation, timeout
+  }: HullConnectorOptions = {}) {
     this.instrumentation = instrumentation || new Instrumentation();
     this.cache = cache || new Cache();
     this.queue = queue || new Queue();
@@ -41,15 +54,11 @@ class HullConnector {
       this.clientConfig.connectorName = connectorName;
     } else {
       try {
-        const manifest = JSON.parse(fs.readFileSync(`${process.cwd()}/manifest.json`));
+        const manifest = JSON.parse(fs.readFileSync(`${process.cwd()}/manifest.json`).toString());
         if (manifest.name) {
           this.clientConfig.connectorName = _.kebabCase(manifest.name);
         }
       } catch (error) {} // eslint-disable-line no-empty
-    }
-
-    if (segmentFilterSetting) {
-      this.connectorConfig.segmentFilterSetting = segmentFilterSetting;
     }
 
     if (skipSignatureValidation) {
@@ -81,16 +90,27 @@ class HullConnector {
    * @param  {express} app expressjs application
    * @return {express}     expressjs application
    */
-  setupApp(app) {
-    setupApp({
-      app,
+  setupApp(app: $Application): $Application {
+    app.use("/", staticRouter());
+    app.use(this.instrumentation.startMiddleware());
+    app.use(contextBaseMiddleware({
       instrumentation: this.instrumentation,
-      cache: this.cache,
       queue: this.queue,
-      connectorConfig: this.connectorConfig,
-      clientMiddleware: this.clientMiddleware(),
-      middlewares: this.middlewares
+      cache: this.cache,
+      connectorConfig: this.connectorConfig
+    }));
+
+    app.engine("html", renderFile);
+
+    app.set("views", `${process.cwd()}/views`);
+    app.set("view engine", "ejs");
+
+    app.use(this.instrumentation.ravenContextMiddleware());
+    app.use((req: HullRequestBase, res: $Response, next: NextFunction) => {
+      req.hull.metric.increment("connector.request", 1);
+      next();
     });
+    this.middlewares.map(middleware => app.use(middleware));
     return app;
   }
 
@@ -100,11 +120,11 @@ class HullConnector {
    * @param  {express} app expressjs application
    * @return {http.Server}
    */
-  startApp(app) {
+  startApp(app: $Application) {
     /**
      * Transient Middleware
      */
-    app.use((err, req, res, next) => {
+    app.use((err: Error, req: HullRequest, res: $Response, next: NextFunction) => {
       if (err instanceof TransientError || (err.name === "ServiceUnavailableError" && err.message === "Response timeout")) {
         req.hull.metric.increment("connector.transient_error", 1, [
           `error_name:${_.snakeCase(err.name)}`,
@@ -128,7 +148,7 @@ class HullConnector {
     /**
      * Unhandled error middleware
      */
-    app.use((err, req, res, next) => { // eslint-disable-line no-unused-vars
+    app.use((err: Error, req: HullRequest, res: $Response, next: NextFunction) => { // eslint-disable-line no-unused-vars
       if (req.hull && req.hull.smartNotifierResponse) {
         const response = req.hull.smartNotifierResponse;
         return res.status(500).json(response.toJSON());
@@ -137,50 +157,41 @@ class HullConnector {
     });
 
     return app.listen(this.port, () => {
-      this.HullClient.logger.info("connector.server.listen", { port: this.port });
+      debug("connector.server.listen", { port: this.port });
     });
   }
 
-  worker(jobs) {
-    this._worker = this._worker || new Worker({
-      Hull: this.HullClient,
+  worker(jobs: Object) {
+    this.worker = new Worker({
       instrumentation: this.instrumentation,
-      cache: this.cache,
       queue: this.queue
     });
-    this._worker.use((req, res, next) => {
-      req.hull = req.hull || {};
-      req.hull.connectorConfig = this.connectorConfig;
-      next();
-    });
-    this._worker.use(this.clientMiddleware());
-    this._worker.use(requireHullMiddleware());
-    this._worker.use(helpersMiddleware());
-    this._worker.use(segmentsMiddleware());
-    this.middlewares.map(middleware => this._worker.use(middleware));
+    this.worker.use(this.instrumentation.startMiddleware());
+    this.worker.use(contextBaseMiddleware({
+      instrumentation: this.instrumentation,
+      queue: this.queue,
+      cache: this.cache,
+      connectorConfig: this.connectorConfig
+    }));
+    this.worker.use(queryConfigurationMiddleware());
+    this.worker.use(clientMiddleware());
+    this.worker.use(fetchFullContextMiddleware());
+    this.middlewares.map(middleware => this.worker.use(middleware));
 
-    this._worker.setJobs(jobs);
-    return this._worker;
+    this.worker.setJobs(jobs);
+    return this.worker;
   }
 
-  use(middleware) {
+  use(middleware: Middleware) {
     this.middlewares.push(middleware);
     return this;
   }
 
-  clientMiddleware() {
-    this._middleware = this._middleware || this.HullMiddleware({
-      hostSecret: this.hostSecret,
-      clientConfig: this.clientConfig
-    });
-    return this._middleware;
-  }
-
-  startWorker(queueName = "queueApp") {
+  startWorker(queueName: string = "queueApp") {
     this.instrumentation.exitOnError = true;
-    if (this._worker) {
-      this._worker.process(queueName);
-      this.HullClient.logger.info("connector.worker.process", { queueName });
+    if (this.worker) {
+      this.worker.process(queueName);
+      debug("connector.worker.process", { queueName });
     }
   }
 }

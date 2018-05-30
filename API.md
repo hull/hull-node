@@ -4,8 +4,6 @@
 
 **Parameters**
 
--   `HullClient` **HullClient** 
--   `HullMiddleware` **[Object][1]** 
 -   `options` **[Object][1]**  (optional, default `{}`)
     -   `options.hostSecret` **[string][2]?** secret to sign req.hull.token
     -   `options.port` **([Number][3] \| [string][2])?** port on which expressjs application should be started
@@ -16,7 +14,6 @@
     -   `options.connectorName` **[string][2]?** force connector name - if not provided will be taken from manifest.json
     -   `options.skipSignatureValidation` **[boolean][4]?** skip signature validation on notifications (for testing only)
     -   `options.timeout` **([number][3] \| [string][2])?** global HTTP server timeout - format is parsed by `ms` npm package
-    -   `options.segmentFilterSetting`  
 
 ### setupApp
 
@@ -123,361 +120,13 @@ When using `superagentErrorPlugin` it's returned by some errors out-of-the-box.
 -   `message` **[string][2]** 
 -   `extra` **[Object][1]** 
 
-## Context
-
-An object that's available in all action handlers and routers as `req.hull`.
-It's a set of parameters and modules to work in the context of current organization and connector instance.
-
-### helpers
-
-This is a set of additional helper functions being exposed at `req.hull.helpers`. They allow to perform common operation in the context of current request. They are similar o `req.hull.client.utils`, but operate at higher level, ensure good practises and should be used in the first place before falling back to raw utils.
-
-#### handleExtract
-
-Helper function to handle JSON extract sent to batch endpoint
-
-**Parameters**
-
--   `ctx` **[Object][1]** Hull request context
--   `options` **[Object][1]** 
-    -   `options.body` **[Object][1]** request body object (req.body)
-    -   `options.batchSize` **[Object][1]** size of the chunk we want to pass to handler
-    -   `options.handler` **[Function][6]** callback returning a Promise (will be called with array of elements)
-    -   `options.onResponse` **[Function][6]** callback called on successful inital response
-    -   `options.onError` **[Function][6]** callback called during error
-
-Returns **[Promise][7]** 
-
-#### requestExtract
-
-This is a method to request an extract of user base to be sent back to the Connector to a selected `path` which should be handled by `notifHandler`.
-
-**Parameters**
-
--   `ctx` **[Object][1]** Hull request context
--   `options` **[Object][1]**  (optional, default `{}`)
-    -   `options.segment` **[Object][1]**  (optional, default `null`)
-    -   `options.format` **[Object][1]**  (optional, default `json`)
-    -   `options.path` **[Object][1]**  (optional, default `/batch`)
-    -   `options.fields` **[Object][1]**  (optional, default `[]`)
-    -   `options.additionalQuery` **[Object][1]**  (optional, default `{}`)
-
-**Examples**
-
-```javascript
-req.hull.helpers.requestExtract({ segment = null, path, fields = [], additionalQuery = {} });
-```
-
-Returns **[Promise][7]** 
-
-#### updateSettings
-
-Allows to update selected settings of the ship `private_settings` object. This is a wrapper over `hullClient.utils.settings.update()` call. On top of that it makes sure that the current context ship object is updated, and the ship cache is refreshed.
-It will emit `ship:update` notify event.
-
-**Parameters**
-
--   `ctx` **[Object][1]** The Context Object
--   `newSettings` **[Object][1]** settings to update
-
-**Examples**
-
-```javascript
-req.hull.helpers.updateSettings({ newSettings });
-```
-
-Returns **[Promise][7]** 
-
-### cache
-
-Cache available as `req.hull.cache` object. This class is being intiated and added to Context Object by QueueAgent.
-If you want to customize cache behavior (for example ttl, storage etc.) please @see Infra.QueueAgent
-
-#### wrap
-
--   **See: [https://github.com/BryanDonovan/node-cache-manager#overview][8]**
-
-Hull client calls which fetch ship settings could be wrapped with this
-method to cache the results
-
-**Parameters**
-
--   `key` **[string][2]** 
--   `cb` **[Function][6]** callback which Promised result would be cached
--   `options` **[Object][1]?** 
-
-Returns **[Promise][7]** 
-
-#### set
-
-Saves ship data to the cache
-
-**Parameters**
-
--   `key` **[string][2]** 
--   `value` **mixed** 
--   `options` **[Object][1]?** 
-
-Returns **[Promise][7]** 
-
-#### get
-
-Returns cached information
-
-**Parameters**
-
--   `key` **[string][2]** 
-
-Returns **[Promise][7]** 
-
-#### del
-
-Clears the ship cache. Since Redis stores doesn't return promise
-for this method, it passes a callback to get a Promise
-
-**Parameters**
-
--   `key` **[string][2]** 
-
-Returns **any** Promise
-
-### metric
-
-Metric agent available as `req.hull.metric` object.
-This class is being initiated by InstrumentationAgent.
-If you want to change or override metrics behavior please @see Infra.InstrumentationAgent
-
-**Examples**
-
-```javascript
-req.hull.metric.value("metricName", metricValue = 1);
-req.hull.metric.increment("metricName", incrementValue = 1); // increments the metric value
-req.hull.metric.event("eventName", { text = "", properties = {} });
-```
-
-#### value
-
-Sets metric value for gauge metric
-
-**Parameters**
-
--   `metric` **[string][2]** metric name
--   `value` **[number][3]** metric value (optional, default `1`)
--   `additionalTags` **[Array][9]** additional tags in form of `["tag_name:tag_value"]` (optional, default `[]`)
-
-Returns **mixed** 
-
-#### increment
-
-Increments value of selected metric
-
-**Parameters**
-
--   `metric` **[string][2]** metric metric name
--   `value` **[number][3]** value which we should increment metric by (optional, default `1`)
--   `additionalTags` **[Array][9]** additional tags in form of `["tag_name:tag_value"]` (optional, default `[]`)
-
-Returns **mixed** 
-
-#### event
-
-**Parameters**
-
--   `options` **[Object][1]** 
-    -   `options.title` **[string][2]** 
-    -   `options.text` **[string][2]**  (optional, default `""`)
-    -   `options.properties` **[Object][1]**  (optional, default `{}`)
-
-Returns **mixed** 
-
-### enqueue
-
-**Parameters**
-
--   `queueAdapter` **[Object][1]** adapter to run - when using this function in Context this param is bound
--   `ctx` **[Context][10]** Hull Context Object - when using this function in Context this param is bound
--   `jobName` **[string][2]** name of specific job to execute
--   `jobPayload` **[Object][1]** the payload of the job
--   `options` **[Object][1]**  (optional, default `{}`)
-    -   `options.ttl` **[number][3]?** job producers can set an expiry value for the time their job can live in active state, so that if workers didn't reply in timely fashion, Kue will fail it with TTL exceeded error message preventing that job from being stuck in active state and spoiling concurrency.
-    -   `options.delay` **[number][3]?** delayed jobs may be scheduled to be queued for an arbitrary distance in time by invoking the .delay(ms) method, passing the number of milliseconds relative to now. Alternatively, you can pass a JavaScript Date object with a specific time in the future. This automatically flags the Job as "delayed".
-    -   `options.queueName` **[string][2]?** when you start worker with a different queue name, you can explicitly set it here to queue specific jobs to that queue
-    -   `options.priority` **([number][3] \| [string][2])?** you can use this param to specify priority of job
-
-**Examples**
-
-```javascript
-// app is Hull.Connector wrapped expressjs app
-app.get((req, res) => {
-  req.hull.enqueue("jobName", { payload: "to-work" })
-    .then(() => {
-      res.end("ok");
-    });
-});
-```
-
-Returns **[Promise][7]** which is resolved when job is successfully enqueued
-
-**Meta**
-
--   **deprecated**: internal connector queue is considered an antipattern, this function is kept only for backward compatiblity
-
-
-## Infra
-
-Production ready connectors need some infrastructure modules to support their operation, allow instrumentation, queueing and caching. The [Hull.Connector][11] comes with default settings, but also allows to initiate them and set a custom configuration:
-
-**Examples**
-
-```javascript
-const instrumentation = new Instrumentation();
-const cache = new Cache();
-const queue = new Queue();
-
-const connector = new Hull.Connector({ instrumentation, cache, queue });
-```
-
-### CacheAgent
-
-This is a wrapper over [https://github.com/BryanDonovan/node-cache-manager][12]
-to manage ship cache storage.
-It is responsible for handling cache key for every ship.
-
-By default it comes with the basic in-memory store, but in case of distributed connectors being run in multiple processes for reliable operation a shared cache solution should be used. The `Cache` module internally uses [node-cache-manager][12], so any of it's compatibile store like `redis` or `memcache` could be used:
-
-The `cache` instance also exposes `contextMiddleware` whch adds `req.hull.cache` to store the ship and segments information in the cache to not fetch it for every request. The `req.hull.cache` is automatically picked and used by the `Hull.Middleware` and `segmentsMiddleware`.
-
-> The `req.hull.cache` can be used by the connector developer for any other caching purposes:
-
-```javascript
-ctx.cache.get('object_name');
-ctx.cache.set('object_name', object_value);
-ctx.cache.wrap('object_name', () => {
-  return Promise.resolve(object_value);
-});
-```
-
-> There are two <code>object names</code> which are reserved and cannot be used here:
->
-> -   any ship id
-> -   "segments"
->
-> **IMPORTANT** internal caching of `ctx.ship` object is refreshed on `ship:update` notifications, if the connector doesn't subscribe for notification at all the cache won't be refreshed automatically. In such case disable caching, set short TTL or add `notifHandler`
-
-**Parameters**
-
--   `options` **[Object][1]** passed to node-cache-manager (optional, default `{}`)
-
-**Examples**
-
-```javascript
-const redisStore = require("cache-manager-redis");
-const { Cache } = require("hull/lib/infra");
-
-const cache = new Cache({
-  store: redisStore,
-  url: 'redis://:XXXX@localhost:6379/0?ttl=600'
-});
-
-const connector = new Hull.Connector({ cache });
-```
-
-### InstrumentationAgent
-
-It automatically sends data to DataDog, Sentry and Newrelic if appropriate ENV VARS are set:
-
--   NEW_RELIC_LICENSE_KEY
--   DATADOG_API_KEY
--   SENTRY_URL
-
-It also exposes the `contextMiddleware` which adds `req.hull.metric` agent to add custom metrics to the ship. Right now it doesn't take any custom options, but it's showed here for the sake of completeness.
-
-**Parameters**
-
--   `options`   (optional, default `{}`)
-
-**Examples**
-
-```javascript
-const { Instrumentation } = require("hull/lib/infra");
-
-const instrumentation = new Instrumentation();
-
-const connector = new Connector.App({ instrumentation });
-```
-
-### QueueAgent
-
-By default it's initiated inside `Hull.Connector` as a very simplistic in-memory queue, but in case of production grade needs, it comes with a [Kue][13] or [Bull][14] adapters which you can initiate in a following way:
-
-`Options` from the constructor of the `BullAdapter` or `KueAdapter` are passed directly to the internal init method and can be set with following parameters:
-
-[https://github.com/Automattic/kue#redis-connection-settings][15] [https://github.com/OptimalBits/bull/blob/master/REFERENCE.md#queue][16]
-
-The `queue` instance has a `contextMiddleware` method which adds `req.hull.enqueue` method to queue jobs - this is done automatically by `Hull.Connector().setupApp(app)`:
-
-```javascript
-req.hull.enqueue((jobName = ''), (jobPayload = {}), (options = {}));
-```
-
-By default the job will be retried 3 times and the payload would be removed from queue after successfull completion.
-
-Then the handlers to work on a specific jobs is defined in following way:
-
-```javascript
-connector.worker({
-  jobsName: (ctx, jobPayload) => {
-    // process Payload
-    // this === job (kue job object)
-    // return Promise
-  }
-});
-connector.startWorker();
-```
-
-**Parameters**
-
--   `adapter` **[Object][1]** 
-
-**Examples**
-
-````javascript
-```javascript
-const { Queue } = require("hull/lib/infra");
-const BullAdapter = require("hull/lib/infra/queue/adapter/bull"); // or KueAdapter
-
-const queueAdapter = new BullAdapter(options);
-const queue = new Queue(queueAdapter);
-
-const connector = new Hull.Connector({ queue });
-```
-````
-
-**Meta**
-
--   **deprecated**: internal connector queue is considered an antipattern, this class is kept only for backward compatiblity
-
-
-## Hull.Middleware
-
-This middleware standardizes the instantiation of a [Hull Client][17] in the context of authorized HTTP request. It also fetches the entire ship's configuration.
-
-**Parameters**
-
--   `HullClient` **HullClient** Hull Client - the version exposed by this library comes with HullClient argument bound
--   `options` **[Object][1]** 
-    -   `options.hostSecret` **[string][2]** The ship hosted secret - consider this as a private key which is used to encrypt and decrypt `req.hull.token`. The token is useful for exposing it outside the Connector &lt;-> Hull Platform communication. For example the OAuth flow or webhooks. Thanks to the encryption no 3rd party will get access to Hull Platform credentials.
-    -   `options.clientConfig` **[Object][1]** Additional config which will be passed to the new instance of Hull Client (optional, default `{}`)
-
-Returns **[Function][6]** 
-
 ## Utils
 
 General utilities
 
 ### oAuthHandler
 
-OAuthHandler is a packaged authentication handler using [Passport][18]. You give it the right parameters, it handles the entire auth scenario for you.
+OAuthHandler is a packaged authentication handler using [Passport][6]. You give it the right parameters, it handles the entire auth scenario for you.
 
 It exposes hooks to check if the ship is Set up correctly, inject additional parameters during login, and save the returned settings during callback.
 
@@ -489,20 +138,20 @@ To make it working in Hull dashboard set following line in **manifest.json** fil
 }
 ```
 
-For example of the notifications payload [see details][19]
+For example of the notifications payload [see details][7]
 
 **Parameters**
 
 -   `options` **[Object][1]** 
     -   `options.name` **[string][2]** The name displayed to the User in the various screens.
     -   `options.tokenInUrl` **[boolean][4]** Some services (like Stripe) require an exact URL match. Some others (like Hubspot) don't pass the state back on the other hand. Setting this flag to false (default: true) removes the `token` Querystring parameter in the URL to only rely on the `state` param.
-    -   `options.isSetup` **[Function][6]** A method returning a Promise, resolved if the ship is correctly setup, or rejected if it needs to display the Login screen.
+    -   `options.isSetup` **[Function][8]** A method returning a Promise, resolved if the ship is correctly setup, or rejected if it needs to display the Login screen.
         Lets you define in the Ship the name of the parameters you need to check for. You can return parameters in the Promise resolve and reject methods, that will be passed to the view. This lets you display status and show buttons and more to the customer
-    -   `options.onAuthorize` **[Function][6]** A method returning a Promise, resolved when complete. Best used to save tokens and continue the sequence once saved.
-    -   `options.onLogin` **[Function][6]** A method returning a Promise, resolved when ready. Best used to process form parameters, and place them in `req.authParams` to be submitted to the Login sequence. Useful to add strategy-specific parameters, such as a portal ID for Hubspot for instance.
-    -   `options.Strategy` **[Function][6]** A Passport Strategy.
+    -   `options.onAuthorize` **[Function][8]** A method returning a Promise, resolved when complete. Best used to save tokens and continue the sequence once saved.
+    -   `options.onLogin` **[Function][8]** A method returning a Promise, resolved when ready. Best used to process form parameters, and place them in `req.authParams` to be submitted to the Login sequence. Useful to add strategy-specific parameters, such as a portal ID for Hubspot for instance.
+    -   `options.Strategy` **[Function][8]** A Passport Strategy.
     -   `options.views` **[Object][1]** Required, A hash of view files for the different screens: login, home, failure, success
-    -   `options.options` **[Object][1]** Hash passed to Passport to configure the OAuth Strategy. (See [Passport OAuth Configuration][20])
+    -   `options.options` **[Object][1]** Hash passed to Passport to configure the OAuth Strategy. (See [Passport OAuth Configuration][9])
 
 **Examples**
 
@@ -565,79 +214,7 @@ app.use(
 }
 ```
 
-Returns **[Function][6]** OAuth handler to use with expressjs
-
-### smartNotifierHandler
-
-`smartNotifierHandler` is a next generation `notifHandler` cooperating with our internal notification tool. It handles Backpressure, throttling and retries for you and lets you adapt to any external rate limiting pattern.
-
-> To enable the smartNotifier for a connector, the `smart-notifier` tag should be present in `manifest.json` file. Otherwise, regular, unthrottled notifications will be sent without the possibility of flow control.
-
-```json
-{
-  "tags": ["smart-notifier"],
-  "subscriptions": [
-    {
-      "url": "/notify"
-    }
-  ]
-}
-```
-
-When performing operations on notification you can set FlowControl settings using `ctx.smartNotifierResponse` helper.
-
-**Parameters**
-
--   `params` **[Object][1]** 
-    -   `params.handlers` **[Object][1]** 
-    -   `params.options` **[Object][1]?** 
-        -   `params.options.maxSize` **[number][3]?** the size of users/account batch chunk
-        -   `params.options.maxTime` **[number][3]?** time waited to capture users/account up to maxSize
-        -   `params.options.segmentFilterSetting` **[string][2]?** setting from connector's private_settings to mark users as whitelisted
-        -   `params.options.groupTraits` **[boolean][4]**  (optional, default `false`)
-    -   `params.userHandlerOptions` **[Object][1]?** deprecated
-
-**Examples**
-
-```javascript
-const { smartNotifierHandler } = require("hull/lib/utils");
-const app = express();
-
-const handler = smartNotifierHandler({
-  handlers: {
-    'ship:update': function(ctx, messages = []) {},
-    'segment:update': function(ctx, messages = []) {},
-    'segment:delete': function(ctx, messages = []) {},
-    'account:update': function(ctx, messages = []) {},
-    'user:update': function(ctx, messages = []) {
-      console.log('Event Handler here', ctx, messages);
-      // ctx: Context Object
-      // messages: [{
-      //   user: { id: '123', ... },
-      //   segments: [{}],
-      //   changes: {},
-      //   events: [{}, {}]
-      //   matchesFilter: true | false
-      // }]
-      // more about `smartNotifierResponse` below
-      ctx.smartNotifierResponse.setFlowControl({
-        type: 'next',
-        size: 100,
-        in: 5000
-      });
-      return Promise.resolve();
-    }
-  },
-  options: {
-    groupTraits: false
-  }
-});
-
-connector.setupApp(app);
-app.use('/notify', handler);
-```
-
-Returns **[Function][6]** expressjs router
+Returns **[Function][8]** OAuth handler to use with expressjs
 
 ### superagentErrorPlugin
 
@@ -681,7 +258,7 @@ superagent.get("http://test/test")
   })
 ```
 
-Returns **[Function][6]** function to use as superagent plugin
+Returns **[Function][8]** function to use as superagent plugin
 
 ### superagentInstrumentationPlugin
 
@@ -751,7 +328,7 @@ connector.service_api.call {
 ```
 ````
 
-Returns **[Function][6]** function to use as superagent plugin
+Returns **[Function][8]** function to use as superagent plugin
 
 ### superagentUrlTemplatePlugin
 
@@ -783,7 +360,342 @@ agent
 });
 ```
 
-Returns **[Function][6]** function to use as superagent plugin
+Returns **[Function][8]** function to use as superagent plugin
+
+## Context
+
+An object that's available in all action handlers and routers as `req.hull`.
+It's a set of parameters and modules to work in the context of current organization and connector instance.
+
+### helpers
+
+This is a set of additional helper functions being exposed at `req.hull.helpers`. They allow to perform common operation in the context of current request. They are similar o `req.hull.client.utils`, but operate at higher level, ensure good practises and should be used in the first place before falling back to raw utils.
+
+#### handleExtract
+
+Helper function to handle JSON extract sent to batch endpoint
+
+**Parameters**
+
+-   `ctx` **[Object][1]** Hull request context
+-   `options` **[Object][1]** 
+    -   `options.body` **[Object][1]** request body object (req.body)
+    -   `options.batchSize` **[Object][1]** size of the chunk we want to pass to handler
+    -   `options.handler` **[Function][8]** callback returning a Promise (will be called with array of elements)
+    -   `options.onResponse` **[Function][8]** callback called on successful inital response
+    -   `options.onError` **[Function][8]** callback called during error
+
+Returns **[Promise][10]** 
+
+#### requestExtract
+
+This is a method to request an extract of user base to be sent back to the Connector to a selected `path` which should be handled by `notifHandler`.
+
+**Parameters**
+
+-   `ctx` **[Object][1]** Hull request context
+-   `options` **[Object][1]**  (optional, default `{}`)
+    -   `options.segment` **[Object][1]**  (optional, default `null`)
+    -   `options.format` **[Object][1]**  (optional, default `json`)
+    -   `options.path` **[Object][1]**  (optional, default `/batch`)
+    -   `options.fields` **[Object][1]**  (optional, default `[]`)
+    -   `options.additionalQuery` **[Object][1]**  (optional, default `{}`)
+
+**Examples**
+
+```javascript
+req.hull.helpers.requestExtract({ segment = null, path, fields = [], additionalQuery = {} });
+```
+
+Returns **[Promise][10]** 
+
+#### updateSettings
+
+Allows to update selected settings of the ship `private_settings` object. This is a wrapper over `hullClient.utils.settings.update()` call. On top of that it makes sure that the current context ship object is updated, and the ship cache is refreshed.
+It will emit `ship:update` notify event.
+
+**Parameters**
+
+-   `ctx` **[Object][1]** The Context Object
+-   `newSettings` **[Object][1]** settings to update
+
+**Examples**
+
+```javascript
+req.hull.helpers.updateSettings({ newSettings });
+```
+
+Returns **[Promise][10]** 
+
+### cache
+
+Cache available as `req.hull.cache` object. This class is being intiated and added to Context Object by QueueAgent.
+If you want to customize cache behavior (for example ttl, storage etc.) please @see Infra.QueueAgent
+
+#### wrap
+
+-   **See: [https://github.com/BryanDonovan/node-cache-manager#overview][11]**
+
+Hull client calls which fetch ship settings could be wrapped with this
+method to cache the results
+
+**Parameters**
+
+-   `key` **[string][2]** 
+-   `cb` **[Function][8]** callback which Promised result would be cached
+-   `options` **[Object][1]?** 
+
+Returns **[Promise][10]** 
+
+#### set
+
+Saves ship data to the cache
+
+**Parameters**
+
+-   `key` **[string][2]** 
+-   `value` **mixed** 
+-   `options` **[Object][1]?** 
+
+Returns **[Promise][10]** 
+
+#### get
+
+Returns cached information
+
+**Parameters**
+
+-   `key` **[string][2]** 
+
+Returns **[Promise][10]** 
+
+#### del
+
+Clears the ship cache. Since Redis stores doesn't return promise
+for this method, it passes a callback to get a Promise
+
+**Parameters**
+
+-   `key` **[string][2]** 
+
+Returns **any** Promise
+
+### metric
+
+Metric agent available as `req.hull.metric` object.
+This class is being initiated by InstrumentationAgent.
+If you want to change or override metrics behavior please @see Infra.InstrumentationAgent
+
+**Examples**
+
+```javascript
+req.hull.metric.value("metricName", metricValue = 1);
+req.hull.metric.increment("metricName", incrementValue = 1); // increments the metric value
+req.hull.metric.event("eventName", { text = "", properties = {} });
+```
+
+#### value
+
+Sets metric value for gauge metric
+
+**Parameters**
+
+-   `metric` **[string][2]** metric name
+-   `value` **[number][3]** metric value (optional, default `1`)
+-   `additionalTags` **[Array][12]** additional tags in form of `["tag_name:tag_value"]` (optional, default `[]`)
+
+Returns **mixed** 
+
+#### increment
+
+Increments value of selected metric
+
+**Parameters**
+
+-   `metric` **[string][2]** metric metric name
+-   `value` **[number][3]** value which we should increment metric by (optional, default `1`)
+-   `additionalTags` **[Array][12]** additional tags in form of `["tag_name:tag_value"]` (optional, default `[]`)
+
+Returns **mixed** 
+
+#### event
+
+**Parameters**
+
+-   `options` **[Object][1]** 
+    -   `options.title` **[string][2]** 
+    -   `options.text` **[string][2]**  (optional, default `""`)
+    -   `options.properties` **[Object][1]**  (optional, default `{}`)
+
+Returns **mixed** 
+
+### enqueue
+
+**Parameters**
+
+-   `queueAdapter` **[Object][1]** adapter to run - when using this function in Context this param is bound
+-   `ctx` **[Context][13]** Hull Context Object - when using this function in Context this param is bound
+-   `jobName` **[string][2]** name of specific job to execute
+-   `jobPayload` **[Object][1]** the payload of the job
+-   `options` **[Object][1]**  (optional, default `{}`)
+    -   `options.ttl` **[number][3]?** job producers can set an expiry value for the time their job can live in active state, so that if workers didn't reply in timely fashion, Kue will fail it with TTL exceeded error message preventing that job from being stuck in active state and spoiling concurrency.
+    -   `options.delay` **[number][3]?** delayed jobs may be scheduled to be queued for an arbitrary distance in time by invoking the .delay(ms) method, passing the number of milliseconds relative to now. Alternatively, you can pass a JavaScript Date object with a specific time in the future. This automatically flags the Job as "delayed".
+    -   `options.queueName` **[string][2]?** when you start worker with a different queue name, you can explicitly set it here to queue specific jobs to that queue
+    -   `options.priority` **([number][3] \| [string][2])?** you can use this param to specify priority of job
+
+**Examples**
+
+```javascript
+// app is Hull.Connector wrapped expressjs app
+app.get((req, res) => {
+  req.hull.enqueue("jobName", { payload: "to-work" })
+    .then(() => {
+      res.end("ok");
+    });
+});
+```
+
+Returns **[Promise][10]** which is resolved when job is successfully enqueued
+
+**Meta**
+
+-   **deprecated**: internal connector queue is considered an antipattern, this function is kept only for backward compatiblity
+
+
+## Infra
+
+Production ready connectors need some infrastructure modules to support their operation, allow instrumentation, queueing and caching. The [Hull.Connector][14] comes with default settings, but also allows to initiate them and set a custom configuration:
+
+**Examples**
+
+```javascript
+const instrumentation = new Instrumentation();
+const cache = new Cache();
+const queue = new Queue();
+
+const connector = new Hull.Connector({ instrumentation, cache, queue });
+```
+
+### CacheAgent
+
+This is a wrapper over [https://github.com/BryanDonovan/node-cache-manager][15]
+to manage ship cache storage.
+It is responsible for handling cache key for every ship.
+
+By default it comes with the basic in-memory store, but in case of distributed connectors being run in multiple processes for reliable operation a shared cache solution should be used. The `Cache` module internally uses [node-cache-manager][15], so any of it's compatibile store like `redis` or `memcache` could be used:
+
+The `cache` instance also exposes `contextMiddleware` whch adds `req.hull.cache` to store the ship and segments information in the cache to not fetch it for every request. The `req.hull.cache` is automatically picked and used by the `Hull.Middleware` and `segmentsMiddleware`.
+
+> The `req.hull.cache` can be used by the connector developer for any other caching purposes:
+
+```javascript
+ctx.cache.get('object_name');
+ctx.cache.set('object_name', object_value);
+ctx.cache.wrap('object_name', () => {
+  return Promise.resolve(object_value);
+});
+```
+
+> There are two <code>object names</code> which are reserved and cannot be used here:
+>
+> -   any ship id
+> -   "segments"
+>
+> **IMPORTANT** internal caching of `ctx.ship` object is refreshed on `ship:update` notifications, if the connector doesn't subscribe for notification at all the cache won't be refreshed automatically. In such case disable caching, set short TTL or add `notifHandler`
+
+**Parameters**
+
+-   `options` **[Object][1]** passed to node-cache-manager (optional, default `{}`)
+
+**Examples**
+
+```javascript
+const redisStore = require("cache-manager-redis");
+const { Cache } = require("hull/lib/infra");
+
+const cache = new Cache({
+  store: redisStore,
+  url: 'redis://:XXXX@localhost:6379/0?ttl=600'
+});
+
+const connector = new Hull.Connector({ cache });
+```
+
+### InstrumentationAgent
+
+It automatically sends data to DataDog, Sentry and Newrelic if appropriate ENV VARS are set:
+
+-   NEW_RELIC_LICENSE_KEY
+-   DATADOG_API_KEY
+-   SENTRY_URL
+
+It also exposes the `contextMiddleware` which adds `req.hull.metric` agent to add custom metrics to the ship. Right now it doesn't take any custom options, but it's showed here for the sake of completeness.
+
+**Parameters**
+
+-   `options`   (optional, default `{}`)
+
+**Examples**
+
+```javascript
+const { Instrumentation } = require("hull/lib/infra");
+
+const instrumentation = new Instrumentation();
+
+const connector = new Connector.App({ instrumentation });
+```
+
+### QueueAgent
+
+By default it's initiated inside `Hull.Connector` as a very simplistic in-memory queue, but in case of production grade needs, it comes with a [Kue][16] or [Bull][17] adapters which you can initiate in a following way:
+
+`Options` from the constructor of the `BullAdapter` or `KueAdapter` are passed directly to the internal init method and can be set with following parameters:
+
+[https://github.com/Automattic/kue#redis-connection-settings][18] [https://github.com/OptimalBits/bull/blob/master/REFERENCE.md#queue][19]
+
+The `queue` instance has a `contextMiddleware` method which adds `req.hull.enqueue` method to queue jobs - this is done automatically by `Hull.Connector().setupApp(app)`:
+
+```javascript
+req.hull.enqueue((jobName = ''), (jobPayload = {}), (options = {}));
+```
+
+By default the job will be retried 3 times and the payload would be removed from queue after successfull completion.
+
+Then the handlers to work on a specific jobs is defined in following way:
+
+```javascript
+connector.worker({
+  jobsName: (ctx, jobPayload) => {
+    // process Payload
+    // this === job (kue job object)
+    // return Promise
+  }
+});
+connector.startWorker();
+```
+
+**Parameters**
+
+-   `adapter` **[Object][1]** 
+
+**Examples**
+
+````javascript
+```javascript
+const { Queue } = require("hull/lib/infra");
+const BullAdapter = require("hull/lib/infra/queue/adapter/bull"); // or KueAdapter
+
+const queueAdapter = new BullAdapter(options);
+const queue = new Queue(queueAdapter);
+
+const connector = new Hull.Connector({ queue });
+```
+````
+
+**Meta**
+
+-   **deprecated**: internal connector queue is considered an antipattern, this class is kept only for backward compatiblity
+
 
 [1]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object
 
@@ -795,32 +707,30 @@ Returns **[Function][6]** function to use as superagent plugin
 
 [5]: #context
 
-[6]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Statements/function
+[6]: http://passportjs.org/
 
-[7]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Promise
+[7]: ./notifications.md
 
-[8]: https://github.com/BryanDonovan/node-cache-manager#overview
+[8]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Statements/function
 
-[9]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array
+[9]: http://passportjs.org/docs/oauth
 
-[10]: #context
+[10]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Promise
 
-[11]: #hullconnector
+[11]: https://github.com/BryanDonovan/node-cache-manager#overview
 
-[12]: https://github.com/BryanDonovan/node-cache-manager
+[12]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array
 
-[13]: https://github.com/Automattic/kue
+[13]: #context
 
-[14]: https://github.com/OptimalBits/bull
+[14]: #hullconnector
 
-[15]: https://github.com/Automattic/kue#redis-connection-settings
+[15]: https://github.com/BryanDonovan/node-cache-manager
 
-[16]: https://github.com/OptimalBits/bull/blob/master/REFERENCE.md#queue
+[16]: https://github.com/Automattic/kue
 
-[17]: https://github.com/hull/hull-client-node
+[17]: https://github.com/OptimalBits/bull
 
-[18]: http://passportjs.org/
+[18]: https://github.com/Automattic/kue#redis-connection-settings
 
-[19]: ./notifications.md
-
-[20]: http://passportjs.org/docs/oauth
+[19]: https://github.com/OptimalBits/bull/blob/master/REFERENCE.md#queue

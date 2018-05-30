@@ -2,8 +2,6 @@ const _ = require("lodash");
 const { Router } = require("express");
 const Promise = require("bluebird");
 
-const requireHullMiddleware = require("./require-hull-middleware");
-
 const statusMap = {
   0: "ok",
   1: "warning",
@@ -22,9 +20,8 @@ const statusMap = {
  * }
  * ]));
  */
-module.exports = function statusHandler(checks) {
+function statusHandler(checks) {
   const router = Router();
-  router.use(requireHullMiddleware());
   router.post("/", (req, res) => {
     const messages = [];
     let globalStatus = 0;
@@ -50,4 +47,6 @@ module.exports = function statusHandler(checks) {
   });
 
   return router;
-};
+}
+
+module.exports = statusHandler;

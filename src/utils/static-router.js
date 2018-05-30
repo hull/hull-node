@@ -1,13 +1,13 @@
 const path = require("path");
 const express = require("express");
 
-function ManifestRoute(dirname) {
-  return function Manifest(req, res) {
+function manifestRouteFactory(dirname) {
+  return function manifestRoute(req, res) {
     return res.sendFile(path.resolve(dirname, "..", "manifest.json"));
   };
 }
 
-function Readme(req, res) {
+function readmeRoute(req, res) {
   return res.redirect(`https://dashboard.hullapp.io/readme?url=https://${req.headers.host}`);
 }
 
@@ -17,9 +17,9 @@ module.exports = function staticRouter() {
   router.use(express.static(`${process.cwd()}/dist`));
   router.use(express.static(`${process.cwd()}/assets`));
 
-  router.get("/manifest.json", ManifestRoute(`${process.cwd()}/dir`));
-  router.get("/", Readme);
-  router.get("/readme", Readme);
+  router.get("/manifest.json", manifestRouteFactory(`${process.cwd()}/dir`));
+  router.get("/", readmeRoute);
+  router.get("/readme", readmeRoute);
 
   return router;
 };
