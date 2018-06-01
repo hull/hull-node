@@ -44,6 +44,9 @@ function parseToken(token, secret) {
  */
 function queryConfigurationMiddlewareFactory() {
   return function queryConfigurationMiddleware(req: HullRequestBase, res: $Response, next: NextFunction) {
+    if (!req.hull || !req.hull.connectorConfig) {
+      return next(new Error("Missing req.hull or req.hull.connectorConfig context object"));
+    }
     const { hostSecret } = req.hull.connectorConfig;
     const clientConfigToken = req.hull.clientConfigToken || req.hull.token || getToken(req.query);
     const clientConfig =
@@ -58,7 +61,7 @@ function queryConfigurationMiddlewareFactory() {
       clientConfig,
       clientConfigToken
     });
-    next();
+    return next();
   };
 }
 

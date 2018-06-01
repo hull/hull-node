@@ -1,6 +1,6 @@
 const _ = require("lodash");
 
-module.exports = function handleExtractFactory({ handlers, options }) {
+function handleExtractFactory({ handlers, options }) {
   return function handleExtract(req, res, next) {
     if (!req.body) return next();
 
@@ -71,3 +71,5 @@ module.exports = function handleExtractFactory({ handlers, options }) {
       });
   };
 };
+
+module.exports = handleExtractFactory;

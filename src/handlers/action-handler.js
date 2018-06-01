@@ -10,10 +10,10 @@ type HullActionHandlerOptions = {
   },
   disableErrorHandling?: boolean
 };
-
+const debug = require("debug")("hull-connector:action-handler");
 const { Router } = require("express");
 
-const { queryConfigurationMiddleware, clientMiddleware, fetchFullContextMiddleware, timeoutMiddleware, haltOnTimedoutMiddleware } = require("../middleware");
+const { queryConfigurationMiddleware, fetchFullContextMiddleware, timeoutMiddleware, haltOnTimedoutMiddleware } = require("../middlewares");
 
 /**
  * This handler allows to handle simple, authorized HTTP calls.
@@ -30,36 +30,45 @@ const { queryConfigurationMiddleware, clientMiddleware, fetchFullContextMiddlewa
  * @param  {string}   [options.cache.options]
  * @return {Function}
  * @example
+ * const { actionHandler } = require("hull").handlers;
  * app.use("/list", actionHandler((ctx) => {}))
  */
-function actionHandler(handler: HullActionHandlerCallback, { cache = {}, disableErrorHandling = false }: HullActionHandlerOptions): Router {
+function actionHandlerFactory({ clientMiddleware }: Object, handler: HullActionHandlerCallback, { cache = {}, disableErrorHandling = false, respondWithError = false }: HullActionHandlerOptions = {}): Router {
   const router = Router();
   router.use(queryConfigurationMiddleware()); // parse config from query
   router.use(clientMiddleware()); // initialize client
   router.use(timeoutMiddleware());
   router.use(fetchFullContextMiddleware({ requestName: "action" }));
   router.use(haltOnTimedoutMiddleware());
-  router.use((req: HullRequest, res: $Response, next: NextFunction) => {
+  router.use(function actionHandler(req: HullRequest, res: $Response, next: NextFunction) {
     (() => {
+      debug("processing");
       if (cache && cache.key) {
         return req.hull.cache.wrap(cache.key, () => {
           return handler(req.hull);
         }, cache.options || {});
       }
+      debug("calling handler");
       return handler(req.hull);
     })()
       .then((response) => {
-        res.json(response);
+        debug("handler response", response);
+        res.end(response);
       })
       .catch(error => next(error));
   });
   if (disableErrorHandling !== true) {
-    router.use((err: Error, req: HullRequest, res: $Response, _next: NextFunction) => {
-      res.status(500).end("error");
+    router.use(function actionHandlerErrorMiddleware(err: Error, req: HullRequest, res: $Response, _next: NextFunction) {
+      debug("error", err);
+      res.status(500);
+      if (respondWithError) {
+        return res.end(err.toString());
+      }
+      return res.end("error");
     });
   }
 
   return router;
 }
 
-module.exports = actionHandler;
+module.exports = actionHandlerFactory;

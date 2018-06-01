@@ -9,7 +9,7 @@ type HullSchedulerHandlerOptions = {
 
 const { Router } = require("express");
 
-const { queryConfigurationMiddleware, clientMiddleware, bodyFullContextMiddleware, timeoutMiddleware, haltOnTimedoutMiddleware } = require("../middleware");
+const { queryConfigurationMiddleware, clientMiddleware, bodyFullContextMiddleware, timeoutMiddleware, haltOnTimedoutMiddleware } = require("../middlewares");
 
 /**
  * This handler allows to handle simple, authorized HTTP calls.

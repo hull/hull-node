@@ -26,7 +26,6 @@ describe("Worker", () => {
 
     };
     const worker = new Worker({
-      Hull: HullStub,
       queue: queueStub,
       instrumentation: instrumentationStub,
       cache: cacheStub

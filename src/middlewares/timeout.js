@@ -1,6 +1,6 @@
 const connectTimeout = require("connect-timeout");
 
-function timeoutMiddlewareFactory({ emitError = true, onTimeout = null }) {
+function timeoutMiddlewareFactory({ emitError = true, onTimeout = null } = {}) {
   return function timeoutMiddleware(req, res, next) {
     const { timeout } = req.hull.connectorConfig;
     const originalSend = res.send;

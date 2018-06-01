@@ -26,7 +26,7 @@ export type HullConnectorOptions = {
 };
 
 export type HullContextBase = {
-  requestId: string, // request id
+  requestId?: string, // request id
   hostname: string, // req.hostname
   options: Object, // body + query
   connectorConfig: HullConnectorOptions, // configuration passed to Hull.Connector

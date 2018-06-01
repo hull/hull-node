@@ -4,25 +4,27 @@ import type { HullRequest, HullNotificationHandlerCallback, HullNotificationHand
 
 const { Router } = require("express");
 const { notificationDefaultFlowControl } = require("../utils");
-const { notificationConfigurationMiddleware, clientMiddleware, timeoutMiddleware, haltOnTimedoutMiddleware, bodyFullContextMiddleware } = require("../middlewares");
+const { queryConfigurationMiddleware, clientMiddleware, timeoutMiddleware, haltOnTimedoutMiddleware, bodyFullContextMiddleware } = require("../middlewares");
 
 /**
  * [notificationHandlerFactory description]
  * @param  {HullNotificationHandlerConfiguration} configuration: HullNotificationHandlerConfiguration [description]
  * @return {[type]}                [description]
  * @example
- * app.use('/smart-notification', notificationHandler({
+ * app.use("/batch", notificationHandler({
  *   "user:update": (ctx, message) => {}
  * }));
  */
-function notificationHandlerFactory(configuration: HullNotificationHandlerConfiguration): * {
+function batchHandlerFactory(configuration: HullNotificationHandlerConfiguration): * {
   const router = Router();
 
   router.use(timeoutMiddleware());
-  router.use(notificationConfigurationMiddleware());
+  router.use(queryConfigurationMiddleware()); // parse query
   router.use(haltOnTimedoutMiddleware());
-  router.use(clientMiddleware());
-  router.use(bodyFullContextMiddleware({ requestName: "notification" }));
+  router.use(clientMiddleware()); // initialize client
+  router.use(haltOnTimedoutMiddleware());
+  router.use(bodyFullContextMiddleware({ requestName: "batch" })); // get rest of the context from body
+  router.use(haltOnTimedoutMiddleware());
   router.use(function notificationHandler(req: HullRequest, res: $Response, next: NextFunction): mixed {
     const { channel, messages } = req.hull.notification;
     if (!configuration[channel]) {
@@ -31,11 +33,6 @@ function notificationHandlerFactory(configuration: HullNotificationHandlerConfig
     const handler: HullNotificationHandlerCallback = typeof configuration[channel] === "function"
       ? configuration[channel]
       : configuration[channel].callback;
-
-    const defaultSuccessFlowControl = notificationDefaultFlowControl(req.hull, channel, "success");
-    req.hull.notificationResponse = {
-      flow_control: defaultSuccessFlowControl
-    };
     return handler(req.hull, messages)
       .then(() => {
         res.status(200).json(req.hull.notificationResponse);
@@ -50,4 +47,4 @@ function notificationHandlerFactory(configuration: HullNotificationHandlerConfig
   return router;
 }
 
-module.exports = notificationHandlerFactory;
+module.exports = batchHandlerFactory;

@@ -2,12 +2,12 @@
 const { expect, should } = require("chai");
 const sinon = require("sinon");
 
-const smartNotifierHandler = require("../../../src/utils/smart-notifier-handler");
+const notificationHandler = require("../../../src/handlers/notification-handler");
 
 
-describe("SmartNotifierHandler", () => {
+describe("notificationHandler", () => {
   it("should return an express router function", () => {
-    const testInstance = new smartNotifierHandler({});
+    const testInstance = notificationHandler({});
     expect(typeof testInstance).to.equal("function");
   });
 });

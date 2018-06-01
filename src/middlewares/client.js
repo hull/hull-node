@@ -4,15 +4,32 @@ import type { HullRequestBase } from "../types";
 
 const _ = require("lodash");
 const jwt = require("jwt-simple");
-const HullClient = require("hull-client");
 const helperFunctions = require("../helpers");
 
 /**
  * This middleware initiates client and helpers,
- * it depends on `req.hull.clientConfig` or `req.hull.config`
- * available already in the request object.
+ * it depends on `req.hull.clientConfig` or `req.hull.config` (legacy naming) parameters available already in the request object.
+ * @example
+ * const { clientMiddleware } = require("hull/lib/middlewares");
+ * const app = express();
+ * app.use((req, res, next) => {
+ *   // prepare req.hull
+ *   req.hull = {
+ *     clientConfig: {
+ *       id: "connectorId",
+ *       secret: "connectorSecret",
+ *       organization: "organizationUrl"
+ *     }
+ *   };
+ *   next()
+ * });
+ * app.use(clientMiddleware());
+ * app.post("/endpoint", (req, res) => {
+ *   req.hull.client.get("app")
+ *     .then(connector => req.end("ok"));
+ * });
  */
-function clientMiddlewareFactory() {
+function clientMiddlewareFactory({ HullClient }: Object) {
   return function clientMiddleware(req: HullRequestBase, res: $Response, next: NextFunction) {
     try {
       if (!req.hull) {

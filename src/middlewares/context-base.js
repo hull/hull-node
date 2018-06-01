@@ -9,10 +9,7 @@ function contextBaseMiddlewareFactory({
   instrumentation, queue, cache, connectorConfig
 }: Object) {
   return function contextBaseMiddleware(req: HullRequestBase, res: $Response, next: NextFunction) {
-    const requestId = req.headers["x-hull-request-id"] || "random";
-
     const context: HullContextBase = {
-      requestId,
       hostname: req.hostname,
       options: Object.assign({}, req.body, req.query), // body + query
       connectorConfig,

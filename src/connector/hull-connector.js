@@ -9,8 +9,7 @@ const { renderFile } = require("ejs");
 const debug = require("debug")("hull-connector");
 
 const { staticRouter } = require("../utils");
-const { queryConfigurationMiddleware, contextBaseMiddleware, clientMiddleware, fetchFullContextMiddleware } = require("../middleware");
-const Worker = require("./worker");
+const { queryConfigurationMiddleware, contextBaseMiddleware, fetchFullContextMiddleware } = require("../middlewares");
 const { Instrumentation, Cache, Queue, Batcher } = require("../infra");
 const { exitHandler } = require("../utils");
 const { TransientError } = require("../errors");
@@ -37,8 +36,9 @@ class HullConnector {
   instrumentation: $PropertyType<HullConnectorOptions, 'instrumentation'>;
   hostSecret: $PropertyType<HullConnectorOptions, 'hostSecret'>;
   clientConfig: $PropertyType<HullConnectorOptions, 'clientConfig'>;
-  worker: Worker;
-  constructor({
+  _worker: Worker;
+  static bind: Function;
+  constructor({ clientMiddleware, Worker }: Object, {
     hostSecret, port, clientConfig = {}, instrumentation, cache, queue, connectorName, skipSignatureValidation, timeout
   }: HullConnectorOptions = {}) {
     this.instrumentation = instrumentation || new Instrumentation();
@@ -162,24 +162,24 @@ class HullConnector {
   }
 
   worker(jobs: Object) {
-    this.worker = new Worker({
+    this._worker = new Worker({
       instrumentation: this.instrumentation,
       queue: this.queue
     });
-    this.worker.use(this.instrumentation.startMiddleware());
-    this.worker.use(contextBaseMiddleware({
+    this._worker.use(this.instrumentation.startMiddleware());
+    this._worker.use(contextBaseMiddleware({
       instrumentation: this.instrumentation,
       queue: this.queue,
       cache: this.cache,
       connectorConfig: this.connectorConfig
     }));
-    this.worker.use(queryConfigurationMiddleware());
-    this.worker.use(clientMiddleware());
-    this.worker.use(fetchFullContextMiddleware());
-    this.middlewares.map(middleware => this.worker.use(middleware));
+    this._worker.use(queryConfigurationMiddleware());
+    this._worker.use(clientMiddleware());
+    this._worker.use(fetchFullContextMiddleware());
+    this.middlewares.map(middleware => this._worker.use(middleware));
 
-    this.worker.setJobs(jobs);
-    return this.worker;
+    this._worker.setJobs(jobs);
+    return this._worker;
   }
 
   use(middleware: Middleware) {
@@ -189,8 +189,8 @@ class HullConnector {
 
   startWorker(queueName: string = "queueApp") {
     this.instrumentation.exitOnError = true;
-    if (this.worker) {
-      this.worker.process(queueName);
+    if (this._worker) {
+      this._worker.process(queueName);
       debug("connector.worker.process", { queueName });
     }
   }

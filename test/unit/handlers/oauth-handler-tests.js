@@ -10,7 +10,7 @@ const { renderFile } = require("ejs");
 
 const HullStub = require("../support/hull-stub");
 
-const oauthHandler = require("../../../src/utils/oauth-handler");
+const oauthHandler = require("../../../src/handlers/oauth-handler");
 
 class StrategyStub extends passport.Strategy {
   constructor() {

@@ -4,7 +4,7 @@ const sinon = require("sinon");
 const Promise = require("bluebird");
 const _ = require("lodash");
 
-const Middleware = require("../../src/middleware/client");
+const Middleware = require("../../src/middlewares/client");
 const HullStub = require("./support/hull-stub");
 
 describe("Client Middleware", () => {

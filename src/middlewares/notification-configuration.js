@@ -8,6 +8,7 @@ const NotificationValidator = require("../utils/notification-validator");
 /**
  * This middleware is responsible for parsing incoming notification, validating it
  * and extracting configuration out of it.
+ * As a result it sets `req.hull.clientConfig` and `req.hull.notification`.
  */
 function notificationConfigurationMiddlewareFactory() {
   return function notificationConfigurationMiddleware(req: HullRequestBase, res: $Response, next: NextFunction) {
