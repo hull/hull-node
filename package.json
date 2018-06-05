@@ -55,7 +55,7 @@
     "kue": "^0.11.5",
     "kue-ui": "^0.1.0",
     "lodash": "^4.17.5",
-    "newrelic": "^2.4.1",
+    "newrelic": "^4.1.4",
     "passport": "^0.3.2",
     "progress-bar-webpack-plugin": "^1.11.0",
     "promise-streams": "^1.0.1",
@@ -72,8 +72,8 @@
     "webpack-hot-middleware": "^2.22.2"
   },
   "peerDependencies": {
-    "express": "^4.16.2",
-    "newrelic": "^2.4.1"
+    "express": "^4.16.3",
+    "newrelic": "^4.1.4"
   },
   "devDependencies": {
     "babel": "^6.5.2",
