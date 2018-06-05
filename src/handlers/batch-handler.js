@@ -2,7 +2,9 @@
 import type { $Response, NextFunction } from "express";
 import type { HullRequest, HullNotificationHandlerCallback, HullNotificationHandlerConfiguration } from "../types";
 
+const _ = require("lodash");
 const { Router } = require("express");
+
 const { notificationDefaultFlowControl } = require("../utils");
 const { queryConfigurationMiddleware, clientMiddleware, timeoutMiddleware, haltOnTimedoutMiddleware, bodyFullContextMiddleware } = require("../middlewares");
 
@@ -15,31 +17,77 @@ const { queryConfigurationMiddleware, clientMiddleware, timeoutMiddleware, haltO
  *   "user:update": (ctx, message) => {}
  * }));
  */
-function batchHandlerFactory(configuration: HullNotificationHandlerConfiguration): * {
+function batchExtractHandlerFactory({ HullClient }: Object, configuration: HullNotificationHandlerConfiguration): * {
   const router = Router();
 
   router.use(timeoutMiddleware());
   router.use(queryConfigurationMiddleware()); // parse query
   router.use(haltOnTimedoutMiddleware());
-  router.use(clientMiddleware()); // initialize client
+  router.use(clientMiddleware({ HullClient })); // initialize client
   router.use(haltOnTimedoutMiddleware());
   router.use(bodyFullContextMiddleware({ requestName: "batch" })); // get rest of the context from body
   router.use(haltOnTimedoutMiddleware());
-  router.use(function notificationHandler(req: HullRequest, res: $Response, next: NextFunction): mixed {
-    const { channel, messages } = req.hull.notification;
-    if (!configuration[channel]) {
-      return next(new Error("Channel unsupported"));
+  router.use(function batchExtractMiddleware(req: HullRequest, res: $Response, next: NextFunction) {
+    const { client, helpers } = req.hull;
+
+    if (!req.body || typeof req.body !== "object") {
+      return next();
     }
-    const handler: HullNotificationHandlerCallback = typeof configuration[channel] === "function"
+
+    if (client === undefined || helpers === undefined) {
+      return next();
+    }
+
+    const { body = {} } = req;
+    const { url, format, object_type } = body;
+    const entityType = object_type === "account_report" ? "account" : "user";
+    const channel = `${entityType}:update`;
+    const handlerCallback: HullNotificationHandlerCallback = typeof configuration[channel] === "function"
       ? configuration[channel]
       : configuration[channel].callback;
-    return handler(req.hull, messages)
-      .then(() => {
-        res.status(200).json(req.hull.notificationResponse);
+    const handlerOptions = configuration[channel].options || {};
+
+    if (!url || !format || !handlerCallback) {
+      return next();
+    }
+
+    return helpers
+      .handleExtract({
+        body,
+        batchSize: handlerOptions.maxSize || 100,
+        onResponse: () => res.end("ok"),
+        onError: (err) => {
+          client.logger.error("connector.batch.error", err.stack);
+          res.sendStatus(400);
+        },
+        handler: (entities) => {
+          const segmentId = (req.query && req.query.segment_id) || null;
+
+          const segmentsList = req.hull[`${entityType}s_segments`].map(s => _.pick(s, ["id", "name", "type", "created_at", "updated_at"]));
+          const entitySegmentsKey = entityType === "user" ? "segments" : "account_segments";
+          const messages = entities.map((entity) => {
+            const segmentIds = _.compact(
+              _.uniq(_.concat(entity.segment_ids || [], [segmentId]))
+            );
+            const message = {
+              [entityType]: _.omit(entity, "segment_ids"),
+              [entitySegmentsKey]: _.compact(
+                segmentIds.map(id => _.find(segmentsList, { id }))
+              )
+            };
+            if (entityType === "user") {
+              message.user = _.omit(entity, "account");
+              message.account = entity.account || {};
+            }
+            return message;
+          });
+
+          return handlerCallback(req.hull, messages);
+        }
       })
       .catch(error => next(error));
   });
-  router.use((err: Error, req: HullRequest, res: $Response, _next: NextFunction) => {
+  router.use(function batchExtractErrorMiddleware(err: Error, req: HullRequest, res: $Response, _next: NextFunction) {
     const { channel } = req.hull.notification;
     const defaultErrorFlowControl = notificationDefaultFlowControl(req.hull, channel, "error");
     res.status(500).json(defaultErrorFlowControl);
@@ -47,4 +95,4 @@ function batchHandlerFactory(configuration: HullNotificationHandlerConfiguration
   return router;
 }
 
-module.exports = batchHandlerFactory;
+module.exports = batchExtractHandlerFactory;

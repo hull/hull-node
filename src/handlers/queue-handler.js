@@ -23,10 +23,10 @@ const { queryConfigurationMiddleware, clientMiddleware, fetchFullContextMiddlewa
  * @example
  * app.use("/list", actionHandler((ctx) => {}))
  */
-function actionHandler(jobName: string, options: Object) {
+function actionHandler({ HullClient }: Object, jobName: string, options: Object) {
   const router = Router();
   router.use(queryConfigurationMiddleware()); // parse config from query
-  router.use(clientMiddleware()); // initialize client
+  router.use(clientMiddleware({ HullClient })); // initialize client
   router.use(timeoutMiddleware());
   router.use(fetchFullContextMiddleware({ requestName: "action" }));
   router.use(haltOnTimedoutMiddleware());

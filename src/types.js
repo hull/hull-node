@@ -121,16 +121,8 @@ export type HullNotificationHandlerCallback =
   HullConnectorUpdateHandlerCallback |
   HullSegmentUpdateHandlerCallback;
 
-export type HullNotificationChannelName =
-  "user:update"
-  | "account:update"
-  | "ship:update"
-  | "connector:update"
-  | "segment:update"
-  | "segment:delete";
-
 export type HullNotificationHandlerConfiguration = {
-  [HullNotificationChannelName]: HullNotificationHandlerCallback | {
+  [HullNotificationChannelName: string]: HullNotificationHandlerCallback | {
     callback: HullNotificationHandlerCallback,
     options: Object
   }

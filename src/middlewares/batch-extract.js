@@ -1,7 +1,11 @@
+// @flow
+import type { $Response, NextFunction } from "express";
+import type { HullRequest, HullNotificationHandlerCallback, HullNotificationHandlerConfiguration } from "../types";
+
 const _ = require("lodash");
 
-function handleExtractFactory({ handlers, options }) {
-  return function handleExtract(req, res, next) {
+function batchExtractMiddlewareFactory(handlers: HullNotificationHandlerConfiguration, options: Object) {
+  return function batchExtractMiddleware(req: HullRequest, res: $Response, next: NextFunction) {
     if (!req.body) return next();
 
     const { body = {} } = req;
@@ -27,9 +31,6 @@ function handleExtractFactory({ handlers, options }) {
         },
         handler: (entities) => {
           const segmentId = req.query.segment_id || null;
-          if (options.groupTraits) {
-            entities = entities.map(u => client.utils.traits.group(u));
-          }
 
           const segmentsList = req.hull[`${entityType}s_segments`].map(s => _.pick(s, ["id", "name", "type", "created_at", "updated_at"]));
           const entitySegmentsKey = entityType === "user" ? "segments" : "account_segments";
@@ -50,19 +51,6 @@ function handleExtractFactory({ handlers, options }) {
             return message;
           });
 
-          // add `matchesFilter` boolean flag
-          messages.map((message) => {
-            if (req.query.source === "connector") {
-              message.matchesFilter = helpers.filterNotification(
-                message,
-                options.segmentFilterSetting ||
-                  req.hull.connectorConfig.segmentFilterSetting
-              );
-            } else {
-              message.matchesFilter = true;
-            }
-            return message;
-          });
           return handlerFunction(req.hull, messages);
         }
       })
@@ -70,6 +58,6 @@ function handleExtractFactory({ handlers, options }) {
         client.logger.error("connector.batch.error", { body, error: _.get(err, "stack", err) });
       });
   };
-};
+}
 
-module.exports = handleExtractFactory;
+module.exports = batchExtractMiddleware;

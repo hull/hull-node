@@ -62,9 +62,9 @@ const HullConnectorClass = require("./connector/hull-connector");
 const handlers = require("./handlers");
 
 const boundClientMiddleware = clientMiddleware.bind(undefined, { HullClient });
-const boundHullConnector = HullConnectorClass.bind(undefined, { Worker, clientMiddleware: boundClientMiddleware });
+const boundHullConnector = HullConnectorClass.bind(undefined, { Worker, HullClient });
 const boundHandlers = Object.keys(handlers).reduce((bound: Object, key: string) => {
-  bound[key] = handlers[key].bind(undefined, { clientMiddleware: boundClientMiddleware });
+  bound[key] = handlers[key].bind(undefined, { HullClient });
   return bound;
 }, {});
 

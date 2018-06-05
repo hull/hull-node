@@ -15,13 +15,13 @@ const { notificationConfigurationMiddleware, clientMiddleware, timeoutMiddleware
  *   "user:update": (ctx, message) => {}
  * }));
  */
-function notificationHandlerFactory(configuration: HullNotificationHandlerConfiguration): * {
+function notificationHandlerFactory({ HullClient }: Object, configuration: HullNotificationHandlerConfiguration): * {
   const router = Router();
 
   router.use(timeoutMiddleware());
   router.use(notificationConfigurationMiddleware());
   router.use(haltOnTimedoutMiddleware());
-  router.use(clientMiddleware());
+  router.use(clientMiddleware({ HullClient }));
   router.use(bodyFullContextMiddleware({ requestName: "notification" }));
   router.use(function notificationHandler(req: HullRequest, res: $Response, next: NextFunction): mixed {
     const { channel, messages } = req.hull.notification;

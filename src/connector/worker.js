@@ -1,3 +1,4 @@
+// @flow
 const Supply = require("supply");
 const Promise = require("bluebird");
 const _ = require("lodash");
@@ -6,7 +7,13 @@ const _ = require("lodash");
  * Background worker using QueueAdapter.
  */
 class Worker {
-  constructor({ queue, instrumentation }) {
+  queueAdapter: Object;
+  instrumentation: Object;
+  res: Object;
+  supply: Supply;
+  jobs: Object;
+
+  constructor({ queue, instrumentation }: Object) {
     if (!queue) {
       throw new Error("Worker initialized without all required dependencies: queue");
     }
@@ -35,23 +42,23 @@ class Worker {
     });
   }
 
-  use(middleware) {
+  use(middleware: Function) {
     this.supply.use(middleware);
     return this;
   }
 
-  setJobs(jobs) {
+  setJobs(jobs: Object) {
     this.jobs = jobs;
   }
 
-  process(queueName = "queueApp") {
+  process(queueName: string = "queueApp") {
     this.queueAdapter.process(queueName, (job) => {
       return this.dispatch(job);
     });
     return this;
   }
 
-  dispatch(job) {
+  dispatch(job: Object) {
     if (_.isEmpty(job.data)) {
       return Promise.resolve();
     }
@@ -100,7 +107,7 @@ class Worker {
     });
   }
 
-  runMiddleware(req, res) {
+  runMiddleware(req: Object, res: Object) {
     return Promise.fromCallback((callback) => {
       this.supply
         .each(req, res, callback);

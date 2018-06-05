@@ -8,14 +8,17 @@ const _ = require("lodash");
 const { renderFile } = require("ejs");
 const debug = require("debug")("hull-connector");
 
+const HullClient = require("hull-client");
 const { staticRouter } = require("../utils");
-const { queryConfigurationMiddleware, contextBaseMiddleware, fetchFullContextMiddleware } = require("../middlewares");
+const Worker = require("./worker");
+const { queryConfigurationMiddleware, contextBaseMiddleware, fetchFullContextMiddleware, clientMiddleware } = require("../middlewares");
 const { Instrumentation, Cache, Queue, Batcher } = require("../infra");
 const { exitHandler } = require("../utils");
 const { TransientError } = require("../errors");
 
 /**
  * @public
+ * @param {Object}
  * @param {Object}        [options={}]
  * @param {string}        [options.connectorName] force connector name - if not provided will be taken from manifest.json
  * @param {string}        [options.hostSecret] secret to sign req.hull.token
@@ -37,10 +40,17 @@ class HullConnector {
   hostSecret: $PropertyType<HullConnectorOptions, 'hostSecret'>;
   clientConfig: $PropertyType<HullConnectorOptions, 'clientConfig'>;
   _worker: Worker;
+
+  Worker: typeof Worker;
+  HullClient: typeof HullClient;
+
   static bind: Function;
-  constructor({ clientMiddleware, Worker }: Object, {
+
+  constructor(dependencies: Object, {
     hostSecret, port, clientConfig = {}, instrumentation, cache, queue, connectorName, skipSignatureValidation, timeout
   }: HullConnectorOptions = {}) {
+    this.HullClient = dependencies.HullClient;
+    this.Worker = dependencies.Worker;
     this.instrumentation = instrumentation || new Instrumentation();
     this.cache = cache || new Cache();
     this.queue = queue || new Queue();
@@ -124,21 +134,21 @@ class HullConnector {
     /**
      * Transient Middleware
      */
-    app.use((err: Error, req: HullRequest, res: $Response, next: NextFunction) => {
-      if (err instanceof TransientError || (err.name === "ServiceUnavailableError" && err.message === "Response timeout")) {
-        req.hull.metric.increment("connector.transient_error", 1, [
-          `error_name:${_.snakeCase(err.name)}`,
-          `error_message:${_.snakeCase(err.message)}`
-        ]);
-        if (req.hull.smartNotifierResponse) {
-          const response = req.hull.smartNotifierResponse;
-          return res.status(err.status || 503).json(response.toJSON());
-        }
-        return res.status(err.status || 503).send("transient-error");
-      }
-      // pass the error
-      return next(err);
-    });
+    // app.use((err: Error, req: HullRequest, res: $Response, next: NextFunction) => {
+    //   if (err instanceof TransientError || (err.name === "ServiceUnavailableError" && err.message === "Response timeout")) {
+    //     req.hull.metric.increment("connector.transient_error", 1, [
+    //       `error_name:${_.snakeCase(err.name)}`,
+    //       `error_message:${_.snakeCase(err.message)}`
+    //     ]);
+    //     if (req.hull.smartNotifierResponse) {
+    //       const response = req.hull.smartNotifierResponse;
+    //       return res.status(err.status || 503).json(response.toJSON());
+    //     }
+    //     return res.status(err.status || 503).send("transient-error");
+    //   }
+    //   // pass the error
+    //   return next(err);
+    // });
 
     /**
      * Instrumentation Middleware
@@ -148,13 +158,13 @@ class HullConnector {
     /**
      * Unhandled error middleware
      */
-    app.use((err: Error, req: HullRequest, res: $Response, next: NextFunction) => { // eslint-disable-line no-unused-vars
-      if (req.hull && req.hull.smartNotifierResponse) {
-        const response = req.hull.smartNotifierResponse;
-        return res.status(500).json(response.toJSON());
-      }
-      return res.status(500).send("unhandled-error");
-    });
+    // app.use((err: Error, req: HullRequest, res: $Response, next: NextFunction) => { // eslint-disable-line no-unused-vars
+    //   if (req.hull && req.hull.smartNotifierResponse) {
+    //     const response = req.hull.smartNotifierResponse;
+    //     return res.status(500).json(response.toJSON());
+    //   }
+    //   return res.status(500).send("unhandled-error");
+    // });
 
     return app.listen(this.port, () => {
       debug("connector.server.listen", { port: this.port });
@@ -162,7 +172,7 @@ class HullConnector {
   }
 
   worker(jobs: Object) {
-    this._worker = new Worker({
+    this._worker = new this.Worker({
       instrumentation: this.instrumentation,
       queue: this.queue
     });
@@ -174,7 +184,7 @@ class HullConnector {
       connectorConfig: this.connectorConfig
     }));
     this._worker.use(queryConfigurationMiddleware());
-    this._worker.use(clientMiddleware());
+    this._worker.use(clientMiddleware({ HullClient: this.HullClient }));
     this._worker.use(fetchFullContextMiddleware());
     this.middlewares.map(middleware => this._worker.use(middleware));
 

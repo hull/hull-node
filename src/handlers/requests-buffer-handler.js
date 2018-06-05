@@ -23,10 +23,10 @@ const Batcher = require("../infra/batcher");
  * @param  {number} options.maxSize [description]
  * @param  {number} options.maxTime [description]
  */
-function requestsBufferHandlerFactory(callback: HullRequestsBufferHandlerCallback, { maxSize = 100, maxTime = 10000, disableErrorHandling = false }: HullRequestsBufferHandlerOptions = {}) {
+function requestsBufferHandlerFactory({ HullClient }: Object, callback: HullRequestsBufferHandlerCallback, { maxSize = 100, maxTime = 10000, disableErrorHandling = false }: HullRequestsBufferHandlerOptions = {}) {
   const uniqueNamespace = crypto.randomBytes(64).toString("hex");
   const router = Router();
-  router.use(clientMiddleware()); // initialize client, we need configuration to be set already
+  router.use(clientMiddleware({ HullClient })); // initialize client, we need configuration to be set already
   router.use(timeoutMiddleware());
   router.use(fetchFullContextMiddleware({ requestName: "batcher" }));
   router.use(haltOnTimedoutMiddleware());
@@ -49,7 +49,7 @@ function requestsBufferHandlerFactory(callback: HullRequestsBufferHandlerCallbac
   });
 
   if (disableErrorHandling !== true) {
-    router.use((err, req, res, _next) => {
+    router.use((err: Error, req, res: $Response, _next: NextFunction) => {
       res.status(500).end("error");
     });
   }

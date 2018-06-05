@@ -108,7 +108,7 @@ function fetchToken(req, res, next) {
  *   ship: ship //The entire Ship instance's config
  * }
  */
-module.exports = function oauth({
+function oauthHandlerFactory({ HullClient }, {
   name,
   tokenInUrl = true,
   isSetup = function setup() { return Promise.resolve(); },
@@ -136,7 +136,7 @@ module.exports = function oauth({
 
   router.use(fetchToken);
   router.use(queryConfigurationMiddleware()); // parse config from token
-  router.use(clientMiddleware()); // initialize client
+  router.use(clientMiddleware({ HullClient })); // initialize client
   router.use(timeoutMiddleware());
   router.use(fetchFullContextMiddleware({ requestName: "oAuth" }));
   router.use(haltOnTimedoutMiddleware());
@@ -220,4 +220,6 @@ module.exports = function oauth({
   });
 
   return router;
-};
+}
+
+module.exports = oauthHandlerFactory;

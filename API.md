@@ -4,29 +4,18 @@
 
 **Parameters**
 
--   `$0` **any** 
-    -   `$0.clientMiddleware`  
-    -   `$0.Worker`  
--   `$1` **any**  (optional, default `{}`)
-    -   `$1.hostSecret`  
-    -   `$1.port`  
-    -   `$1.clientConfig`   (optional, default `{}`)
-    -   `$1.instrumentation`  
-    -   `$1.cache`  
-    -   `$1.queue`  
-    -   `$1.connectorName`  
-    -   `$1.skipSignatureValidation`  
-    -   `$1.timeout`  
+-   `dependencies` **[Object][1]** 
 -   `options` **[Object][1]**  (optional, default `{}`)
-    -   `options.connectorName` **[string][2]?** force connector name - if not provided will be taken from manifest.json
     -   `options.hostSecret` **[string][2]?** secret to sign req.hull.token
     -   `options.port` **([Number][3] \| [string][2])?** port on which expressjs application should be started
-    -   `options.clientConfig` **[Object][1]?** additional `HullClient` configuration
-    -   `options.skipSignatureValidation` **[boolean][4]?** skip signature validation on notifications (for testing only)
-    -   `options.timeout` **([number][3] \| [string][2])?** global HTTP server timeout - format is parsed by `ms` npm package
+    -   `options.clientConfig` **[Object][1]?** additional `HullClient` configuration (optional, default `{}`)
     -   `options.instrumentation` **[Object][1]?** override default InstrumentationAgent
     -   `options.cache` **[Object][1]?** override default CacheAgent
     -   `options.queue` **[Object][1]?** override default QueueAgent
+    -   `options.connectorName` **[string][2]?** force connector name - if not provided will be taken from manifest.json
+    -   `options.skipSignatureValidation` **[boolean][4]?** skip signature validation on notifications (for testing only)
+    -   `options.timeout` **([number][3] \| [string][2])?** global HTTP server timeout - format is parsed by `ms` npm package
+-   `Object`  
 
 ### setupApp
 

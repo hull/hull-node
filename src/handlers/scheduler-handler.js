@@ -28,13 +28,13 @@ const { queryConfigurationMiddleware, clientMiddleware, bodyFullContextMiddlewar
  * @example
  * app.use("/list", actionHandler((ctx) => {}))
  */
-function schedulerHandlerFactory(handler: HullSchedulerHandlerCallback, { disableErrorHandling = false }: HullSchedulerHandlerOptions) {
+function schedulerHandlerFactory({ HullClient }: Object, handler: HullSchedulerHandlerCallback, { disableErrorHandling = false }: HullSchedulerHandlerOptions) {
   const router = Router();
 
   router.use(timeoutMiddleware());
   router.use(queryConfigurationMiddleware()); // parse query
   router.use(haltOnTimedoutMiddleware());
-  router.use(clientMiddleware()); // initialize client
+  router.use(clientMiddleware({ HullClient })); // initialize client
   router.use(haltOnTimedoutMiddleware());
   router.use(bodyFullContextMiddleware({ requestName: "scheduler" })); // get rest of the context from body
   router.use(haltOnTimedoutMiddleware());

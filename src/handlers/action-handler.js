@@ -8,12 +8,13 @@ type HullActionHandlerOptions = {
     key?: string,
     options?: Object
   },
-  disableErrorHandling?: boolean
+  disableErrorHandling?: boolean,
+  respondWithError?: boolean
 };
 const debug = require("debug")("hull-connector:action-handler");
 const { Router } = require("express");
 
-const { queryConfigurationMiddleware, fetchFullContextMiddleware, timeoutMiddleware, haltOnTimedoutMiddleware } = require("../middlewares");
+const { queryConfigurationMiddleware, fetchFullContextMiddleware, timeoutMiddleware, haltOnTimedoutMiddleware, clientMiddleware } = require("../middlewares");
 
 /**
  * This handler allows to handle simple, authorized HTTP calls.
@@ -23,7 +24,8 @@ const { queryConfigurationMiddleware, fetchFullContextMiddleware, timeoutMiddlew
  *
  * Optionally it can cache the response, then provide options.cache object with key
  *
- * @param  {Function} handler [description]
+ * @param  {Object}
+ * @param  {Function} handler [description
  * @param  {Object}   [options]
  * @param  {Object}   [options.cache]
  * @param  {string}   [options.cache.key]
@@ -33,10 +35,10 @@ const { queryConfigurationMiddleware, fetchFullContextMiddleware, timeoutMiddlew
  * const { actionHandler } = require("hull").handlers;
  * app.use("/list", actionHandler((ctx) => {}))
  */
-function actionHandlerFactory({ clientMiddleware }: Object, handler: HullActionHandlerCallback, { cache = {}, disableErrorHandling = false, respondWithError = false }: HullActionHandlerOptions = {}): Router {
+function actionHandlerFactory({ HullClient }: Object, handler: HullActionHandlerCallback, { cache = {}, disableErrorHandling = false, respondWithError = false }: HullActionHandlerOptions = {}): Router {
   const router = Router();
   router.use(queryConfigurationMiddleware()); // parse config from query
-  router.use(clientMiddleware()); // initialize client
+  router.use(clientMiddleware({ HullClient })); // initialize client
   router.use(timeoutMiddleware());
   router.use(fetchFullContextMiddleware({ requestName: "action" }));
   router.use(haltOnTimedoutMiddleware());
