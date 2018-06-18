@@ -5,8 +5,14 @@
 # 0.14.0-beta.1
 * Upgrade hull-client-node to v2.0.0
 
-# 0.13.15
+# 0.13.16
 * Explicitly handle too large kraken notification payloads
+* Adds devMode utility
+* Turn on flow in index.js files
+
+# 0.13.15
+* Bump hull-client version to 1.2.2
+* Adds support for Account anonymous_id claim
 
 # 0.13.14
 * Fix flow type for THullEvent
