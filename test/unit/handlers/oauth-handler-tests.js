@@ -2,11 +2,9 @@
 const http = require("http");
 const { expect, should } = require("chai");
 const sinon = require("sinon");
-const express = require("express");
-const Promise = require("bluebird");
+const httpMocks = require("node-mocks-http");
+const { EventEmitter } = require("events");
 const passport = require("passport");
-const request = require("request");
-const { renderFile } = require("ejs");
 
 const HullStub = require("../support/hull-stub");
 
@@ -22,41 +20,33 @@ class StrategyStub extends passport.Strategy {
   }
 }
 
-function mockHullMiddleware(req, res, next) {
-  req.hull = req.hull || {};
-  req.hull.client = new HullStub();
-  req.hull.client.get()
-    .then(ship => {
-      req.hull.ship = ship;
-      next();
-    });
-  req.hull.metric = {
-    error: () => {}
-  };
-}
-
 describe("OAuthHandler", () => {
   it("should handle oauth errors", (done) => {
-    const app = express();
-    app.engine("html", renderFile);
-    app.set("views", `${process.cwd()}/test/unit/fixtures/`);
-    app.set("view engine", "ejs");
-
-    app.use(mockHullMiddleware);
-    app.use("/auth", oauthHandler({
+    const request = httpMocks.createRequest({
+      method: "POST",
+      url: "/login"
+    });
+    request.hull = {
+      client: new HullStub(),
+      connectorConfig: {
+        hostSecret: "123"
+      },
+      cache: {
+        wrap: () => {}
+      }
+    };
+    const response = httpMocks.createResponse({ eventEmitter: EventEmitter });
+    oauthHandler({ HullClient: HullStub }, {
       name: "Test",
       Strategy: StrategyStub,
       views: {
         failure: "oauth-failure-view.html"
       }
-    }));
-    const server = app.listen(() => {
-      const port = server.address().port;
-      request(`http://localhost:${port}/auth/callback`, (error, response, body) => {
-          expect(response.statusCode).to.equal(200);
-          expect(body).to.equal("This is an oauth failure: test\n");
-          done();
-        });
+    }).handle(request, response);
+    response.on("end", () => {
+      expect(response.statusCode).to.equal(200);
+      expect(response._getRenderView()).to.equal("oauth-failure-view.html");
+      done();
     });
   });
 });

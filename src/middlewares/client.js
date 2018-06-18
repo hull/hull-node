@@ -35,11 +35,11 @@ function clientMiddlewareFactory({ HullClient }: Object) {
       if (!req.hull) {
         throw new Error("Missing request context, you need to initiate it before");
       }
-      if (!req.hull.clientConfig && !req.hull.config) {
-        throw new Error("Missing clientConfig");
-      }
       if (!req.hull.connectorConfig || !req.hull.connectorConfig.hostSecret) {
         throw new Error("Missing connectorConfig.hostSecret");
+      }
+      if (!req.hull.clientConfig && !req.hull.config) {
+        throw new Error("Missing clientConfig");
       }
       const { hostSecret } = req.hull.connectorConfig;
 

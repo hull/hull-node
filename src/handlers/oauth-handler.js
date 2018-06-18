@@ -13,6 +13,7 @@ const FAILURE_URL = "/failure";
 const SUCCESS_URL = "/success";
 
 function fetchToken(req, res, next) {
+  console.log("fetchToken");
   const token = req.query.token || req.query.state;
   if (token && token.split(".").length === 3) {
     req.hull = req.hull || {};

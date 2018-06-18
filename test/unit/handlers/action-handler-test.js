@@ -4,21 +4,17 @@ const sinon = require("sinon");
 const httpMocks = require("node-mocks-http");
 const { EventEmitter } = require("events");
 const Promise = require("bluebird");
-const hullStub = require("../support/hull-stub");
+const HullStub = require("../support/hull-stub");
 
 const actionHandler = require("../../../src/handlers/action-handler");
 
 const deps = {
-  clientMiddleware: () => {
-    return (req, res, next) => {
-      next();
-    };
-  }
+  HullClient: HullStub
 };
 
 function buildContextBaseStub() {
   return {
-    client: new hullStub(),
+    client: new HullStub(),
     connectorConfig: {
       hostSecret: "123"
     },
@@ -35,7 +31,7 @@ describe("actionHandler", () => {
       url: "/"
     });
     request.hull = {
-      client: new hullStub(),
+      client: new HullStub(),
       connectorConfig: {
         hostSecret: "123"
       },
