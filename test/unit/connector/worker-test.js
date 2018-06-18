@@ -3,7 +3,6 @@ const { expect } = require("chai");
 const sinon = require("sinon");
 
 const Worker = require("../../../src/connector/worker");
-const HullStub = require("../support/hull-stub");
 
 describe("Worker", () => {
 
