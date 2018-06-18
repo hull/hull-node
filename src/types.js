@@ -79,6 +79,9 @@ export type HullContext = {
 
 export type HullRequestBase = {
   ...$Request,
+  headers: {
+    [string]: string
+  },
   hull: HullContextBase
 };
 

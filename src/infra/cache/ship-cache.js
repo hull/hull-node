@@ -1,5 +1,5 @@
 /* @flow */
-import type { HullReqContext } from "../../types";
+import type { HullContext } from "../../types";
 
 const jwt = require("jwt-simple");
 const Promise = require("bluebird");
@@ -13,11 +13,11 @@ const Promise = require("bluebird");
  * @memberof Context
  */
 class ConnectorCache {
-  ctx: HullReqContext;
+  ctx: HullContext;
   cache: Object;
   promiseReuser: Object;
 
-  constructor(ctx: HullReqContext, cache: Object, promiseReuser: Object) {
+  constructor(ctx: HullContext, cache: Object, promiseReuser: Object) {
     this.ctx = ctx;
     this.cache = cache;
     this.promiseReuser = promiseReuser;
@@ -37,6 +37,9 @@ class ConnectorCache {
    * @return {string}
    */
   getCacheKey(key: string): string {
+    if (this.ctx.client === undefined) {
+      throw new Error("ShipCache can be used only with initialized client, otherwise use ctx.cache.cache.set");
+    }
     const { secret, organization } = this.ctx.client.configuration();
     return jwt.encode({ sub: key, iss: organization }, secret);
   }

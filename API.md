@@ -15,7 +15,6 @@
     -   `options.connectorName` **[string][2]?** force connector name - if not provided will be taken from manifest.json
     -   `options.skipSignatureValidation` **[boolean][4]?** skip signature validation on notifications (for testing only)
     -   `options.timeout` **([number][3] \| [string][2])?** global HTTP server timeout - format is parsed by `ms` npm package
--   `Object`  
 
 ### setupApp
 

@@ -10,7 +10,7 @@ function contextBaseMiddlewareFactory({
 }: Object) {
   return function contextBaseMiddleware(req: HullRequestBase, res: $Response, next: NextFunction) {
     const context: HullContextBase = {
-      hostname: req.hostname,
+      hostname: req.hostname || "",
       options: Object.assign({}, req.body, req.query), // body + query
       connectorConfig,
 

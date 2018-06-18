@@ -6,7 +6,7 @@
  */
 module.exports.staticRouter = require("./static-router");
 module.exports.PromiseReuser = require("./promise-reuser");
-module.exports.exitHandler = require("./exit-handler");
+module.exports.onExit = require("./on-exit");
 
 module.exports.notificationDefaultFlowControl = require("./notification-default-flow-control");
 module.exports.NotificationValidator = require("./notification-validator");

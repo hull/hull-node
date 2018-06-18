@@ -1,5 +1,6 @@
 /* @flow */
-import type { $Request } from "express";
+// import type { $Request } from "express";
+import type { HullRequestBase } from "../types";
 
 const Promise = require("bluebird");
 const requestClient = require("request");
@@ -20,56 +21,56 @@ class NotificationValidator {
     }
   }
 
-  validateHeaders(req: $Request): Error | null {
+  validateHeaders(req: HullRequestBase): Error | null {
     if (!this.hasFlagHeader(req)) {
-      return new Error("UNSUPPORTED_SIGNATURE_VERSION", "Unsupported signature version");
+      return new Error("Unsupported signature version");
     }
 
     if (!this.validateSignatureVersion(req)) {
-      return new Error("UNSUPPORTED_SIGNATURE_VERSION", "Unsupported signature version");
+      return new Error("Unsupported signature version");
     }
 
     if (!this.validateSignatureHeaders(req)) {
-      return new Error("MISSING_SIGNATURE_HEADERS", "Missing signature header(s)");
+      return new Error("Missing signature header(s)");
     }
 
     return null;
   }
 
-  hasFlagHeader(req: $Request): boolean {
+  hasFlagHeader(req: HullRequestBase): boolean {
     return _.has(req.headers, "x-hull-smart-notifier");
   }
 
-  validatePayload(req: $Request): Error | null {
+  validatePayload(req: HullRequestBase): Error | null {
     if (!req.body) {
-      return new Error("MISSING_NOTIFICATION", "No notification in payload");
+      return new Error("No notification in payload");
     }
 
     if (!req.body.configuration) {
-      return new Error("MISSING_CONFIGURATION", "No configuration in payload");
+      return new Error("No configuration in payload");
     }
     return null;
   }
 
-  validateSignatureVersion(req: $Request): boolean {
+  validateSignatureVersion(req: HullRequestBase): boolean {
     return _.has(req.headers, "x-hull-smart-notifier-signature-version") &&
       _.indexOf(supportedSignaturesVersions, req.headers["x-hull-smart-notifier-signature-version"]) >= 0;
   }
 
-  validateSignatureHeaders(req: $Request): boolean {
+  validateSignatureHeaders(req: HullRequestBase): boolean {
     return ["x-hull-smart-notifier-signature",
       "x-hull-smart-notifier-signature-version",
       "x-hull-smart-notifier-signature-public-key-url"
     ].every(h => _.has(req.headers, h));
   }
 
-  validateSignature(req: $Request): Promise {
+  validateSignature(req: HullRequestBase): Promise {
     return this.getCertificate(req)
       .then((certificate) => {
         try {
           const decoded = jwt.verify(req.headers["x-hull-smart-notifier-signature"], certificate, {
             algorithms: ["RS256"],
-            jwtid: req.body.notification_id
+            jwtid: (req.body && req.body.notification_id) || ""
           });
 
           if (decoded) {
@@ -82,7 +83,7 @@ class NotificationValidator {
       });
   }
 
-  getCertificate(req: $Request): Promise {
+  getCertificate(req: HullRequestBase): Promise {
     const certUrl = req.headers["x-hull-smart-notifier-signature-public-key-url"];
     const signature = req.headers["x-hull-smart-notifier-signature"];
     if (_.has(certCache, certUrl)) {

@@ -24,6 +24,9 @@ function notificationHandlerFactory({ HullClient }: Object, configuration: HullN
   router.use(clientMiddleware({ HullClient }));
   router.use(bodyFullContextMiddleware({ requestName: "notification" }));
   router.use(function notificationHandler(req: HullRequest, res: $Response, next: NextFunction): mixed {
+    if (!req.hull.notification) {
+      return next(new Error("Missing Notification payload"));
+    }
     const { channel, messages } = req.hull.notification;
     if (!configuration[channel]) {
       return next(new Error("Channel unsupported"));
@@ -36,6 +39,7 @@ function notificationHandlerFactory({ HullClient }: Object, configuration: HullN
     req.hull.notificationResponse = {
       flow_control: defaultSuccessFlowControl
     };
+    // $FlowFixMe
     return handler(req.hull, messages)
       .then(() => {
         res.status(200).json(req.hull.notificationResponse);
@@ -43,9 +47,11 @@ function notificationHandlerFactory({ HullClient }: Object, configuration: HullN
       .catch(error => next(error));
   });
   router.use((err: Error, req: HullRequest, res: $Response, _next: NextFunction) => {
-    const { channel } = req.hull.notification;
-    const defaultErrorFlowControl = notificationDefaultFlowControl(req.hull, channel, "error");
-    res.status(500).json(defaultErrorFlowControl);
+    if (req.hull.notification) {
+      const { channel } = req.hull.notification;
+      const defaultErrorFlowControl = notificationDefaultFlowControl(req.hull, channel, "error");
+      res.status(500).json(defaultErrorFlowControl);
+    }
   });
   return router;
 }

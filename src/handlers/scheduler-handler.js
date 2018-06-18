@@ -19,6 +19,7 @@ const { queryConfigurationMiddleware, clientMiddleware, bodyFullContextMiddlewar
  *
  * Optionally it can cache the response, then provide options.cache object with key
  *
+ * @param  {Objecct}  dependencies
  * @param  {Function} handler [description]
  * @param  {Object}   [options]
  * @param  {Object}   [options.cache]

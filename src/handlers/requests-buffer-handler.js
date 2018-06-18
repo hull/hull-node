@@ -4,8 +4,8 @@ import type { HullRequest, HullContext } from "../types";
 
 type HullRequestsBufferHandlerCallback = (ctx: HullContext, requests: Array<{ body: mixed, query: mixed }>) => Promise<*>;
 type HullRequestsBufferHandlerOptions = {
-  maxSize?: number | string,
-  maxTime?: number | string,
+  maxSize?: number,
+  maxTime?: number,
   disableErrorHandling?: boolean
 };
 
@@ -17,11 +17,11 @@ const { clientMiddleware, fetchFullContextMiddleware, timeoutMiddleware, haltOnT
 const Batcher = require("../infra/batcher");
 
 /**
- * [batcherHandler description]
- * @param  {Function} callback         [description]
- * @param  {Object} options [description]
- * @param  {number} options.maxSize [description]
- * @param  {number} options.maxTime [description]
+ * @param {Object}   dependencies
+ * @param {Function} callback         [description]
+ * @param {Object}   options [description]
+ * @param {number}   options.maxSize [description]
+ * @param {number}   options.maxTime [description]
  */
 function requestsBufferHandlerFactory({ HullClient }: Object, callback: HullRequestsBufferHandlerCallback, { maxSize = 100, maxTime = 10000, disableErrorHandling = false }: HullRequestsBufferHandlerOptions = {}) {
   const uniqueNamespace = crypto.randomBytes(64).toString("hex");

@@ -13,11 +13,17 @@ function fetchConnector(ctx): Promise<*> {
 }
 
 function fetchSegments(ctx, entityType = "users") {
+  if (ctx.client === undefined) {
+    return Promise.reject(new Error("Missing client"));
+  }
   if (ctx[`${entityType}_segments`]) {
     return Promise.resolve(ctx[`${entityType}_segments`]);
   }
   const { id } = ctx.client.configuration();
   return ctx.cache.wrap(`${entityType}_segments`, () => {
+    if (ctx.client === undefined) {
+      return Promise.reject(new Error("Missing client"));
+    }
     return ctx.client.get(
       `/${entityType}_segments`,
       { shipId: id },
@@ -39,6 +45,9 @@ function fetchSegments(ctx, entityType = "users") {
  */
 function fetchFullContextMiddlewareFactory({ requestName }: Object = {}) {
   return function fetchFullContextMiddleware(req: HullRequest, res: $Response, next: NextFunction) {
+    if (req.hull === undefined || req.hull.client === undefined) {
+      return next(new Error("We need initialized client to fetch connector settings and segments lists"));
+    }
     return Promise.all([
       fetchConnector(req.hull),
       fetchSegments(req.hull, "users"),
@@ -54,7 +63,7 @@ function fetchFullContextMiddlewareFactory({ requestName }: Object = {}) {
         accounts_segments: accountsSegments,
       });
       next();
-    });
+    }).catch(error => next(error));
   };
 }
 

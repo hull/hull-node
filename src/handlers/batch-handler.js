@@ -81,16 +81,18 @@ function batchExtractHandlerFactory({ HullClient }: Object, configuration: HullN
             }
             return message;
           });
-
+          // $FlowFixMe
           return handlerCallback(req.hull, messages);
         }
       })
       .catch(error => next(error));
   });
   router.use(function batchExtractErrorMiddleware(err: Error, req: HullRequest, res: $Response, _next: NextFunction) {
-    const { channel } = req.hull.notification;
-    const defaultErrorFlowControl = notificationDefaultFlowControl(req.hull, channel, "error");
-    res.status(500).json(defaultErrorFlowControl);
+    if (req.hull.notification) {
+      const { channel } = req.hull.notification;
+      const defaultErrorFlowControl = notificationDefaultFlowControl(req.hull, channel, "error");
+      res.status(500).json(defaultErrorFlowControl);
+    }
   });
   return router;
 }

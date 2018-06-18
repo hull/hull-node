@@ -1,5 +1,5 @@
 // @flow
-import type { HullReqContext } from "../../types";
+import type { HullContext } from "../../types";
 
 const _ = require("lodash");
 
@@ -17,13 +17,13 @@ const _ = require("lodash");
  * req.hull.metric.event("eventName", { text = "", properties = {} });
  */
 class MetricAgent {
-  ctx: HullReqContext;
+  ctx: HullContext;
   manifest: Object;
   dogapi: Object;
   logFunction: Function;
   metrics: Object;
 
-  constructor(ctx: HullReqContext, instrumentationAgent: Object) {
+  constructor(ctx: HullContext, instrumentationAgent: Object) {
     this.metrics = instrumentationAgent.metrics;
     this.dogapi = instrumentationAgent.dogapi;
     this.manifest = instrumentationAgent.manifest;
@@ -97,7 +97,7 @@ class MetricAgent {
   }
 
   getMetricTags() {
-    const { organization = "none", id = "none" } = _.get(this.ctx, "client") ? this.ctx.client.configuration() : {};
+    const { organization = "none", id = "none" } = this.ctx.client !== undefined ? this.ctx.client.configuration() : {};
     const hullHost = organization.split(".").slice(1).join(".");
     const tags = [
       "source:ship", `ship_version:${this.manifest.version}`, `ship_name:${this.manifest.name}`,

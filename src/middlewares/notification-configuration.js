@@ -39,17 +39,21 @@ function notificationConfigurationMiddlewareFactory() {
       })
       .then(() => {
         const { body } = req;
-        const clientConfig = body.configuration;
-        if (!req.hull.requestId && req.body.notification_id) {
-          const timestamp = Math.floor(new Date().getTime() / 1000);
-          req.hull.requestId = ["smart-notifier", timestamp, req.body.notification_id].join(":");
+        if (body === null || typeof body !== "object") {
+          return next(new Error("Missing payload body"));
         }
+        const clientConfig = body.configuration;
+        if (!req.hull.requestId && body.notification_id) {
+          const timestamp = Math.floor(new Date().getTime() / 1000);
+          req.hull.requestId = ["smart-notifier", timestamp, body.notification_id].join(":");
+        }
+        // $FlowFixMe
         req.hull = Object.assign({}, req.hull, {
           clientConfig,
           config: clientConfig,
           notification: body
         });
-        next();
+        return next();
       })
       .catch((error) => {
         next(error);

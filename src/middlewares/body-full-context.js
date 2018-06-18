@@ -15,14 +15,20 @@ function bodyFullContextMiddlewareFactory({ requestName }: Object) {
         return next(err);
       }
 
+      if (req.body === null
+        || req.body === undefined
+        || typeof req.body !== "object") {
+        return next(new Error("Body must be a json object"));
+      }
       const { body } = req;
       const clientConfig = body.configuration;
       const connector = body.connector;
       const { users_segments, accounts_segments } = body;
-      if (!req.hull.requestId && req.body.notification_id) {
+      if (!req.hull.requestId && body.notification_id) {
         const timestamp = Math.floor(new Date().getTime() / 1000);
-        req.hull.requestId = [requestName, timestamp, req.body.notification_id].join(":");
+        req.hull.requestId = [requestName, timestamp, body.notification_id].join(":");
       }
+      // $FlowFixMe
       req.hull = Object.assign({}, req.hull, {
         clientConfig,
         config: clientConfig,

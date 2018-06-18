@@ -9,7 +9,7 @@ const _ = require("lodash");
 function notificationDefaultFlowControl(ctx: HullContext, channel: string, type: HullFlowControlType): HullNotificationFlowControl {
   function pickPrivateSettings(param: string): number {
     const settingName = _.snakeCase(`default_${type}_flow_control_${channel}_${param}`);
-    return parseInt(ctx.private_settings[settingName], 10);
+    return parseInt(ctx.connector.private_settings[settingName], 10);
   }
   function pickEnv(param: string): number {
     const envVarName = _.upperCase(_.snakeCase(`default_${type}_flow_control_${channel}_${param}`));

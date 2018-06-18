@@ -5,15 +5,25 @@ import type { HullRequestBase } from "../types";
 const jwt = require("jwt-simple");
 
 function getToken(query: $PropertyType<HullRequestBase, 'query'>): string {
-  if (query && (query.hullToken || query.token || query.state)) {
-    return query.hullToken || query.token || query.state;
+  if (query) {
+    if (typeof query.hullToken === "string") {
+      return query.hullToken;
+    }
+
+    if (typeof query.token === "string") {
+      return query.token;
+    }
+
+    if (typeof query.state === "string") {
+      return query.state;
+    }
   }
   return "";
 }
 
 function parseQueryString(query: $PropertyType<HullRequestBase, 'query'>): Object {
   return ["organization", "ship", "secret"].reduce((cfg, k) => {
-    const val = (query[k] || "").trim();
+    const val = (query && typeof query[k] === "string" ? query[k] : "").trim();
     if (typeof val === "string") {
       cfg[k] = val;
     } else if (val && val[0] && typeof val[0] === "string") {
@@ -30,7 +40,7 @@ function parseToken(token, secret) {
     return config;
   } catch (err) {
     const e = new Error("Invalid Token");
-    e.status = 401;
+    // e.status = 401;
     throw e;
   }
 }

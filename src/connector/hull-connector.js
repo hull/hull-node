@@ -1,6 +1,6 @@
 // @flow
 import type { $Application, $Response, NextFunction, Middleware } from "express";
-import type { HullConnectorOptions, HullRequest, HullRequestBase } from "../types";
+import type { HullConnectorOptions, HullRequestBase } from "../types";
 
 const Promise = require("bluebird");
 const fs = require("fs");
@@ -13,12 +13,12 @@ const { staticRouter } = require("../utils");
 const Worker = require("./worker");
 const { queryConfigurationMiddleware, contextBaseMiddleware, fetchFullContextMiddleware, clientMiddleware } = require("../middlewares");
 const { Instrumentation, Cache, Queue, Batcher } = require("../infra");
-const { exitHandler } = require("../utils");
-const { TransientError } = require("../errors");
+const { onExit } = require("../utils");
+// const { TransientError } = require("../errors");
 
 /**
  * @public
- * @param {Object}
+ * @param {Object}        dependencies
  * @param {Object}        [options={}]
  * @param {string}        [options.connectorName] force connector name - if not provided will be taken from manifest.json
  * @param {string}        [options.hostSecret] secret to sign req.hull.token
@@ -79,7 +79,7 @@ class HullConnector {
       this.connectorConfig.timeout = timeout;
     }
 
-    exitHandler(() => {
+    onExit(() => {
       return Promise.all([
         Batcher.exit(),
         this.queue.exit()
