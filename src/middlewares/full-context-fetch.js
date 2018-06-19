@@ -1,6 +1,6 @@
 // @flow
 import type { $Response, NextFunction } from "express";
-import type { HullRequest } from "../types";
+import type { HullRequestWithClient } from "../types";
 
 
 function fetchConnector(ctx): Promise<*> {
@@ -8,7 +8,7 @@ function fetchConnector(ctx): Promise<*> {
     return Promise.resolve(ctx.connector);
   }
   return ctx.cache.wrap("connector", () => {
-    return ctx.client.get("app");
+    return ctx.client.get("app", {});
   });
 }
 
@@ -44,7 +44,7 @@ function fetchSegments(ctx, entityType = "users") {
  * - `req.hull.accounts_segments`
  */
 function fetchFullContextMiddlewareFactory({ requestName }: Object = {}) {
-  return function fetchFullContextMiddleware(req: HullRequest, res: $Response, next: NextFunction) {
+  return function fetchFullContextMiddleware(req: HullRequestWithClient, res: $Response, next: NextFunction) {
     if (req.hull === undefined || req.hull.client === undefined) {
       return next(new Error("We need initialized client to fetch connector settings and segments lists"));
     }
@@ -56,9 +56,7 @@ function fetchFullContextMiddlewareFactory({ requestName }: Object = {}) {
       const requestId = [requestName].join("-");
       req.hull = Object.assign({}, req.hull, {
         requestId,
-        ship: connector, // legacy
         connector,
-        segments: usersSegments, // legacy
         users_segments: usersSegments,
         accounts_segments: accountsSegments,
       });

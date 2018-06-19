@@ -11,7 +11,7 @@ const debug = require("debug")("hull-connector");
 const HullClient = require("hull-client");
 const { staticRouter } = require("../utils");
 const Worker = require("./worker");
-const { queryConfigurationMiddleware, contextBaseMiddleware, fetchFullContextMiddleware, clientMiddleware } = require("../middlewares");
+const { configurationFromQueryMiddleware, contextBaseMiddleware, fullContextFetchMiddleware, clientMiddleware } = require("../middlewares");
 const { Instrumentation, Cache, Queue, Batcher } = require("../infra");
 const { onExit } = require("../utils");
 // const { TransientError } = require("../errors");
@@ -183,9 +183,9 @@ class HullConnector {
       cache: this.cache,
       connectorConfig: this.connectorConfig
     }));
-    this._worker.use(queryConfigurationMiddleware());
+    this._worker.use(configurationFromQueryMiddleware());
     this._worker.use(clientMiddleware({ HullClient: this.HullClient }));
-    this._worker.use(fetchFullContextMiddleware());
+    this._worker.use(fullContextFetchMiddleware());
     this.middlewares.map(middleware => this._worker.use(middleware));
 
     this._worker.setJobs(jobs);

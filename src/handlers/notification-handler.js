@@ -1,10 +1,10 @@
 // @flow
 import type { $Response, NextFunction } from "express";
-import type { HullRequest, HullNotificationHandlerCallback, HullNotificationHandlerConfiguration } from "../types";
+import type { HullRequestFull, HullNotificationHandlerCallback, HullNotificationHandlerConfiguration } from "../types";
 
 const { Router } = require("express");
 const { notificationDefaultFlowControl } = require("../utils");
-const { notificationConfigurationMiddleware, clientMiddleware, timeoutMiddleware, haltOnTimedoutMiddleware, bodyFullContextMiddleware } = require("../middlewares");
+const { configurationFromNotificationMiddleware, clientMiddleware, timeoutMiddleware, haltOnTimedoutMiddleware, fullContextBodyMiddleware } = require("../middlewares");
 
 /**
  * [notificationHandlerFactory description]
@@ -19,11 +19,11 @@ function notificationHandlerFactory({ HullClient }: Object, configuration: HullN
   const router = Router();
 
   router.use(timeoutMiddleware());
-  router.use(notificationConfigurationMiddleware());
+  router.use(configurationFromNotificationMiddleware());
   router.use(haltOnTimedoutMiddleware());
   router.use(clientMiddleware({ HullClient }));
-  router.use(bodyFullContextMiddleware({ requestName: "notification" }));
-  router.use(function notificationHandler(req: HullRequest, res: $Response, next: NextFunction): mixed {
+  router.use(fullContextBodyMiddleware({ requestName: "notification" }));
+  router.use(function notificationHandler(req: HullRequestFull, res: $Response, next: NextFunction): mixed {
     if (!req.hull.notification) {
       return next(new Error("Missing Notification payload"));
     }
@@ -46,7 +46,7 @@ function notificationHandlerFactory({ HullClient }: Object, configuration: HullN
       })
       .catch(error => next(error));
   });
-  router.use((err: Error, req: HullRequest, res: $Response, _next: NextFunction) => {
+  router.use((err: Error, req: HullRequestFull, res: $Response, _next: NextFunction) => {
     if (req.hull.notification) {
       const { channel } = req.hull.notification;
       const defaultErrorFlowControl = notificationDefaultFlowControl(req.hull, channel, "error");

@@ -4,7 +4,7 @@ const passport = require("passport");
 const bodyParser = require("body-parser");
 const querystring = require("querystring");
 
-const { queryConfigurationMiddleware, clientMiddleware, fetchFullContextMiddleware, timeoutMiddleware, haltOnTimedoutMiddleware } = require("../middlewares");
+const { configurationFromQueryMiddleware, clientMiddleware, fullContextFetchMiddleware, timeoutMiddleware, haltOnTimedoutMiddleware } = require("../middlewares");
 
 const HOME_URL = "/";
 const LOGIN_URL = "/login";
@@ -136,10 +136,10 @@ function oauthHandlerFactory({ HullClient }, {
   const router = Router();
 
   router.use(fetchToken);
-  router.use(queryConfigurationMiddleware()); // parse config from token
+  router.use(configurationFromQueryMiddleware()); // parse config from token
   router.use(clientMiddleware({ HullClient })); // initialize client
   router.use(timeoutMiddleware());
-  router.use(fetchFullContextMiddleware({ requestName: "oAuth" }));
+  router.use(fullContextFetchMiddleware({ requestName: "oAuth" }));
   router.use(haltOnTimedoutMiddleware());
   router.use(passport.initialize());
   router.use(bodyParser.urlencoded({ extended: true }));

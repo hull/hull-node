@@ -5,5 +5,6 @@ module.exports.notificationandler = require("./notification-handler");
 module.exports.oauthHandler = require("./oauth-handler");
 module.exports.queueHandler = require("./queue-handler");
 module.exports.requestsBufferHandler = require("./requests-buffer-handler");
-module.exports.schedulerHandler = require("./scheduler-handler");
-module.exports.statusHandler = require("./status-handler");
+module.exports.scheduleHandler = require("./schedule-handler");
+
+// module.exports.statusHandler = require("./status-handler");

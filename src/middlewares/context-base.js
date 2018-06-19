@@ -18,8 +18,7 @@ function contextBaseMiddlewareFactory({
       metric: instrumentation.getMetric(),
       enqueue: queue.getEnqueue(),
 
-      service: {},
-      shipApp: {}
+      service: {}
     };
     req.hull = context;
     next();

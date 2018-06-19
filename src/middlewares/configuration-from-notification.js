@@ -49,9 +49,7 @@ function notificationConfigurationMiddlewareFactory() {
         }
         // $FlowFixMe
         req.hull = Object.assign({}, req.hull, {
-          clientConfig,
-          config: clientConfig,
-          notification: body
+          clientConfig
         });
         return next();
       })

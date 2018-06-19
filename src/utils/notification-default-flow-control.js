@@ -1,12 +1,12 @@
 // @flow
 
-import type { HullContext, HullNotificationFlowControl } from "../types";
+import type { HullContextFull, HullNotificationFlowControl } from "../types";
 
 type HullFlowControlType = "success" | "unsupported" | "error";
 
 const _ = require("lodash");
 
-function notificationDefaultFlowControl(ctx: HullContext, channel: string, type: HullFlowControlType): HullNotificationFlowControl {
+function notificationDefaultFlowControl(ctx: HullContextFull, channel: string, type: HullFlowControlType): HullNotificationFlowControl {
   function pickPrivateSettings(param: string): number {
     const settingName = _.snakeCase(`default_${type}_flow_control_${channel}_${param}`);
     return parseInt(ctx.connector.private_settings[settingName], 10);

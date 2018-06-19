@@ -1,6 +1,6 @@
 // @flow
 import type { $Response, NextFunction } from "express";
-import type { HullRequestBase } from "../types";
+import type { HullRequestWithConfiguration } from "../types";
 
 const _ = require("lodash");
 const jwt = require("jwt-simple");
@@ -30,7 +30,7 @@ const helperFunctions = require("../helpers");
  * });
  */
 function clientMiddlewareFactory({ HullClient }: Object) {
-  return function clientMiddleware(req: HullRequestBase, res: $Response, next: NextFunction) {
+  return function clientMiddleware(req: HullRequestWithConfiguration, res: $Response, next: NextFunction) {
     try {
       if (!req.hull) {
         throw new Error("Missing request context, you need to initiate it before");
@@ -38,13 +38,13 @@ function clientMiddlewareFactory({ HullClient }: Object) {
       if (!req.hull.connectorConfig || !req.hull.connectorConfig.hostSecret) {
         throw new Error("Missing connectorConfig.hostSecret");
       }
-      if (!req.hull.clientConfig && !req.hull.config) {
+      if (!req.hull.clientConfig) {
         throw new Error("Missing clientConfig");
       }
       const { hostSecret } = req.hull.connectorConfig;
 
-      const config = req.hull.clientConfig || req.hull.config;
-      const client = new HullClient(config);
+      const clientConfig = req.hull.clientConfig;
+      const client = new HullClient(clientConfig);
       const helpers = _.mapValues(helperFunctions, func => func.bind(null, req.hull));
       const token = jwt.encode(req.hull.clientConfig, hostSecret);
       req.hull = Object.assign({}, req.hull, {

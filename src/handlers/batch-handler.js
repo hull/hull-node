@@ -1,12 +1,12 @@
 // @flow
 import type { $Response, NextFunction } from "express";
-import type { HullRequest, HullNotificationHandlerCallback, HullNotificationHandlerConfiguration } from "../types";
+import type { HullRequestFull, HullNotificationHandlerCallback, HullNotificationHandlerConfiguration } from "../types";
 
 const _ = require("lodash");
 const { Router } = require("express");
 
 const { notificationDefaultFlowControl } = require("../utils");
-const { queryConfigurationMiddleware, clientMiddleware, timeoutMiddleware, haltOnTimedoutMiddleware, bodyFullContextMiddleware } = require("../middlewares");
+const { configurationFromQueryMiddleware, clientMiddleware, timeoutMiddleware, haltOnTimedoutMiddleware, fullContextBodyMiddleware } = require("../middlewares");
 
 /**
  * [notificationHandlerFactory description]
@@ -21,13 +21,13 @@ function batchExtractHandlerFactory({ HullClient }: Object, configuration: HullN
   const router = Router();
 
   router.use(timeoutMiddleware());
-  router.use(queryConfigurationMiddleware()); // parse query
+  router.use(configurationFromQueryMiddleware()); // parse query
   router.use(haltOnTimedoutMiddleware());
   router.use(clientMiddleware({ HullClient })); // initialize client
   router.use(haltOnTimedoutMiddleware());
-  router.use(bodyFullContextMiddleware({ requestName: "batch" })); // get rest of the context from body
+  router.use(fullContextBodyMiddleware({ requestName: "batch" })); // get rest of the context from body
   router.use(haltOnTimedoutMiddleware());
-  router.use(function batchExtractMiddleware(req: HullRequest, res: $Response, next: NextFunction) {
+  router.use(function batchExtractMiddleware(req: HullRequestFull, res: $Response, next: NextFunction) {
     const { client, helpers } = req.hull;
 
     if (!req.body || typeof req.body !== "object") {
@@ -87,7 +87,7 @@ function batchExtractHandlerFactory({ HullClient }: Object, configuration: HullN
       })
       .catch(error => next(error));
   });
-  router.use(function batchExtractErrorMiddleware(err: Error, req: HullRequest, res: $Response, _next: NextFunction) {
+  router.use(function batchExtractErrorMiddleware(err: Error, req: HullRequestFull, res: $Response, _next: NextFunction) {
     if (req.hull.notification) {
       const { channel } = req.hull.notification;
       const defaultErrorFlowControl = notificationDefaultFlowControl(req.hull, channel, "error");

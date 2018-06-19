@@ -1,5 +1,5 @@
 // @flow
-import type { HullContext } from "../../types";
+import type { HullContextFull } from "../../types";
 
 const _ = require("lodash");
 
@@ -17,13 +17,13 @@ const _ = require("lodash");
  * req.hull.metric.event("eventName", { text = "", properties = {} });
  */
 class MetricAgent {
-  ctx: HullContext;
+  ctx: HullContextFull;
   manifest: Object;
   dogapi: Object;
   logFunction: Function;
   metrics: Object;
 
-  constructor(ctx: HullContext, instrumentationAgent: Object) {
+  constructor(ctx: HullContextFull, instrumentationAgent: Object) {
     this.metrics = instrumentationAgent.metrics;
     this.dogapi = instrumentationAgent.dogapi;
     this.manifest = instrumentationAgent.manifest;

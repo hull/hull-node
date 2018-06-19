@@ -1,15 +1,15 @@
 // @flow
 import type { $Response, NextFunction } from "express";
-import type { HullRequest, HullContext } from "../types";
+import type { HullRequestFull, HullContextFull } from "../types";
 
-type HullSchedulerHandlerCallback = (ctx: HullContext) => Promise<*>;
+type HullSchedulerHandlerCallback = (ctx: HullContextFull) => Promise<*>;
 type HullSchedulerHandlerOptions = {
   disableErrorHandling?: boolean
 };
 
 const { Router } = require("express");
 
-const { queryConfigurationMiddleware, clientMiddleware, bodyFullContextMiddleware, timeoutMiddleware, haltOnTimedoutMiddleware } = require("../middlewares");
+const { configurationFromQueryMiddleware, clientMiddleware, fullContextBodyMiddleware, timeoutMiddleware, haltOnTimedoutMiddleware } = require("../middlewares");
 
 /**
  * This handler allows to handle simple, authorized HTTP calls.
@@ -29,17 +29,17 @@ const { queryConfigurationMiddleware, clientMiddleware, bodyFullContextMiddlewar
  * @example
  * app.use("/list", actionHandler((ctx) => {}))
  */
-function schedulerHandlerFactory({ HullClient }: Object, handler: HullSchedulerHandlerCallback, { disableErrorHandling = false }: HullSchedulerHandlerOptions) {
+function scheduleHandlerFactory({ HullClient }: Object, handler: HullSchedulerHandlerCallback, { disableErrorHandling = false }: HullSchedulerHandlerOptions) {
   const router = Router();
 
   router.use(timeoutMiddleware());
-  router.use(queryConfigurationMiddleware()); // parse query
+  router.use(configurationFromQueryMiddleware()); // parse query
   router.use(haltOnTimedoutMiddleware());
   router.use(clientMiddleware({ HullClient })); // initialize client
   router.use(haltOnTimedoutMiddleware());
-  router.use(bodyFullContextMiddleware({ requestName: "scheduler" })); // get rest of the context from body
+  router.use(fullContextBodyMiddleware({ requestName: "scheduler" })); // get rest of the context from body
   router.use(haltOnTimedoutMiddleware());
-  router.use(function schedulerHandler(req: HullRequest, res: $Response, next: NextFunction) {
+  router.use(function scheduleHandler(req: HullRequestFull, res: $Response, next: NextFunction) {
     handler(req.hull)
       .then((response) => {
         res.json(response);
@@ -47,11 +47,11 @@ function schedulerHandlerFactory({ HullClient }: Object, handler: HullSchedulerH
       .catch(error => next(error));
   });
   if (disableErrorHandling === true) {
-    router.use((err: Error, req: HullRequest, res: $Response, _next: NextFunction) => {
+    router.use((err: Error, req: HullRequestFull, res: $Response, _next: NextFunction) => {
       res.status(503).end("err");
     });
   }
   return router;
 }
 
-module.exports = schedulerHandlerFactory;
+module.exports = scheduleHandlerFactory;

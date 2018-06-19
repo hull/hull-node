@@ -1,8 +1,8 @@
 // @flow
 import type { $Response, NextFunction } from "express";
-import type { HullRequest, HullContext } from "../types";
+import type { HullRequestFull, HullContextFull } from "../types";
 
-type HullRequestsBufferHandlerCallback = (ctx: HullContext, requests: Array<{ body: mixed, query: mixed }>) => Promise<*>;
+type HullRequestsBufferHandlerCallback = (ctx: HullContextFull, requests: Array<{ body: mixed, query: mixed }>) => Promise<*>;
 type HullRequestsBufferHandlerOptions = {
   maxSize?: number,
   maxTime?: number,
@@ -12,7 +12,7 @@ type HullRequestsBufferHandlerOptions = {
 const crypto = require("crypto");
 const { Router } = require("express");
 
-const { clientMiddleware, fetchFullContextMiddleware, timeoutMiddleware, haltOnTimedoutMiddleware } = require("../middlewares");
+const { clientMiddleware, fullContextFetchMiddleware, timeoutMiddleware, haltOnTimedoutMiddleware } = require("../middlewares");
 
 const Batcher = require("../infra/batcher");
 
@@ -28,9 +28,9 @@ function requestsBufferHandlerFactory({ HullClient }: Object, callback: HullRequ
   const router = Router();
   router.use(clientMiddleware({ HullClient })); // initialize client, we need configuration to be set already
   router.use(timeoutMiddleware());
-  router.use(fetchFullContextMiddleware({ requestName: "batcher" }));
+  router.use(fullContextFetchMiddleware({ requestName: "batcher" }));
   router.use(haltOnTimedoutMiddleware());
-  router.use(function requestsBufferHandler(req: HullRequest, res: $Response, next: NextFunction) {
+  router.use(function requestsBufferHandler(req: HullRequestFull, res: $Response, next: NextFunction) {
     Batcher.getHandler(uniqueNamespace, {
       ctx: req.hull,
       options: {
@@ -49,7 +49,7 @@ function requestsBufferHandlerFactory({ HullClient }: Object, callback: HullRequ
   });
 
   if (disableErrorHandling !== true) {
-    router.use((err: Error, req, res: $Response, _next: NextFunction) => {
+    router.use((err: Error, req: HullRequestFull, res: $Response, _next: NextFunction) => {
       res.status(500).end("error");
     });
   }

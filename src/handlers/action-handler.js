@@ -1,8 +1,8 @@
 // @flow
 import type { $Response, NextFunction } from "express";
-import type { HullRequest, HullContext } from "../types";
+import type { HullRequestFull, HullContextFull } from "../types";
 
-type HullActionHandlerCallback = (ctx: HullContext) => Promise<*>;
+type HullActionHandlerCallback = (ctx: HullContextFull) => Promise<*>;
 type HullActionHandlerOptions = {
   cache?: {
     key?: string,
@@ -14,7 +14,7 @@ type HullActionHandlerOptions = {
 const debug = require("debug")("hull-connector:action-handler");
 const { Router } = require("express");
 
-const { queryConfigurationMiddleware, fetchFullContextMiddleware, timeoutMiddleware, haltOnTimedoutMiddleware, clientMiddleware } = require("../middlewares");
+const { configurationFromQueryMiddleware, fullContextFetchMiddleware, timeoutMiddleware, haltOnTimedoutMiddleware, clientMiddleware } = require("../middlewares");
 
 /**
  * This handler allows to handle simple, authorized HTTP calls.
@@ -22,11 +22,12 @@ const { queryConfigurationMiddleware, fetchFullContextMiddleware, timeoutMiddlew
  *
  * If you need custom way of passing data, you need to use custom middleware before the handler.
  *
- * Optionally it can cache the response, then provide options.cache object with key
+ * Optionally it can cache the response, to use it provide `options.cache` parameter with cache key
  *
  * @param  {Object}
  * @param  {Function} handler [description
  * @param  {Object}   [options]
+ * @param  {Object}   [options.disableErrorHandling] if you want to disable internal
  * @param  {Object}   [options.cache]
  * @param  {string}   [options.cache.key]
  * @param  {string}   [options.cache.options]
@@ -37,12 +38,12 @@ const { queryConfigurationMiddleware, fetchFullContextMiddleware, timeoutMiddlew
  */
 function actionHandlerFactory({ HullClient }: Object, handler: HullActionHandlerCallback, { cache = {}, disableErrorHandling = false, respondWithError = false }: HullActionHandlerOptions = {}): Router {
   const router = Router();
-  router.use(queryConfigurationMiddleware()); // parse config from query
+  router.use(configurationFromQueryMiddleware()); // parse config from query
   router.use(clientMiddleware({ HullClient })); // initialize client
   router.use(timeoutMiddleware());
-  router.use(fetchFullContextMiddleware({ requestName: "action" }));
+  router.use(fullContextFetchMiddleware({ requestName: "action" }));
   router.use(haltOnTimedoutMiddleware());
-  router.use(function actionHandler(req: HullRequest, res: $Response, next: NextFunction) {
+  router.use(function actionHandler(req: HullRequestFull, res: $Response, next: NextFunction) {
     (() => {
       debug("processing");
       if (cache && cache.key) {
@@ -60,7 +61,7 @@ function actionHandlerFactory({ HullClient }: Object, handler: HullActionHandler
       .catch(error => next(error));
   });
   if (disableErrorHandling !== true) {
-    router.use(function actionHandlerErrorMiddleware(err: Error, req: HullRequest, res: $Response, _next: NextFunction) {
+    router.use(function actionHandlerErrorMiddleware(err: Error, req: HullRequestFull, res: $Response, _next: NextFunction) {
       debug("error", err);
       res.status(500);
       if (respondWithError) {

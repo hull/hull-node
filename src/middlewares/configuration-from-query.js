@@ -47,7 +47,7 @@ function parseToken(token, secret) {
 
 /**
  * This middleware is responsible for preparing `req.hull.clientConfig`.
- * If there is already `req.hull.clientConfig` or `req.hull.config` set before it just skips.
+ * If there is already `req.hull.clientConfig` set before it just skips.
  * Otherwise it tries to parse encrypted token, it search for the token first in `req.hull.clientConfigToken`
  * and `req.hull.token`, if not available it tries to get the token in `req.query.hullToken`, `req.query.token` or `req.query.state`.
  * If those two steps fails to find information it parse `req.query` looking for direct connector configuration
@@ -58,16 +58,13 @@ function queryConfigurationMiddlewareFactory() {
       return next(new Error("Missing req.hull or req.hull.connectorConfig context object"));
     }
     const { hostSecret } = req.hull.connectorConfig;
-    const clientConfigToken = req.hull.clientConfigToken || req.hull.token || getToken(req.query);
+    const clientConfigToken = req.hull.clientConfigToken || getToken(req.query);
     const clientConfig =
       req.hull.clientConfig ||
-      req.hull.config ||
       parseToken(clientConfigToken, hostSecret) ||
       parseQueryString(req.query) ||
       {};
     req.hull = Object.assign({}, req.hull, {
-      config: clientConfig,
-      token: clientConfigToken,
       clientConfig,
       clientConfigToken
     });

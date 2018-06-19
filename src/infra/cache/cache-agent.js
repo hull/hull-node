@@ -1,6 +1,6 @@
 const cacheManager = require("cache-manager");
 const _ = require("lodash");
-const ShipCache = require("./ship-cache");
+const ConnectorCache = require("./connector-cache");
 const PromiseReuser = require("../../utils/promise-reuser");
 
 /**
@@ -58,7 +58,7 @@ class CacheAgent {
   contextMiddleware() { // eslint-disable-line class-methods-use-this
     return (req, res, next) => {
       req.hull = req.hull || {};
-      req.hull.cache = req.hull.cache || new ShipCache(req.hull, this.cache, this.promiseReuser);
+      req.hull.cache = req.hull.cache || new ConnectorCache(req.hull, this.cache, this.promiseReuser);
       next();
     };
   }
