@@ -1,6 +1,8 @@
 # 0.14.0-beta.2
 * Remove notif handler and middleware
 * Introduce new notification handler
+* Cleanup middleware stack
+* TBD
 
 # 0.14.0-beta.1
 * Upgrade hull-client-node to v2.0.0
