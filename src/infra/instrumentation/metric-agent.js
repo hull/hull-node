@@ -80,13 +80,12 @@ class MetricAgent {
   /**
    * @public
    * @memberof Context.metric
-   * @param  {Object} options
-   * @param  {string} options.title
-   * @param  {string} options.text
-   * @param  {Object} [options.properties={}]
+   * @param  {string} title
+   * @param  {string} [text]
+   * @param  {Object} [properties={}]
    * @return {mixed}
    */
-  event({ title, text = "", properties = {} }: { title: string, text?: string, properties?: Object }) {
+  event(title: string, text: string = "", properties: Object = {}) {
     this.logFunction("metric.event", { title, text, properties });
     if (!this.dogapi) {
       return null;
@@ -100,9 +99,12 @@ class MetricAgent {
     const { organization = "none", id = "none" } = this.ctx.client !== undefined ? this.ctx.client.configuration() : {};
     const hullHost = organization.split(".").slice(1).join(".");
     const tags = [
-      "source:ship", `ship_version:${this.manifest.version}`, `ship_name:${this.manifest.name}`,
-      `ship_env:${process.env.NODE_ENV || "production"}`, `hull_host:${hullHost}`,
-      `organization:${organization}`, `ship:${id}`
+      "source:ship", "source:connector",
+      `ship_version:${this.manifest.version}`, `connector_version:${this.manifest.version}`,
+      `ship_name:${this.manifest.name}`, `connector_name:${this.manifest.name}`,
+      `ship_env:${process.env.NODE_ENV || "production"}`, `connector_env:${process.env.NODE_ENV || "production"}`,
+      `hull_env:${process.env.HULL_ENV}`, `hull_host:${hullHost}`, `organization:${organization}`,
+      `ship:${id}`, `connector:${id}`
     ];
     return tags;
   }

@@ -523,10 +523,9 @@ Returns **mixed**
 
 **Parameters**
 
--   `options` **[Object][1]** 
-    -   `options.title` **[string][2]** 
-    -   `options.text` **[string][2]**  (optional, default `""`)
-    -   `options.properties` **[Object][1]**  (optional, default `{}`)
+-   `title` **[string][2]** 
+-   `text` **[string][2]?**  (optional, default `""`)
+-   `properties` **[Object][1]**  (optional, default `{}`)
 
 Returns **mixed** 
 
