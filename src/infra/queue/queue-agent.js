@@ -50,15 +50,11 @@ class QueueAgent {
       this.adapter = new MemoryAdapter();
     }
 
-    this.contextMiddleware = this.contextMiddleware.bind(this);
+    this.getEnqueue = this.getEnqueue.bind(this);
   }
 
-  getEnqueue() { // eslint-disable-line class-methods-use-this
-    return (req, res, next) => {
-      req.hull = req.hull || {};
-      req.hull.enqueue = req.hull.enqueue || enqueue.bind(null, this.adapter, req.hull);
-      return next();
-    };
+  getEnqueue(ctx) { // eslint-disable-line class-methods-use-this
+    return enqueue.bind(null, this.adapter, ctx);
   }
 
   exit() {

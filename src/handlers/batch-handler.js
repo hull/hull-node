@@ -4,8 +4,8 @@ import type { HullRequestFull, HullNotificationHandlerCallback, HullNotification
 
 const _ = require("lodash");
 const { Router } = require("express");
+const debug = require("debug")("hull-connector:batch-handler");
 
-const { notificationDefaultFlowControl } = require("../utils");
 const { configurationFromQueryMiddleware, clientMiddleware, timeoutMiddleware, haltOnTimedoutMiddleware, fullContextBodyMiddleware } = require("../middlewares");
 
 /**
@@ -30,6 +30,7 @@ function batchExtractHandlerFactory({ HullClient }: Object, configuration: HullN
   router.use(function batchExtractMiddleware(req: HullRequestFull, res: $Response, next: NextFunction) {
     const { client, helpers } = req.hull;
 
+    debug("batchExtractMiddleware", { body: req.body, client, helpers });
     if (!req.body || typeof req.body !== "object") {
       return next();
     }
@@ -42,11 +43,17 @@ function batchExtractHandlerFactory({ HullClient }: Object, configuration: HullN
     const { url, format, object_type } = body;
     const entityType = object_type === "account_report" ? "account" : "user";
     const channel = `${entityType}:update`;
-    const handlerCallback: HullNotificationHandlerCallback = typeof configuration[channel] === "function"
-      ? configuration[channel]
-      : configuration[channel].callback;
-    const handlerOptions = configuration[channel].options || {};
+    let handlerCallback: HullNotificationHandlerCallback | void;
 
+    if (typeof configuration[channel] === "function") {
+      handlerCallback = configuration[channel];
+    } else if (typeof configuration[channel] === "object" && typeof configuration[channel].callback === "function") {
+      handlerCallback = configuration[channel].callback;
+    }
+    const handlerOptions = (typeof configuration[channel] === "object" && configuration[channel].options) || {};
+    debug("channel", channel);
+    debug("entityType", entityType);
+    debug("context", req.hull);
     if (!url || !format || !handlerCallback) {
       return next();
     }
@@ -63,7 +70,7 @@ function batchExtractHandlerFactory({ HullClient }: Object, configuration: HullN
         handler: (entities) => {
           const segmentId = (req.query && req.query.segment_id) || null;
 
-          const segmentsList = req.hull[`${entityType}s_segments`].map(s => _.pick(s, ["id", "name", "type", "created_at", "updated_at"]));
+          const segmentsList = req.hull[`${entityType}sSegments`].map(s => _.pick(s, ["id", "name", "type", "created_at", "updated_at"]));
           const entitySegmentsKey = entityType === "user" ? "segments" : "account_segments";
           const messages = entities.map((entity) => {
             const segmentIds = _.compact(
@@ -88,11 +95,8 @@ function batchExtractHandlerFactory({ HullClient }: Object, configuration: HullN
       .catch(error => next(error));
   });
   router.use(function batchExtractErrorMiddleware(err: Error, req: HullRequestFull, res: $Response, _next: NextFunction) {
-    if (req.hull.notification) {
-      const { channel } = req.hull.notification;
-      const defaultErrorFlowControl = notificationDefaultFlowControl(req.hull, channel, "error");
-      res.status(500).json(defaultErrorFlowControl);
-    }
+    debug("error", err);
+    res.status(500).end("error");
   });
   return router;
 }

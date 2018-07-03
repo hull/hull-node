@@ -81,8 +81,7 @@ class InstrumentationAgent {
         });
       });
     }
-
-    this.contextMiddleware = this.contextMiddleware.bind(this);
+    this.getMetric = this.getMetric.bind(this);
   }
 
   startTransaction(jobName, callback) {
@@ -130,12 +129,8 @@ class InstrumentationAgent {
     };
   }
 
-  getMetric() { // eslint-disable-line class-methods-use-this
-    return (req, res, next) => {
-      req.hull = req.hull || {};
-      req.hull.metric = req.hull.metric || new MetricAgent(req.hull, this);
-      next();
-    };
+  getMetric(ctx) { // eslint-disable-line class-methods-use-this
+    return new MetricAgent(ctx, this);
   }
 
   ravenContextMiddleware() {

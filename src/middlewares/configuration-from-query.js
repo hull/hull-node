@@ -21,7 +21,7 @@ function getToken(query: $PropertyType<HullRequestBase, 'query'>): string {
   return "";
 }
 
-function parseQueryString(query: $PropertyType<HullRequestBase, 'query'>): Object {
+function parseQueryString(query: $PropertyType<HullRequestBase, 'query'>): { [string]: string | void } {
   return ["organization", "ship", "secret"].reduce((cfg, k) => {
     const val = (query && typeof query[k] === "string" ? query[k] : "").trim();
     if (typeof val === "string") {
@@ -46,10 +46,10 @@ function parseToken(token, secret) {
 }
 
 /**
- * This middleware is responsible for preparing `req.hull.clientConfig`.
- * If there is already `req.hull.clientConfig` set before it just skips.
- * Otherwise it tries to parse encrypted token, it search for the token first in `req.hull.clientConfigToken`
- * and `req.hull.token`, if not available it tries to get the token in `req.query.hullToken`, `req.query.token` or `req.query.state`.
+ * This middleware is responsible for preparing `req.hull.clientCredentials`.
+ * If there is already `req.hull.clientCredentials` set before it just skips.
+ * Otherwise it tries to parse encrypted token, it search for the token first in `req.hull.clientCredentialsToken`
+ * if not available it tries to get the token in `req.query.hullToken`, `req.query.token` or `req.query.state`.
  * If those two steps fails to find information it parse `req.query` looking for direct connector configuration
  */
 function queryConfigurationMiddlewareFactory() {
@@ -58,15 +58,22 @@ function queryConfigurationMiddlewareFactory() {
       return next(new Error("Missing req.hull or req.hull.connectorConfig context object"));
     }
     const { hostSecret } = req.hull.connectorConfig;
-    const clientConfigToken = req.hull.clientConfigToken || getToken(req.query);
-    const clientConfig =
-      req.hull.clientConfig ||
-      parseToken(clientConfigToken, hostSecret) ||
-      parseQueryString(req.query) ||
-      {};
-    req.hull = Object.assign({}, req.hull, {
-      clientConfig,
-      clientConfigToken
+    const clientCredentialsToken = req.hull.clientCredentialsToken || getToken(req.query);
+    const clientCredentials =
+      req.hull.clientCredentials ||
+      parseToken(clientCredentialsToken, hostSecret) ||
+      parseQueryString(req.query);
+
+    if (clientCredentials === undefined) {
+      return next(new Error("Could not resolve clientCredentials"));
+    }
+    // handle legacy naming
+    if (clientCredentials.ship && typeof clientCredentials.ship === "string") {
+      clientCredentials.id = clientCredentials.ship;
+    }
+    req.hull = Object.assign(req.hull, {
+      clientCredentials,
+      clientCredentialsToken
     });
     return next();
   };

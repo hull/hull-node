@@ -2,6 +2,7 @@
 import type { $Response, NextFunction } from "express";
 import type { HullRequestWithConfiguration } from "../types";
 
+const debug = require("debug")("hull-connector:client-middleware");
 const _ = require("lodash");
 const jwt = require("jwt-simple");
 const helperFunctions = require("../helpers");
@@ -38,19 +39,20 @@ function clientMiddlewareFactory({ HullClient }: Object) {
       if (!req.hull.connectorConfig || !req.hull.connectorConfig.hostSecret) {
         throw new Error("Missing connectorConfig.hostSecret");
       }
-      if (!req.hull.clientConfig) {
-        throw new Error("Missing clientConfig");
+      if (!req.hull.clientCredentials) {
+        throw new Error("Missing clientCredentials");
       }
       const { hostSecret } = req.hull.connectorConfig;
-
-      const clientConfig = req.hull.clientConfig;
-      const client = new HullClient(clientConfig);
+      const mergedClientConfig = Object.assign({}, req.hull.clientConfig || {}, req.hull.clientCredentials);
+      debug("mergedClientConfig", mergedClientConfig);
+      const client = new HullClient(mergedClientConfig);
       const helpers = _.mapValues(helperFunctions, func => func.bind(null, req.hull));
-      const token = jwt.encode(req.hull.clientConfig, hostSecret);
-      req.hull = Object.assign({}, req.hull, {
+      const clientCredentialsToken = jwt.encode(req.hull.clientCredentials, hostSecret);
+      // $FlowFixMe
+      req.hull = Object.assign(req.hull, {
         client,
         helpers,
-        token
+        clientCredentialsToken
       });
       next();
     } catch (error) {

@@ -4,6 +4,7 @@
  * @namespace Utils
  * @public
  */
+module.exports.defaultMiddlewareSet = require("./default-middleware-set");
 module.exports.staticRouter = require("./static-router");
 module.exports.PromiseReuser = require("./promise-reuser");
 module.exports.onExit = require("./on-exit");

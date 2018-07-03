@@ -49,6 +49,7 @@ class HullConnector {
   constructor(dependencies: Object, {
     hostSecret, port, clientConfig = {}, instrumentation, cache, queue, connectorName, skipSignatureValidation, timeout
   }: HullConnectorOptions = {}) {
+    console.log("HULL-connector", clientConfig);
     this.HullClient = dependencies.HullClient;
     this.Worker = dependencies.Worker;
     this.instrumentation = instrumentation || new Instrumentation();
@@ -79,6 +80,7 @@ class HullConnector {
       this.connectorConfig.timeout = timeout;
     }
 
+    this.connectorConfig.hostSecret = hostSecret;
     onExit(() => {
       return Promise.all([
         Batcher.exit(),
@@ -107,7 +109,8 @@ class HullConnector {
       instrumentation: this.instrumentation,
       queue: this.queue,
       cache: this.cache,
-      connectorConfig: this.connectorConfig
+      connectorConfig: this.connectorConfig,
+      clientConfig: this.clientConfig
     }));
 
     app.engine("html", renderFile);
@@ -181,7 +184,8 @@ class HullConnector {
       instrumentation: this.instrumentation,
       queue: this.queue,
       cache: this.cache,
-      connectorConfig: this.connectorConfig
+      connectorConfig: this.connectorConfig,
+      clientConfig: this.clientConfig
     }));
     this._worker.use(configurationFromQueryMiddleware());
     this._worker.use(clientMiddleware({ HullClient: this.HullClient }));

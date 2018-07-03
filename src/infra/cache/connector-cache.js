@@ -38,7 +38,7 @@ class ConnectorCache {
    */
   getCacheKey(key: string): string {
     if (this.ctx.client === undefined) {
-      throw new Error("ShipCache can be used only with initialized client, otherwise use ctx.cache.cache.set");
+      throw new Error("ConnectorCache can be used only with initialized client, otherwise use ctx.cache.cache.set");
     }
     const { secret, organization } = this.ctx.client.configuration();
     return jwt.encode({ sub: key, iss: organization }, secret);

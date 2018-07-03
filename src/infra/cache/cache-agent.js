@@ -51,16 +51,12 @@ class CacheAgent {
       store: "memory"
     });
     this.cache = cacheManager.caching(options);
-    this.contextMiddleware = this.contextMiddleware.bind(this);
+    this.getConnectorCache = this.getConnectorCache.bind(this);
     this.promiseReuser = new PromiseReuser();
   }
 
-  getConnectorCache() { // eslint-disable-line class-methods-use-this
-    return (req, res, next) => {
-      req.hull = req.hull || {};
-      req.hull.cache = req.hull.cache || new ConnectorCache(req.hull, this.cache, this.promiseReuser);
-      next();
-    };
+  getConnectorCache(ctx) { // eslint-disable-line class-methods-use-this
+    return new ConnectorCache(ctx, this.cache, this.promiseReuser);
   }
 }
 

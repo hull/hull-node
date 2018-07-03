@@ -1,3 +1,11 @@
+# 0.14.0-beta.4
+* fixed batch handler
+* renamed `clientConfig` and `clientConfigToken` params to distinguish between base clientConfig and credentials resolved from query or notification
+* added some debug lines
+* finish renaming
+* force mutating `req.hull` in place
+* added `defaultMiddlewareSet` util
+
 # 0.14.0-beta.3
 * fix naming
 * expose `utils` param on Hull object

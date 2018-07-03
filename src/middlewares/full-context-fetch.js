@@ -2,6 +2,7 @@
 import type { $Response, NextFunction } from "express";
 import type { HullRequestWithClient } from "../types";
 
+const debug = require("debug")("hull-connector:full-context-fetch-middleware");
 
 function fetchConnector(ctx): Promise<*> {
   if (ctx.connector) {
@@ -53,12 +54,13 @@ function fetchFullContextMiddlewareFactory({ requestName }: Object = {}) {
       fetchSegments(req.hull, "users"),
       fetchSegments(req.hull, "accounts")
     ]).then(([connector, usersSegments, accountsSegments]) => {
+      debug("result", { connector, usersSegments, accountsSegments });
       const requestId = [requestName].join("-");
-      req.hull = Object.assign({}, req.hull, {
+      req.hull = Object.assign(req.hull, {
         requestId,
         connector,
-        users_segments: usersSegments,
-        accounts_segments: accountsSegments,
+        usersSegments,
+        accountsSegments
       });
       next();
     }).catch(error => next(error));

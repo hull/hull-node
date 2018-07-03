@@ -32,30 +32,36 @@ export type HullNotificationFlowControl = {
   in_time: number
 };
 
+export type HullClientCredentials = {
+  id: $PropertyType<HullClientConfiguration, "id">,
+  secret: $PropertyType<HullClientConfiguration, "secret">,
+  organization: $PropertyType<HullClientConfiguration, "organization">,
+};
+
 export type HullContextBase = {
   requestId?: string, // request id
   hostname: string, // req.hostname
   options: Object, // body + query
   connectorConfig: HullConnectorOptions, // configuration passed to Hull.Connector
-
+  clientConfig: HullClientConfiguration,
   cache: ConnectorCache,
   metric: MetricAgent,
   enqueue: (jobName: string, jobPayload?: Object, options?: Object) => Promise<*>,
 
   service: Object,
 
-  clientConfig?: Object, // HullClient configuration
-  clientConfigToken?: string, // computed token
+  clientCredentials?: HullClientCredentials, // HullClient configuration
+  clientCredentialsToken?: string, // computed token
 };
 
 export type HullContextWithConfiguration = {
   /*:: ...$Exact<HullContextBase>, */
-  clientConfig?: Object, // HullClient configuration
-  clientConfigToken?: string, // computed token
+  clientCredentials: HullClientCredentials, // HullClient configuration
+  clientCredentialsToken?: string, // computed token
 
   connector?: HullConnector,
-  users_segments?: Array<HullSegment>,
-  accounts_segments?: Array<HullSegment>
+  usersSegments?: Array<HullSegment>,
+  accountsSegments?: Array<HullSegment>
 };
 
 export type HullContextWithClient = {
@@ -73,8 +79,8 @@ export type HullContextWithClient = {
 export type HullContextFull = {
   /*:: ...$Exact<HullContextWithClient>, */
   connector: HullConnector,
-  users_segments: Array<HullSegment>,
-  accounts_segments: Array<HullSegment>,
+  usersSegments: Array<HullSegment>,
+  accountsSegments: Array<HullSegment>,
 
   notification?: HullNotification,
   notificationResponse?: {
