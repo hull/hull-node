@@ -1,3 +1,9 @@
+# 0.14.0-beta.3
+* fix naming
+* expose `utils` param on Hull object
+* add `defaultMiddlewareSet` utility
+* add first migration guide
+
 # 0.14.0-beta.2
 * Remove notif handler and middleware
 * Introduce new notification handler
