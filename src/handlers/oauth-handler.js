@@ -109,7 +109,7 @@ function fetchToken(req, res, next) {
  *   ship: ship //The entire Ship instance's config
  * }
  */
-function oauthHandlerFactory({ HullClient }, {
+function oAuthHandlerFactory({ HullClient }, {
   name,
   tokenInUrl = true,
   isSetup = function setup() { return Promise.resolve(); },
@@ -223,4 +223,4 @@ function oauthHandlerFactory({ HullClient }, {
   return router;
 }
 
-module.exports = oauthHandlerFactory;
+module.exports = oAuthHandlerFactory;

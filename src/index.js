@@ -26,7 +26,7 @@ const boundHandlers = (Object.keys(handlers): Array<string>).reduce((bound: Obje
 
 module.exports = {
   Client: HullClient,
-  Middleware: boundClientMiddleware,
+  middleware: boundClientMiddleware,
   Connector: boundHullConnector,
   handlers: boundHandlers
 };

@@ -14,7 +14,7 @@ function contextBaseMiddlewareFactory({
       options: Object.assign({}, req.body, req.query), // body + query
       connectorConfig,
 
-      cache: cache.getCache(),
+      cache: cache.getConnectorCache(),
       metric: instrumentation.getMetric(),
       enqueue: queue.getEnqueue(),
 

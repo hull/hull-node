@@ -3,7 +3,7 @@ const { expect } = require("chai");
 const sinon = require("sinon");
 const HullStub = require("../support/hull-stub");
 
-const ShipCache = require("../../../src/infra/cache/ship-cache");
+const ShipCache = require("../../../src/infra/cache/connector-cache");
 
 describe("Enqueue", () => {
   it("should expose set, wrap, get and del methods", () => {

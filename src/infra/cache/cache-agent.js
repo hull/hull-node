@@ -55,7 +55,7 @@ class CacheAgent {
     this.promiseReuser = new PromiseReuser();
   }
 
-  contextMiddleware() { // eslint-disable-line class-methods-use-this
+  getConnectorCache() { // eslint-disable-line class-methods-use-this
     return (req, res, next) => {
       req.hull = req.hull || {};
       req.hull.cache = req.hull.cache || new ConnectorCache(req.hull, this.cache, this.promiseReuser);

@@ -53,7 +53,7 @@ class QueueAgent {
     this.contextMiddleware = this.contextMiddleware.bind(this);
   }
 
-  contextMiddleware() { // eslint-disable-line class-methods-use-this
+  getEnqueue() { // eslint-disable-line class-methods-use-this
     return (req, res, next) => {
       req.hull = req.hull || {};
       req.hull.enqueue = req.hull.enqueue || enqueue.bind(null, this.adapter, req.hull);

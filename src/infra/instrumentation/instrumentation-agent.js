@@ -130,7 +130,7 @@ class InstrumentationAgent {
     };
   }
 
-  contextMiddleware() { // eslint-disable-line class-methods-use-this
+  getMetric() { // eslint-disable-line class-methods-use-this
     return (req, res, next) => {
       req.hull = req.hull || {};
       req.hull.metric = req.hull.metric || new MetricAgent(req.hull, this);

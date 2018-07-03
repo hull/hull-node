@@ -103,7 +103,7 @@ class MetricAgent {
       `ship_version:${this.manifest.version}`, `connector_version:${this.manifest.version}`,
       `ship_name:${this.manifest.name}`, `connector_name:${this.manifest.name}`,
       `ship_env:${process.env.NODE_ENV || "production"}`, `connector_env:${process.env.NODE_ENV || "production"}`,
-      `hull_env:${process.env.HULL_ENV}`, `hull_host:${hullHost}`, `organization:${organization}`,
+      `hull_env:${process.env.HULL_ENV || "production"}`, `hull_host:${hullHost}`, `organization:${organization}`,
       `ship:${id}`, `connector:${id}`
     ];
     return tags;
