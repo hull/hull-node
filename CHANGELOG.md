@@ -4,7 +4,7 @@
 * added some debug lines
 * finish renaming
 * force mutating `req.hull` in place
-* added `defaultMiddlewareSet` util
+* added `credsFromQueryFullFetch` and `credsFromQueryFullBody` utilities
 
 # 0.14.0-beta.3
 * fix naming
