@@ -2,6 +2,7 @@
 import type { HullContextFull } from "../../types";
 
 const _ = require("lodash");
+const debug = require("debug")("hull-connector:metric-agent");
 
 /**
  * Metric agent available as `req.hull.metric` object.
@@ -29,7 +30,7 @@ class MetricAgent {
     this.manifest = instrumentationAgent.manifest;
     this.ctx = ctx;
     this.logFunction = process.env.CONNECTOR_METRIC_LOGS
-      ? _.get(ctx, "client.logger.debug", console.log)
+      ? _.get(ctx, "client.logger.debug", debug)
       : () => {};
   }
 

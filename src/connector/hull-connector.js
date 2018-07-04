@@ -49,7 +49,7 @@ class HullConnector {
   constructor(dependencies: Object, {
     hostSecret, port, clientConfig = {}, instrumentation, cache, queue, connectorName, skipSignatureValidation, timeout
   }: HullConnectorOptions = {}) {
-    console.log("HULL-connector", clientConfig);
+    debug("clientConfig", clientConfig);
     this.HullClient = dependencies.HullClient;
     this.Worker = dependencies.Worker;
     this.instrumentation = instrumentation || new Instrumentation();

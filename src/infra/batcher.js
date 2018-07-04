@@ -1,12 +1,13 @@
 const _ = require("lodash");
 const Promise = require("bluebird");
+const debug = require("debug")("hull-connector:batcher");
 
 const HANDLERS = {};
 
 class Batcher {
 
   static exit() {
-    console.log("batcher.exit");
+    debug("batcher.exit");
     if (!Batcher.exiting) {
       const exiting = Promise.all(_.map(HANDLERS, h => h.flush()));
       Batcher.exiting = exiting;

@@ -1,3 +1,5 @@
+const debug = require("debug")("hull-connector:on-exit");
+
 /**
  * @param {Promise} promise
  */
@@ -9,7 +11,7 @@ function onExit(promise) {
 
   function handleExit() {
     const waiting = 30000;
-    console.log("connector.exitHandler.handleExit", { waiting });
+    debug("connector.exitHandler.handleExit", { waiting });
     setTimeout(exitNow, waiting);
     promise().then(exitNow, exitNow);
   }

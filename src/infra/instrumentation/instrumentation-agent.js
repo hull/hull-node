@@ -2,6 +2,7 @@ const Raven = require("raven");
 const metrics = require("datadog-metrics");
 const dogapi = require("dogapi");
 const url = require("url");
+const debug = require("debug")("hull-connector:instrumentation-agent");
 
 const MetricAgent = require("./metric-agent");
 
@@ -50,7 +51,7 @@ class InstrumentationAgent {
 
 
     if (process.env.SENTRY_URL) {
-      console.log("starting raven");
+      debug("starting raven");
       this.raven = Raven.config(process.env.SENTRY_URL, {
         environment: process.env.HULL_ENV || "production",
         release: this.manifest.version,
