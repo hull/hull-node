@@ -10,8 +10,8 @@ const NotificationValidator = require("../utils/notification-validator");
  * and extracting configuration out of it.
  * As a result it sets `req.hull.clientConfig` and `req.hull.notification`.
  */
-function notificationConfigurationMiddlewareFactory() {
-  return function notificationConfigurationMiddleware(req: HullRequestBase, res: $Response, next: NextFunction) {
+function credentialsFromNotificationMiddlewareFactory() {
+  return function credentialsFromNotificationMiddleware(req: HullRequestBase, res: $Response, next: NextFunction) {
     const { skipSignatureValidation } = req.hull.connectorConfig;
     const notificationValidator = new NotificationValidator();
 
@@ -61,4 +61,4 @@ function notificationConfigurationMiddlewareFactory() {
   };
 }
 
-module.exports = notificationConfigurationMiddlewareFactory;
+module.exports = credentialsFromNotificationMiddlewareFactory;

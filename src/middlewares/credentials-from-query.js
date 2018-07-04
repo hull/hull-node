@@ -52,8 +52,8 @@ function parseToken(token, secret) {
  * if not available it tries to get the token in `req.query.hullToken`, `req.query.token` or `req.query.state`.
  * If those two steps fails to find information it parse `req.query` looking for direct connector configuration
  */
-function queryConfigurationMiddlewareFactory() {
-  return function queryConfigurationMiddleware(req: HullRequestBase, res: $Response, next: NextFunction) {
+function credentialsFromQueryMiddlewareFactory() {
+  return function credentialsFromQueryMiddleware(req: HullRequestBase, res: $Response, next: NextFunction) {
     if (!req.hull || !req.hull.connectorConfig) {
       return next(new Error("Missing req.hull or req.hull.connectorConfig context object"));
     }
@@ -79,4 +79,4 @@ function queryConfigurationMiddlewareFactory() {
   };
 }
 
-module.exports = queryConfigurationMiddlewareFactory;
+module.exports = credentialsFromQueryMiddlewareFactory;

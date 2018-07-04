@@ -8,8 +8,8 @@ const bodyParser = require("body-parser");
 /**
  * This middleware parses json body and extracts information to fill in full HullContext object.
  */
-function bodyFullContextMiddlewareFactory({ requestName }: Object) {
-  return function bodyFullContextMiddleware(req: HullRequestWithClient, res: $Response, next: NextFunction) {
+function fullContextBodyMiddlewareFactory({ requestName }: Object) {
+  return function fullContextBodyMiddleware(req: HullRequestWithClient, res: $Response, next: NextFunction) {
     bodyParser.json({ limit: "10mb" })(req, res, (err) => {
       if (err !== undefined) {
         return next(err);
@@ -57,4 +57,4 @@ function bodyFullContextMiddlewareFactory({ requestName }: Object) {
   };
 }
 
-module.exports = bodyFullContextMiddlewareFactory;
+module.exports = fullContextBodyMiddlewareFactory;

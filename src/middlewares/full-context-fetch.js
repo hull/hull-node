@@ -44,8 +44,8 @@ function fetchSegments(ctx, entityType = "users") {
  * - `req.hull.users_segments`
  * - `req.hull.accounts_segments`
  */
-function fetchFullContextMiddlewareFactory({ requestName }: Object = {}) {
-  return function fetchFullContextMiddleware(req: HullRequestWithClient, res: $Response, next: NextFunction) {
+function fullContextFetchMiddlewareFactory({ requestName }: Object = {}) {
+  return function fullContextFetchMiddleware(req: HullRequestWithClient, res: $Response, next: NextFunction) {
     if (req.hull === undefined || req.hull.client === undefined) {
       return next(new Error("We need initialized client to fetch connector settings and segments lists"));
     }
@@ -67,4 +67,4 @@ function fetchFullContextMiddlewareFactory({ requestName }: Object = {}) {
   };
 }
 
-module.exports = fetchFullContextMiddlewareFactory;
+module.exports = fullContextFetchMiddlewareFactory;
