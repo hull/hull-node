@@ -9,7 +9,7 @@ type HullSchedulerHandlerOptions = {
 
 const { Router } = require("express");
 
-const { configurationFromQueryMiddleware, clientMiddleware, fullContextBodyMiddleware, timeoutMiddleware, haltOnTimedoutMiddleware } = require("../middlewares");
+const { credentialsFromQueryMiddleware, clientMiddleware, fullContextBodyMiddleware, timeoutMiddleware, haltOnTimedoutMiddleware } = require("../middlewares");
 
 /**
  * This handler allows to handle simple, authorized HTTP calls.
@@ -33,7 +33,7 @@ function scheduleHandlerFactory({ HullClient }: Object, handler: HullSchedulerHa
   const router = Router();
 
   router.use(timeoutMiddleware());
-  router.use(configurationFromQueryMiddleware()); // parse query
+  router.use(credentialsFromQueryMiddleware()); // parse query
   router.use(haltOnTimedoutMiddleware());
   router.use(clientMiddleware({ HullClient })); // initialize client
   router.use(haltOnTimedoutMiddleware());

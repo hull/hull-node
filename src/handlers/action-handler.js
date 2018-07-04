@@ -14,7 +14,7 @@ type HullActionHandlerOptions = {
 const debug = require("debug")("hull-connector:action-handler");
 const { Router } = require("express");
 
-const { configurationFromQueryMiddleware, fullContextFetchMiddleware, timeoutMiddleware, haltOnTimedoutMiddleware, clientMiddleware } = require("../middlewares");
+const { credentialsFromQueryMiddleware, fullContextFetchMiddleware, timeoutMiddleware, haltOnTimedoutMiddleware, clientMiddleware } = require("../middlewares");
 
 /**
  * This handler allows to handle simple, authorized HTTP calls.
@@ -38,7 +38,7 @@ const { configurationFromQueryMiddleware, fullContextFetchMiddleware, timeoutMid
  */
 function actionHandlerFactory({ HullClient }: Object, handler: HullActionHandlerCallback, { cache = {}, disableErrorHandling = false, respondWithError = false }: HullActionHandlerOptions = {}): Router {
   const router = Router();
-  router.use(configurationFromQueryMiddleware()); // parse config from query
+  router.use(credentialsFromQueryMiddleware()); // parse config from query
   router.use(clientMiddleware({ HullClient })); // initialize client
   router.use(timeoutMiddleware());
   router.use(fullContextFetchMiddleware({ requestName: "action" }));

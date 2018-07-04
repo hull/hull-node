@@ -4,7 +4,7 @@ import type { HullRequestFull } from "../types";
 
 const { Router } = require("express");
 
-const { configurationFromQueryMiddleware, clientMiddleware, fullContextFetchMiddleware, timeoutMiddleware, haltOnTimedoutMiddleware } = require("../middlewares");
+const { credentialsFromQueryMiddleware, clientMiddleware, fullContextFetchMiddleware, timeoutMiddleware, haltOnTimedoutMiddleware } = require("../middlewares");
 
 /**
  * This handler allows to handle simple, authorized HTTP calls.
@@ -25,7 +25,7 @@ const { configurationFromQueryMiddleware, clientMiddleware, fullContextFetchMidd
  */
 function actionHandler({ HullClient }: Object, jobName: string, options: Object) {
   const router = Router();
-  router.use(configurationFromQueryMiddleware()); // parse config from query
+  router.use(credentialsFromQueryMiddleware()); // parse config from query
   router.use(clientMiddleware({ HullClient })); // initialize client
   router.use(timeoutMiddleware());
   router.use(fullContextFetchMiddleware({ requestName: "action" }));

@@ -6,7 +6,7 @@ const _ = require("lodash");
 const { Router } = require("express");
 const debug = require("debug")("hull-connector:batch-handler");
 
-const { configurationFromQueryMiddleware, clientMiddleware, timeoutMiddleware, haltOnTimedoutMiddleware, fullContextBodyMiddleware } = require("../middlewares");
+const { credentialsFromQueryMiddleware, clientMiddleware, timeoutMiddleware, haltOnTimedoutMiddleware, fullContextBodyMiddleware } = require("../middlewares");
 
 /**
  * [notificationHandlerFactory description]
@@ -21,7 +21,7 @@ function batchExtractHandlerFactory({ HullClient }: Object, configuration: HullN
   const router = Router();
 
   router.use(timeoutMiddleware());
-  router.use(configurationFromQueryMiddleware()); // parse query
+  router.use(credentialsFromQueryMiddleware()); // parse query
   router.use(haltOnTimedoutMiddleware());
   router.use(clientMiddleware({ HullClient })); // initialize client
   router.use(haltOnTimedoutMiddleware());

@@ -54,7 +54,7 @@ export type HullContextBase = {
   clientCredentialsToken?: string, // computed token
 };
 
-export type HullContextWithConfiguration = {
+export type HullContextWithCredentials = {
   /*:: ...$Exact<HullContextBase>, */
   clientCredentials: HullClientCredentials, // HullClient configuration
   clientCredentialsToken?: string, // computed token
@@ -65,7 +65,7 @@ export type HullContextWithConfiguration = {
 };
 
 export type HullContextWithClient = {
-  /*:: ...$Exact<HullContextWithConfiguration>, */
+  /*:: ...$Exact<HullContextWithCredentials>, */
   client: HullClient,
   helpers: Object
 };
@@ -96,12 +96,12 @@ export type HullRequestBase = {
   hull: HullContextBase
 };
 
-export type HullRequestWithConfiguration = {
+export type HullRequestWithCredentials = {
   ...$Request,
   headers: {
     [string]: string
   },
-  hull: HullContextWithConfiguration
+  hull: HullContextWithCredentials
 };
 
 export type HullRequestWithClient = {

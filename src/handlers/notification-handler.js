@@ -4,7 +4,7 @@ import type { HullRequestFull, HullNotificationHandlerCallback, HullNotification
 
 const { Router } = require("express");
 const { notificationDefaultFlowControl } = require("../utils");
-const { configurationFromNotificationMiddleware, clientMiddleware, timeoutMiddleware, haltOnTimedoutMiddleware, fullContextBodyMiddleware } = require("../middlewares");
+const { credentialsFromNotificationMiddleware, clientMiddleware, timeoutMiddleware, haltOnTimedoutMiddleware, fullContextBodyMiddleware } = require("../middlewares");
 
 /**
  * [notificationHandlerFactory description]
@@ -19,7 +19,7 @@ function notificationHandlerFactory({ HullClient }: Object, configuration: HullN
   const router = Router();
 
   router.use(timeoutMiddleware());
-  router.use(configurationFromNotificationMiddleware());
+  router.use(credentialsFromNotificationMiddleware());
   router.use(haltOnTimedoutMiddleware());
   router.use(clientMiddleware({ HullClient }));
   router.use(fullContextBodyMiddleware({ requestName: "notification" }));

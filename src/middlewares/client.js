@@ -1,6 +1,6 @@
 // @flow
 import type { $Response, NextFunction } from "express";
-import type { HullRequestWithConfiguration } from "../types";
+import type { HullRequestWithCredentials } from "../types";
 
 const debug = require("debug")("hull-connector:client-middleware");
 const _ = require("lodash");
@@ -31,7 +31,7 @@ const helperFunctions = require("../helpers");
  * });
  */
 function clientMiddlewareFactory({ HullClient }: Object) {
-  return function clientMiddleware(req: HullRequestWithConfiguration, res: $Response, next: NextFunction) {
+  return function clientMiddleware(req: HullRequestWithCredentials, res: $Response, next: NextFunction) {
     try {
       if (!req.hull) {
         throw new Error("Missing request context, you need to initiate it before");

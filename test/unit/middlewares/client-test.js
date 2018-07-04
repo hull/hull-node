@@ -4,8 +4,8 @@ const sinon = require("sinon");
 const Promise = require("bluebird");
 const _ = require("lodash");
 
-const clientMiddleware = require("../../src/middlewares/client");
-const HullStub = require("./support/hull-stub");
+const clientMiddleware = require("../../../src/middlewares/client");
+const HullStub = require("../support/hull-stub");
 
 describe("Client clientMiddleware", () => {
   beforeEach(function beforeEachHandler() {
