@@ -4,8 +4,7 @@
  * @namespace Utils
  * @public
  */
-module.exports.credsFromQueryFullFetch = require("./creds-from-query-full-fetch");
-module.exports.credsFromQueryFullBody = require("./creds-from-query-full-body");
+module.exports.credsFromQueryMiddlewares = require("./creds-from-query-middlewares");
 
 module.exports.staticRouter = require("./static-router");
 module.exports.PromiseReuser = require("./promise-reuser");

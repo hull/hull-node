@@ -2,6 +2,7 @@
 import type { $Response, NextFunction } from "express";
 import type { HullRequestBase } from "../types";
 
+const debug = require("debug")("hull-connector:credentials-from-notification");
 const bodyParser = require("body-parser");
 const NotificationValidator = require("../utils/notification-validator");
 
@@ -23,6 +24,7 @@ function credentialsFromNotificationMiddlewareFactory() {
     }
 
     return bodyParser.json({ limit: "10mb" })(req, res, (err) => {
+      debug("parsed json body");
       if (err !== undefined) {
         return next(err);
       }
@@ -36,7 +38,7 @@ function credentialsFromNotificationMiddlewareFactory() {
           return Promise.resolve();
         }
         return notificationValidator.validateSignature(req);
-      })
+      })()
       .then(() => {
         const { body } = req;
         if (body === null || typeof body !== "object") {

@@ -44,7 +44,7 @@ function clientMiddlewareFactory({ HullClient }: Object) {
       }
       const { hostSecret } = req.hull.connectorConfig;
       const mergedClientConfig = Object.assign({}, req.hull.clientConfig || {}, req.hull.clientCredentials);
-      debug("mergedClientConfig", mergedClientConfig);
+      debug("configuration %o", mergedClientConfig);
       const client = new HullClient(mergedClientConfig);
       const helpers = _.mapValues(helperFunctions, func => func.bind(null, req.hull));
       const clientCredentialsToken = jwt.encode(req.hull.clientCredentials, hostSecret);

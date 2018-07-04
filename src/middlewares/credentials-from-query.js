@@ -2,6 +2,7 @@
 import type { $Response, NextFunction } from "express";
 import type { HullRequestBase } from "../types";
 
+const debug = require("debug")("hull-connector:credentials-from-query");
 const jwt = require("jwt-simple");
 
 function getToken(query: $PropertyType<HullRequestBase, 'query'>): string {
@@ -71,6 +72,7 @@ function credentialsFromQueryMiddlewareFactory() {
     if (clientCredentials.ship && typeof clientCredentials.ship === "string") {
       clientCredentials.id = clientCredentials.ship;
     }
+    debug("resolved configuration");
     req.hull = Object.assign(req.hull, {
       clientCredentials,
       clientCredentialsToken

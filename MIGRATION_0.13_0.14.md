@@ -35,12 +35,12 @@
       }
     }));
     ```
-5. if using plain expressjs routes use `credsFromQueryFullBody` or `credsFromQueryFullFetch` utility to get full `req.hull` context. Otherwise switch to correct `handler`:
+5. if using plain expressjs routes use `credsFromQueryMiddlewares` utility to get full `req.hull` context. Otherwise switch to correct `handler`:
     ```js
-    const { credsFromQueryFullFetch } = require("hull").utils;
+    const { credsFromQueryMiddlewares } = require("hull").utils;
     app.post(
       "/custom-endpoint",
-      ...credsFromQueryFullFetch(),
+      ...credsFromQueryMiddlewares(),
       (req, res) => {
         req.hull
       }
@@ -48,11 +48,12 @@
     ```
 6. `T` prefix was removed from types
 7. `req.hull.ship` was renamed to `req.hull.connector`
-8. `req.hull.segments` were renamed to `req.hull.usersSegments`
-9. `const Hull = require("hull");` is not a `HullClient` class anymore, so you need to change:
+8. `req.hull.segments` and `req.hull.users_segments` were renamed to `req.hull.usersSegments` and `req.hull.accounts_segments` was renamed to `req.hull.accountsSegments`
+10. `const Hull = require("hull");` is not a `HullClient` class anymore, so you need to change:
     ```js
     // before
     Hull.logger.transports.console.level;
     // after
     Hull.Client.logger.transports.console.level = "debug";
     ```
+11. filter-notifications helper is not available anymore, implement custom filterUtil

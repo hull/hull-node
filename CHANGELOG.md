@@ -1,3 +1,8 @@
+# 0.14.0-beta.5
+* fix dataflow including missing stuff at body payload
+* add more debug lines and errors
+* `users_segments` and `accounts_segments` context params are renamed to `camelCase` versions
+
 # 0.14.0-beta.4
 * fixed batch handler
 * renamed `clientConfig` and `clientConfigToken` params to distinguish between base clientConfig and credentials resolved from query or notification
@@ -16,7 +21,6 @@
 * Remove notif handler and middleware
 * Introduce new notification handler
 * Cleanup middleware stack
-* TBD
 
 # 0.14.0-beta.1
 * Upgrade hull-client-node to v2.0.0

@@ -11,10 +11,10 @@ function contextBaseMiddlewareFactory({
   return function contextBaseMiddleware(req: HullRequestBase, res: $Response, next: NextFunction) {
     const context = {};
     context.hostname = req.hostname || "";
-    context.options = Object.assign({}, req.body, req.query); // body + quer;
+    context.isBatch = false;
+    context.options = Object.assign({}, req.query);
     context.clientConfig = clientConfig;
     context.connectorConfig = connectorConfig;
-    context.service = {};
     context.cache = cache.getConnectorCache(context);
     context.metric = instrumentation.getMetric(context);
     context.enqueue = queue.getEnqueue(context);

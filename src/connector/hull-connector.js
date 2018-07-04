@@ -103,6 +103,10 @@ class HullConnector {
    * @return {express}     expressjs application
    */
   setupApp(app: $Application): $Application {
+    app.use((req, res, next: NextFunction) => {
+      debug("incoming request", req.method, req.url);
+      next();
+    });
     app.use("/", staticRouter());
     app.use(this.instrumentation.startMiddleware());
     app.use(contextBaseMiddleware({

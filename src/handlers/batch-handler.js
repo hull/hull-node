@@ -6,7 +6,7 @@ const _ = require("lodash");
 const { Router } = require("express");
 const debug = require("debug")("hull-connector:batch-handler");
 
-const { credentialsFromQueryMiddleware, clientMiddleware, timeoutMiddleware, haltOnTimedoutMiddleware, fullContextBodyMiddleware } = require("../middlewares");
+const { credentialsFromQueryMiddleware, clientMiddleware, timeoutMiddleware, haltOnTimedoutMiddleware, fullContextBodyMiddleware, fullContextFetchMiddleware } = require("../middlewares");
 
 /**
  * [notificationHandlerFactory description]
@@ -25,18 +25,17 @@ function batchExtractHandlerFactory({ HullClient }: Object, configuration: HullN
   router.use(haltOnTimedoutMiddleware());
   router.use(clientMiddleware({ HullClient })); // initialize client
   router.use(haltOnTimedoutMiddleware());
-  router.use(fullContextBodyMiddleware({ requestName: "batch" })); // get rest of the context from body
+  router.use(fullContextBodyMiddleware({ requestName: "batch", strict: false })); // get rest of the context from body
+  router.use(fullContextFetchMiddleware({ requestName: "batch" })); // if something is missing at body
   router.use(haltOnTimedoutMiddleware());
   router.use(function batchExtractMiddleware(req: HullRequestFull, res: $Response, next: NextFunction) {
     const { client, helpers } = req.hull;
-
-    debug("batchExtractMiddleware", { body: req.body, client, helpers });
     if (!req.body || typeof req.body !== "object") {
-      return next();
+      return next(new Error("Missing body payload"));
     }
 
     if (client === undefined || helpers === undefined) {
-      return next();
+      return next(new Error("Authorized HullClient is missing"));
     }
 
     const { body = {} } = req;
@@ -53,11 +52,15 @@ function batchExtractHandlerFactory({ HullClient }: Object, configuration: HullN
     const handlerOptions = (typeof configuration[channel] === "object" && configuration[channel].options) || {};
     debug("channel", channel);
     debug("entityType", entityType);
-    debug("context", req.hull);
-    if (!url || !format || !handlerCallback) {
-      return next();
+    debug("handlerCallback", typeof handlerCallback);
+    if (!url || !format) {
+      return next(new Error("Missing any of required payload parameters: `url`, `format`."));
     }
 
+    if (!handlerCallback) {
+      return next(new Error(`Missing handler for this channel: ${channel}`));
+    }
+    req.hull.isBatch = true;
     return helpers
       .handleExtract({
         body,

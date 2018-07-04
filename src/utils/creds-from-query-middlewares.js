@@ -5,17 +5,19 @@ const {
   clientMiddleware,
   timeoutMiddleware,
   fullContextBodyMiddleware,
+  fullContextFetchMiddleware,
   haltOnTimedoutMiddleware
 } = require("../middlewares");
 
-function credsFromQueryFullBody({ requestName }: { requestName: string } = {}) {
+function credsFromQueryMiddlewares({ requestName }: { requestName: string } = {}) {
   return [
     credentialsFromQueryMiddleware(),
     clientMiddleware({ HullClient }),
     timeoutMiddleware(),
-    fullContextBodyMiddleware({ requestName }),
+    fullContextBodyMiddleware({ requestName, strict: false }), // get rest of the context from body
+    fullContextFetchMiddleware({ requestName }), // if something is missing at body
     haltOnTimedoutMiddleware()
   ];
 }
 
-module.exports = credsFromQueryFullBody;
+module.exports = credsFromQueryMiddlewares;

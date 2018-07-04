@@ -47,8 +47,7 @@ export type HullContextBase = {
   cache: ConnectorCache,
   metric: MetricAgent,
   enqueue: (jobName: string, jobPayload?: Object, options?: Object) => Promise<*>,
-
-  service: Object,
+  isBatch: boolean,
 
   clientCredentials?: HullClientCredentials, // HullClient configuration
   clientCredentialsToken?: string, // computed token

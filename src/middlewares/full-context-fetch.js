@@ -5,28 +5,32 @@ import type { HullRequestWithClient } from "../types";
 const debug = require("debug")("hull-connector:full-context-fetch-middleware");
 
 function fetchConnector(ctx): Promise<*> {
+  debug("fetchConnector");
   if (ctx.connector) {
     return Promise.resolve(ctx.connector);
   }
   return ctx.cache.wrap("connector", () => {
+    debug("fetchConnector - calling API");
     return ctx.client.get("app", {});
   });
 }
 
 function fetchSegments(ctx, entityType = "users") {
+  debug("fetchSegments", entityType);
   if (ctx.client === undefined) {
     return Promise.reject(new Error("Missing client"));
   }
-  if (ctx[`${entityType}_segments`]) {
-    return Promise.resolve(ctx[`${entityType}_segments`]);
+  if (ctx[`${entityType}sSegments`]) {
+    return Promise.resolve(ctx[`${entityType}sSegments`]);
   }
   const { id } = ctx.client.configuration();
-  return ctx.cache.wrap(`${entityType}_segments`, () => {
+  return ctx.cache.wrap(`${entityType}s_segments`, () => {
     if (ctx.client === undefined) {
       return Promise.reject(new Error("Missing client"));
     }
+    debug("fetchSegments - calling API");
     return ctx.client.get(
-      `/${entityType}_segments`,
+      `/${entityType}s_segments`,
       { shipId: id },
       {
         timeout: 5000,
@@ -41,20 +45,36 @@ function fetchSegments(ctx, entityType = "users") {
  * using initiated `req.hull.client`.
  * It's responsible for setting
  * - `req.hull.connector`
- * - `req.hull.users_segments`
- * - `req.hull.accounts_segments`
+ * - `req.hull.usersSegments`
+ * - `req.hull.accountsSegments`
+ * It also honour existing values at this properties. If they are already set they won't be overwritten.
  */
-function fullContextFetchMiddlewareFactory({ requestName }: Object = {}) {
+function fullContextFetchMiddlewareFactory({ requestName, strict = true }: Object = {}) {
   return function fullContextFetchMiddleware(req: HullRequestWithClient, res: $Response, next: NextFunction) {
     if (req.hull === undefined || req.hull.client === undefined) {
       return next(new Error("We need initialized client to fetch connector settings and segments lists"));
     }
     return Promise.all([
       fetchConnector(req.hull),
-      fetchSegments(req.hull, "users"),
-      fetchSegments(req.hull, "accounts")
+      fetchSegments(req.hull, "user"),
+      fetchSegments(req.hull, "account")
     ]).then(([connector, usersSegments, accountsSegments]) => {
-      debug("result", { connector, usersSegments, accountsSegments });
+      debug("received responses %o", {
+        connector: typeof connector,
+        usersSegments: Array.isArray(usersSegments) && usersSegments.length,
+        accountsSegments: Array.isArray(accountsSegments) && accountsSegments.length
+      });
+      if (strict && typeof connector !== "object") {
+        return next(new Error("Body is missing connector object"));
+      }
+
+      if (strict && !Array.isArray(usersSegments)) {
+        return next(new Error("Body is missing segments array"));
+      }
+
+      if (strict && !Array.isArray(accountsSegments)) {
+        return next(new Error("Body is missing accounts_segments array"));
+      }
       const requestId = [requestName].join("-");
       req.hull = Object.assign(req.hull, {
         requestId,
@@ -62,7 +82,7 @@ function fullContextFetchMiddlewareFactory({ requestName }: Object = {}) {
         usersSegments,
         accountsSegments
       });
-      next();
+      return next();
     }).catch(error => next(error));
   };
 }
