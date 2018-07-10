@@ -29,7 +29,7 @@ const { credentialsFromQueryMiddleware, clientMiddleware, fullContextBodyMiddlew
  * @example
  * app.use("/list", actionHandler((ctx) => {}))
  */
-function scheduleHandlerFactory({ HullClient }: Object, handler: HullSchedulerHandlerCallback, { disableErrorHandling = false }: HullSchedulerHandlerOptions) {
+function scheduleHandlerFactory({ HullClient }: Object, channel, handler: HullSchedulerHandlerCallback, { disableErrorHandling = false }: HullSchedulerHandlerOptions) {
   const router = Router();
 
   router.use(timeoutMiddleware());

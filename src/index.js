@@ -16,7 +16,6 @@ const Worker = require("./connector/worker");
 const clientMiddleware = require("./middlewares/client");
 const HullConnectorClass = require("./connector/hull-connector");
 const handlers = require("./handlers");
-const utils = require("./utils");
 
 const boundClientMiddleware = clientMiddleware.bind(undefined, { HullClient });
 const boundHullConnector = HullConnectorClass.bind(undefined, { Worker, HullClient });
@@ -30,5 +29,4 @@ module.exports = {
   middleware: boundClientMiddleware,
   Connector: boundHullConnector,
   handlers: boundHandlers,
-  utils
 };

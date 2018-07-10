@@ -41,22 +41,24 @@ export type HullClientCredentials = {
 export type HullContextBase = {
   requestId?: string, // request id
   hostname: string, // req.hostname
-  options: Object, // body + query
+  options: Object, // req.query
+  isBatch: boolean,
+
   connectorConfig: HullConnectorOptions, // configuration passed to Hull.Connector
-  clientConfig: HullClientConfiguration,
+  clientConfig: HullClientConfiguration, // configuration which will be applied to Hull Client
+
   cache: ConnectorCache,
   metric: MetricAgent,
   enqueue: (jobName: string, jobPayload?: Object, options?: Object) => Promise<*>,
-  isBatch: boolean,
 
-  clientCredentials?: HullClientCredentials, // HullClient configuration
-  clientCredentialsToken?: string, // computed token
+  clientCredentials?: HullClientCredentials, // HullClient credentials
+  clientCredentialsToken?: string, // encrypted token with HullClient credentials
 };
 
 export type HullContextWithCredentials = {
   /*:: ...$Exact<HullContextBase>, */
   clientCredentials: HullClientCredentials, // HullClient configuration
-  clientCredentialsToken?: string, // computed token
+  clientCredentialsToken?: string,
 
   connector?: HullConnector,
   usersSegments?: Array<HullSegment>,
@@ -65,6 +67,7 @@ export type HullContextWithCredentials = {
 
 export type HullContextWithClient = {
   /*:: ...$Exact<HullContextWithCredentials>, */
+  clientCredentialsToken: string,
   client: HullClient,
   helpers: Object
 };
@@ -144,15 +147,15 @@ export interface HullSyncAgent {
 
 export type HullServerFunction = (app: $Application, extra?: Object) => $Application;
 
-export type HullNotificationHandlerCallback =
+export type HullHandlerCallback =
   HullUserUpdateHandlerCallback |
   HullAccountUpdateHandlerCallback |
   HullConnectorUpdateHandlerCallback |
   HullSegmentUpdateHandlerCallback;
 
-export type HullNotificationHandlerConfiguration = {
-  [HullNotificationChannelName: string]: HullNotificationHandlerCallback | {
-    callback: HullNotificationHandlerCallback,
+export type HullHandlerConfiguration = {
+  [HullChannelName: string]: HullHandlerCallback | {
+    callback: HullHandlerCallback,
     options: Object
   }
 };

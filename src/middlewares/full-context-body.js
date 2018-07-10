@@ -6,7 +6,7 @@ const debug = require("debug")("hull-connector:full-context-body-middleware");
 const bodyParser = require("body-parser");
 
 /**
- * This middleware parses json body and extracts information to fill in full HullContext object.
+ * This middleware parses request json body and extracts information to fill in full HullContext object.
  */
 function fullContextBodyMiddlewareFactory({ requestName, strict = true }: Object) {
   return function fullContextBodyMiddleware(req: HullRequestWithClient, res: $Response, next: NextFunction) {

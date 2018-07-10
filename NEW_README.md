@@ -2,9 +2,16 @@
 
 This library provides a framework to build and run connectors applications.
 
-- Get started
-- Handlers
-- Context
+1. Get started
+2. Examples
+  - Processing outgoing data flow
+  - Processing data replay
+  - Fetching incoming data
+  - Processing incoming webhooks
+  - Providing settings data
+  - Triggering one time jobs
+3. Handlers
+4. Context
 
 
 ## Get started
@@ -12,23 +19,125 @@ This library provides a framework to build and run connectors applications.
 ```js
 const express = require("express");
 const { Connector } = require("hull");
+const { notificationHandler } = require("hull").handlers;
 
-const connector = new Connector({
-
-});
+const connector = new Connector({ ...options });
 
 const app = express();
 
 connector.setupApp(app);
 
-// specify handlers, see below
+// specify handlers, see details below
+app.use("/notification", notificationHandler({
+  "user:update": (ctx, messages) => {
+    // process user update messages
+  }
+}));
 
 connector.startApp(app);
 ```
 
+## Examples
+
+### Processing outgoing data flow
+
+To process outgoing data flow which occurs whenever there is any change on the Hull User or Hull Account we need to register an endpoint which will be notified on each change:
+
+**manifest.json**
+```json
+{
+  subscriptions: [
+    { url: "/notification" }
+  ]
+}
+```
+
+Then in our connector code we need to implement `notificationHandler` and pass there a map of processing callback which will do the actual work
+
+```js
+const express = require("express");
+const { Connector } = require("hull");
+const { notificationHandler } = require("hull").handlers;
+
+const connector = new Connector({ ...options });
+// const { notificationHandler } = connector.handlers;
+const app = express();
+
+connector.setupApp(app);
+
+// specify handlers, see details below
+app.use("/notification", notificationHandler({
+  "user:update": (ctx, messages) => {
+    // process user update messages
+  }
+}));
+
+connector.startApp(app);
+```
+
+### Processing data replay
+### Fetching incoming data
+
+**manifest.json**
+```json
+{
+  schedules: [
+    { url: "/fetch-users" }
+  ]
+}
+```
+
+Then in our connector code we need to implement `notificationHandler` and pass there a map of processing callback which will do the actual work
+
+```js
+const express = require("express");
+const { Connector } = require("hull");
+const { scheduleHandler } = require("hull").handlers;
+
+const connector = new Connector({ ...options });
+const app = express();
+
+connector.setupApp(app);
+
+// specify handlers, see details below
+app.use("/fetch-users", scheduleHandler("schedule:fetch-users", {
+  "schedule:fetch-users": (ctx) => {
+    // perform api calls to fetch the data
+  }
+}));
+
+connec
+
+### Processing incoming webhooks
+If external service connector integrates with provides sending it's updates as webhook requests we provide a way to handle then
+
+```js
+const express = require("express");
+const { Connector } = require("hull");
+const { requestsBufferHandler } = require("hull").handlers;
+
+const connector = new Connector({ ...options });
+// const { notificationHandler } = connector.handlers;
+const app = express();
+
+connector.setupApp(app);
+
+// specify handlers, see details below
+app.use("/incoming-webhook", requestsBufferHandler("incoming:webhook", {
+  "incoming:webhook": (ctx, simplifiedRequests = []) => {
+    // process user update messages
+  }
+}));
+
+connector.startApp(app);
+```
+
+### Triggering one time jobs
+
+### Providing data for settings
+
+
 ## Handlers
-
-
 
 ### Notification Handler
 

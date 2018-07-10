@@ -1,6 +1,6 @@
 // @flow
 import type { $Response, NextFunction } from "express";
-import type { HullRequestFull, HullNotificationHandlerCallback, HullNotificationHandlerConfiguration } from "../types";
+import type { HullRequestFull, HullHandlerCallback, HullHandlerConfiguration } from "../types";
 
 const debug = require("debug")("hull-connector:notification-handler");
 const { Router } = require("express");
@@ -16,7 +16,7 @@ const { credentialsFromNotificationMiddleware, clientMiddleware, timeoutMiddlewa
  *   "user:update": (ctx, message) => {}
  * }));
  */
-function notificationHandlerFactory({ HullClient }: Object, configuration: HullNotificationHandlerConfiguration): * {
+function notificationHandlerFactory({ HullClient }: Object, configuration: HullHandlerConfiguration): * {
   const router = Router();
 
   router.use(timeoutMiddleware());
@@ -30,7 +30,7 @@ function notificationHandlerFactory({ HullClient }: Object, configuration: HullN
     }
     const { channel, messages } = req.hull.notification;
     debug("notification", { channel, messages: Array.isArray(messages) && messages.length });
-    let handlerCallback: HullNotificationHandlerCallback | void;
+    let handlerCallback: HullHandlerCallback | void;
 
     if (typeof configuration[channel] === "function") {
       handlerCallback = configuration[channel];

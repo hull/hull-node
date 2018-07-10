@@ -28,7 +28,7 @@ function requestsBufferHandlerFactory({ HullClient }: Object, callback: HullRequ
   const router = Router();
   router.use(clientMiddleware({ HullClient })); // initialize client, we need configuration to be set already
   router.use(timeoutMiddleware());
-  router.use(fullContextFetchMiddleware({ requestName: "batcher" }));
+  router.use(fullContextFetchMiddleware({ requestName: "requests-buffer" }));
   router.use(haltOnTimedoutMiddleware());
   router.use(function requestsBufferHandler(req: HullRequestFull, res: $Response, next: NextFunction) {
     Batcher.getHandler(uniqueNamespace, {

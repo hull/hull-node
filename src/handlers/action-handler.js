@@ -23,6 +23,11 @@ const { credentialsFromQueryMiddleware, fullContextFetchMiddleware, timeoutMiddl
  * If you need custom way of passing data, you need to use custom middleware before the handler.
  *
  * Optionally it can cache the response, to use it provide `options.cache` parameter with cache key
+ * Metrics:
+ * connector.action-handler.requests
+ * connector.action-handler.duration
+ * connector.action-handler.api-calls
+ *
  *
  * @param  {Object}
  * @param  {Function} handler [description
