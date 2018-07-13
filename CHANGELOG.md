@@ -1,3 +1,6 @@
+# 0.14.0-beta.6
+* inroduce handlers configuration flow type as unified structure to initiate all handlers
+
 # 0.14.0-beta.5
 * fix dataflow including missing stuff at body payload
 * add more debug lines and errors
