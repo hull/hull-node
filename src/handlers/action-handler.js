@@ -1,20 +1,20 @@
 // @flow
 import type { $Response, NextFunction } from "express";
-import type { HullRequestFull, HullContextFull } from "../types";
+import type { HullHandlersConfigurationEntry, HullRequestFull } from "../types";
 
-type HullActionHandlerCallback = (ctx: HullContextFull) => Promise<*>;
-type HullActionHandlerOptions = {
-  cache?: {
-    key?: string,
-    options?: Object
-  },
-  disableErrorHandling?: boolean,
-  respondWithError?: boolean
-};
+// type HullActionHandlerOptions = {
+//   cache?: {
+//     key?: string,
+//     options?: Object
+//   },
+//   disableErrorHandling?: boolean,
+//   respondWithError?: boolean
+// };
 const debug = require("debug")("hull-connector:action-handler");
 const { Router } = require("express");
 
 const { credentialsFromQueryMiddleware, fullContextFetchMiddleware, timeoutMiddleware, haltOnTimedoutMiddleware, clientMiddleware } = require("../middlewares");
+const { normalizeHandlersConfigurationEntry } = require("../utils");
 
 /**
  * This handler allows to handle simple, authorized HTTP calls.
@@ -30,18 +30,25 @@ const { credentialsFromQueryMiddleware, fullContextFetchMiddleware, timeoutMiddl
  *
  *
  * @param  {Object}
- * @param  {Function} handler [description
- * @param  {Object}   [options]
- * @param  {Object}   [options.disableErrorHandling] if you want to disable internal
- * @param  {Object}   [options.cache]
- * @param  {string}   [options.cache.key]
- * @param  {string}   [options.cache.options]
+ * @param  {Object|Function} configurationEntry [description]
+ * @param  {Object} [configurationEntry.options]
+ * @param  {Object} [configurationEntry.options.disableErrorHandling] if you want to disable internal
+ * @param  {Object} [configurationEntry.options.cache]
+ * @param  {string} [configurationEntry.options.cache.key]
+ * @param  {string} [configurationEntry.options.cache.options]
  * @return {Function}
  * @example
  * const { actionHandler } = require("hull").handlers;
  * app.use("/list", actionHandler((ctx) => {}))
  */
-function actionHandlerFactory({ HullClient }: Object, handler: HullActionHandlerCallback, { cache = {}, disableErrorHandling = false, respondWithError = false }: HullActionHandlerOptions = {}): Router {
+function actionHandlerFactory({ HullClient }: Object, configurationEntry: HullHandlersConfigurationEntry): Router {
+  const { callback, options } = normalizeHandlersConfigurationEntry(configurationEntry);
+  const {
+    cache = {},
+    disableErrorHandling = false,
+    respondWithError = false
+  } = options;
+
   const router = Router();
   router.use(credentialsFromQueryMiddleware()); // parse config from query
   router.use(clientMiddleware({ HullClient })); // initialize client
@@ -53,14 +60,16 @@ function actionHandlerFactory({ HullClient }: Object, handler: HullActionHandler
       debug("processing");
       if (cache && cache.key) {
         return req.hull.cache.wrap(cache.key, () => {
-          return handler(req.hull);
+          // $FlowFixMe
+          return callback(req.hull);
         }, cache.options || {});
       }
-      debug("calling handler");
-      return handler(req.hull);
+      debug("calling callback");
+      // $FlowFixMe
+      return callback(req.hull);
     })()
       .then((response) => {
-        debug("handler response", response);
+        debug("callback response", response);
         res.end(response);
       })
       .catch(error => next(error));

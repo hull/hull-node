@@ -5,6 +5,8 @@
  * @public
  */
 module.exports.credsFromQueryMiddlewares = require("./creds-from-query-middlewares");
+module.exports.normalizeHandlersConfigurationEntry = require("./normalize-handlers-configuration-entry");
+module.exports.normalizeHandlersConfiguration = require("./normalize-handlers-configuration");
 
 module.exports.staticRouter = require("./static-router");
 module.exports.PromiseReuser = require("./promise-reuser");

@@ -1,12 +1,13 @@
 // @flow
 import type { $Response, NextFunction } from "express";
-import type { HullRequestFull, HullNotificationHandlerCallback, HullNotificationHandlerConfiguration } from "../types";
+import type { HullRequestFull, HullHandlersConfiguration } from "../types";
 
 const _ = require("lodash");
 const { Router } = require("express");
 const debug = require("debug")("hull-connector:batch-handler");
 
 const { credentialsFromQueryMiddleware, clientMiddleware, timeoutMiddleware, haltOnTimedoutMiddleware, fullContextBodyMiddleware, fullContextFetchMiddleware } = require("../middlewares");
+const { normalizeHandlersConfiguration } = require("../utils");
 
 /**
  * [notificationHandlerFactory description]
@@ -17,9 +18,9 @@ const { credentialsFromQueryMiddleware, clientMiddleware, timeoutMiddleware, hal
  *   "user:update": (ctx, message) => {}
  * }));
  */
-function batchExtractHandlerFactory({ HullClient }: Object, configuration: HullNotificationHandlerConfiguration): * {
+function batchExtractHandlerFactory({ HullClient }: Object, configuration: HullHandlersConfiguration): * {
   const router = Router();
-
+  const normalizedConfiguration = normalizeHandlersConfiguration(configuration);
   router.use(timeoutMiddleware());
   router.use(credentialsFromQueryMiddleware()); // parse query
   router.use(haltOnTimedoutMiddleware());
@@ -42,29 +43,22 @@ function batchExtractHandlerFactory({ HullClient }: Object, configuration: HullN
     const { url, format, object_type } = body;
     const entityType = object_type === "account_report" ? "account" : "user";
     const channel = `${entityType}:update`;
-    let handlerCallback: HullNotificationHandlerCallback | void;
-
-    if (typeof configuration[channel] === "function") {
-      handlerCallback = configuration[channel];
-    } else if (typeof configuration[channel] === "object" && typeof configuration[channel].callback === "function") {
-      handlerCallback = configuration[channel].callback;
+    if (normalizedConfiguration[channel] === undefined) {
+      return next(new Error(`Missing handler for this channel: ${channel}`));
     }
-    const handlerOptions = (typeof configuration[channel] === "object" && configuration[channel].options) || {};
+    const { callback, options } = normalizedConfiguration[channel];
+
     debug("channel", channel);
     debug("entityType", entityType);
-    debug("handlerCallback", typeof handlerCallback);
+    debug("handlerCallback", typeof callback);
     if (!url || !format) {
       return next(new Error("Missing any of required payload parameters: `url`, `format`."));
-    }
-
-    if (!handlerCallback) {
-      return next(new Error(`Missing handler for this channel: ${channel}`));
     }
     req.hull.isBatch = true;
     return helpers
       .handleExtract({
         body,
-        batchSize: handlerOptions.maxSize || 100,
+        batchSize: options.maxSize || 100,
         onResponse: () => res.end("ok"),
         onError: (err) => {
           client.logger.error("connector.batch.error", err.stack);
@@ -92,7 +86,7 @@ function batchExtractHandlerFactory({ HullClient }: Object, configuration: HullN
             return message;
           });
           // $FlowFixMe
-          return handlerCallback(req.hull, messages);
+          return callback(req.hull, messages);
         }
       })
       .catch(error => next(error));

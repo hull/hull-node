@@ -18,7 +18,7 @@ const Batcher = require("../infra/batcher");
 
 /**
  * @param {Object}   dependencies
- * @param {Function} callback         [description]
+ * @param {Object|Function} callback         [description]
  * @param {Object}   options [description]
  * @param {number}   options.maxSize [description]
  * @param {number}   options.maxTime [description]

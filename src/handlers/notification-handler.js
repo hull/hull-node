@@ -1,10 +1,10 @@
 // @flow
 import type { $Response, NextFunction } from "express";
-import type { HullRequestFull, HullHandlerCallback, HullHandlerConfiguration } from "../types";
+import type { HullRequestFull, HullHandlersConfiguration } from "../types";
 
 const debug = require("debug")("hull-connector:notification-handler");
 const { Router } = require("express");
-const { notificationDefaultFlowControl } = require("../utils");
+const { normalizeHandlersConfiguration, notificationDefaultFlowControl } = require("../utils");
 const { credentialsFromNotificationMiddleware, clientMiddleware, timeoutMiddleware, haltOnTimedoutMiddleware, fullContextBodyMiddleware } = require("../middlewares");
 
 /**
@@ -16,9 +16,9 @@ const { credentialsFromNotificationMiddleware, clientMiddleware, timeoutMiddlewa
  *   "user:update": (ctx, message) => {}
  * }));
  */
-function notificationHandlerFactory({ HullClient }: Object, configuration: HullHandlerConfiguration): * {
+function notificationHandlerFactory({ HullClient }: Object, configuration: HullHandlersConfiguration): * {
   const router = Router();
-
+  const normalizedConfiguration = normalizeHandlersConfiguration(configuration);
   router.use(timeoutMiddleware());
   router.use(credentialsFromNotificationMiddleware());
   router.use(haltOnTimedoutMiddleware());
@@ -30,25 +30,17 @@ function notificationHandlerFactory({ HullClient }: Object, configuration: HullH
     }
     const { channel, messages } = req.hull.notification;
     debug("notification", { channel, messages: Array.isArray(messages) && messages.length });
-    let handlerCallback: HullHandlerCallback | void;
-
-    if (typeof configuration[channel] === "function") {
-      handlerCallback = configuration[channel];
-    } else if (typeof configuration[channel] === "object" && typeof configuration[channel].callback === "function") {
-      handlerCallback = configuration[channel].callback;
-    }
-    // const handlerOptions = (typeof configuration[channel] === "object" && configuration[channel].options) || {};
-
-    if (typeof handlerCallback !== "function") {
+    if (normalizedConfiguration[channel] === undefined) {
       return next(new Error("Channel unsupported"));
     }
+    const { callback } = normalizedConfiguration[channel];
 
     const defaultSuccessFlowControl = notificationDefaultFlowControl(req.hull, channel, "success");
     req.hull.notificationResponse = {
       flow_control: defaultSuccessFlowControl
     };
     // $FlowFixMe
-    return handlerCallback(req.hull, messages)
+    return callback(req.hull, messages)
       .then(() => {
         res.status(200).json(req.hull.notificationResponse);
       })
@@ -58,6 +50,10 @@ function notificationHandlerFactory({ HullClient }: Object, configuration: HullH
     debug("got error", err);
     if (req.hull.notification) {
       const { channel } = req.hull.notification;
+      if (err.toString() === "Channel unsupported") {
+        const defaultUnsupportedFlowControl = notificationDefaultFlowControl(req.hull, channel, "unsupported");
+        res.status(404).json(defaultUnsupportedFlowControl);
+      }
       const defaultErrorFlowControl = notificationDefaultFlowControl(req.hull, channel, "error");
       res.status(500).json(defaultErrorFlowControl);
     }

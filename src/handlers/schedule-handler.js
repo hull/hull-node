@@ -1,16 +1,16 @@
 // @flow
 import type { $Response, NextFunction } from "express";
-import type { HullRequestFull, HullContextFull } from "../types";
+import type { HullRequestFull, HullHandlersConfigurationEntry } from "../types";
 
-type HullSchedulerHandlerCallback = (ctx: HullContextFull) => Promise<*>;
-type HullSchedulerHandlerOptions = {
-  disableErrorHandling?: boolean
-};
+// type HullSchedulerHandlerCallback = (ctx: HullContextFull) => Promise<*>;
+// type HullSchedulerHandlerOptions = {
+//   disableErrorHandling?: boolean
+// };
 
 const { Router } = require("express");
 
 const { credentialsFromQueryMiddleware, clientMiddleware, fullContextBodyMiddleware, timeoutMiddleware, haltOnTimedoutMiddleware } = require("../middlewares");
-
+const { normalizeHandlersConfigurationEntry } = require("../utils");
 /**
  * This handler allows to handle simple, authorized HTTP calls.
  * By default it picks authorization configuration from query.
@@ -20,17 +20,19 @@ const { credentialsFromQueryMiddleware, clientMiddleware, fullContextBodyMiddlew
  * Optionally it can cache the response, then provide options.cache object with key
  *
  * @param  {Objecct}  dependencies
- * @param  {Function} handler [description]
- * @param  {Object}   [options]
- * @param  {Object}   [options.cache]
- * @param  {string}   [options.cache.key]
- * @param  {string}   [options.cache.options]
+ * @param  {Object|Function} configurationEntry [description]
+ * @param  {Object}   [configurationEntry.options]
+ * @param  {Object}   [configurationEntry.options.cache]
+ * @param  {string}   [configurationEntry.options.cache.key]
+ * @param  {string}   [configurationEntry.options.cache.options]
  * @return {Function}
  * @example
  * app.use("/list", actionHandler((ctx) => {}))
  */
-function scheduleHandlerFactory({ HullClient }: Object, channel, handler: HullSchedulerHandlerCallback, { disableErrorHandling = false }: HullSchedulerHandlerOptions) {
+function scheduleHandlerFactory({ HullClient }: Object, configurationEntry: HullHandlersConfigurationEntry) {
   const router = Router();
+  const { callback, options } = normalizeHandlersConfigurationEntry(configurationEntry);
+  const { disableErrorHandling = false } = options;
 
   router.use(timeoutMiddleware());
   router.use(credentialsFromQueryMiddleware()); // parse query
@@ -40,7 +42,8 @@ function scheduleHandlerFactory({ HullClient }: Object, channel, handler: HullSc
   router.use(fullContextBodyMiddleware({ requestName: "scheduler" })); // get rest of the context from body
   router.use(haltOnTimedoutMiddleware());
   router.use(function scheduleHandler(req: HullRequestFull, res: $Response, next: NextFunction) {
-    handler(req.hull)
+    // $FlowFixMe
+    callback(req.hull)
       .then((response) => {
         res.json(response);
       })

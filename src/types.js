@@ -153,9 +153,17 @@ export type HullHandlerCallback =
   HullConnectorUpdateHandlerCallback |
   HullSegmentUpdateHandlerCallback;
 
-export type HullHandlerConfiguration = {
-  [HullChannelName: string]: HullHandlerCallback | {
-    callback: HullHandlerCallback,
-    options: Object
-  }
+export type HullNormalizedHandlersConfigurationEntry = {
+  callback: HullHandlerCallback,
+  options: Object
+};
+
+export type HullNormalizedHandlersConfiguration = {
+  [HullChannelName: string]: HullNormalizedHandlersConfigurationEntry
+};
+
+export type HullHandlersConfigurationEntry = HullHandlerCallback | HullNormalizedHandlersConfiguration;
+
+export type HullHandlersConfiguration = {
+  [HullChannelName: string]: HullHandlersConfigurationEntry
 };

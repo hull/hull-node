@@ -13,6 +13,25 @@ This library provides a framework to build and run connectors applications.
 3. Handlers
 4. Context
 
+## Handler Configuration
+
+```js
+// @flow
+import type { HullHandlersConfiguration } from "hull";
+
+const handlersConfiguration: HullHandlersConfiguration = {
+  "user:update": () => {},
+  "account:update": {
+    callback: () => {},
+    options: {},
+  }
+  "scheduler:fetch": () => {},
+  "incoming:webook": {
+    callback: () => {},
+    options: {}
+  }
+};
+```
 
 ## Get started
 
