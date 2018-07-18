@@ -1,3 +1,7 @@
+# 0.14.0-beta.7
+* various fixes
+* introduce stream related utils
+
 # 0.14.0-beta.6
 * inroduce handlers configuration flow type as unified structure to initiate all handlers
 
