@@ -50,13 +50,14 @@ function notificationHandlerFactory({ HullClient }: Object, configuration: HullH
     debug("got error", err);
     if (req.hull.notification) {
       const { channel } = req.hull.notification;
-      if (err.toString() === "Channel unsupported") {
+      if (err.message === "Channel unsupported") {
         const defaultUnsupportedFlowControl = notificationDefaultFlowControl(req.hull, channel, "unsupported");
-        res.status(404).json(defaultUnsupportedFlowControl);
+        return res.status(404).json(defaultUnsupportedFlowControl);
       }
       const defaultErrorFlowControl = notificationDefaultFlowControl(req.hull, channel, "error");
       res.status(500).json(defaultErrorFlowControl);
     }
+    return null;
   });
   return router;
 }

@@ -160,9 +160,9 @@ function oAuthHandlerFactory({ HullClient }, {
   passport.use(strategy);
 
   router.get(HOME_URL, (req, res) => {
-    const { ship = {}, client } = req.hull;
+    const { connector = {}, client } = req.hull;
     client.logger.debug("connector.oauth.home");
-    const data = { name, urls: getURLs(req), ship };
+    const data = { name, urls: getURLs(req), connector };
     isSetup(req)
       .then(
         (setup = {}) => { res.render(views.home, _.merge({}, data, setup)); },
@@ -210,12 +210,14 @@ function oAuthHandlerFactory({ HullClient }, {
     client.logger.debug("connector.oauth.authorize");
     onAuthorize(req)
       .then(() => res.redirect(getURL(req, SUCCESS_URL)))
-      .catch(error => res.redirect(getURL(req, FAILURE_URL, { token: req.hull.token, error })));
+      .catch(error => res.redirect(getURL(req, FAILURE_URL, { token: req.hull.clientCredentialsToken, error })));
   });
 
   router.use((error, req, res, next) => { // eslint-disable-line no-unused-vars
     const { client } = req.hull;
-    client.logger.error("connector.oauth.error", error);
+    if (client) {
+      client.logger.error("connector.oauth.error", error);
+    }
     return res.render(views.failure, { name, urls: getURLs(req), error: error.message || error.toString() || "" });
   });
 
