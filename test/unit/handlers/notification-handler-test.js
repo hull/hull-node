@@ -7,7 +7,7 @@ const notificationHandler = require("../../../src/handlers/notification-handler"
 
 describe("notificationHandler", () => {
   it("should return an express router function", () => {
-    const testInstance = notificationHandler({});
+    const testInstance = notificationHandler({ HullClient: {} }, {});
     expect(typeof testInstance).to.equal("function");
   });
 });

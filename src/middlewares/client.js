@@ -31,6 +31,9 @@ const helperFunctions = require("../helpers");
  * });
  */
 function clientMiddlewareFactory({ HullClient }: Object) {
+  if (HullClient === undefined) {
+    throw new Error("clientMiddleware require HullClient class as dependency");
+  }
   return function clientMiddleware(req: HullRequestWithCredentials, res: $Response, next: NextFunction) {
     try {
       if (!req.hull) {

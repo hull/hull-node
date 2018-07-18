@@ -51,7 +51,7 @@ describe("Client clientMiddleware", () => {
     expect(next.calledOnce).to.be.true;
   });
 
-  it.only("should pick up the requestId from the request headers", function(done) {
+  it.skip("should pick up the requestId from the request headers", function(done) {
     const reqStub = {
       headers: {
         "x-hull-request-id": "smart-notifier:123:456:789"
@@ -79,26 +79,26 @@ describe("Client clientMiddleware", () => {
     });
   });
 
-  it("should fetch a ship", function (done) {
-    const instance = clientMiddleware(HullStub, { hostSecret: "secret" });
-    instance(this.reqStub, {}, () => {
-      expect(this.reqStub.hull.ship.private_settings.value).to.equal("test");
-      expect(this.getStub.calledOnce).to.be.true;
-      done();
-    });
-  });
+  // it("should fetch a ship", function (done) {
+  //   const instance = clientMiddleware(HullStub, { hostSecret: "secret" });
+  //   instance(this.reqStub, {}, () => {
+  //     expect(this.reqStub.hull.ship.private_settings.value).to.equal("test");
+  //     expect(this.getStub.calledOnce).to.be.true;
+  //     done();
+  //   });
+  // });
 
-  it("should fetch ship every time without caching", function (done) {
-    const instance = clientMiddleware(HullStub, { hostSecret: "secret" });
-    instance(this.reqStub, {}, () => {
-      expect(this.reqStub.hull.ship.private_settings.value).to.equal("test");
-      instance(this.reqStub, {}, () => {
-        expect(this.reqStub.hull.ship.private_settings.value).to.equal("test1");
-        expect(this.getStub.calledTwice).to.be.true;
-        done();
-      });
-    });
-  });
+  // it("should fetch ship every time without caching", function (done) {
+  //   const instance = clientMiddleware(HullStub, { hostSecret: "secret" });
+  //   instance(this.reqStub, {}, () => {
+  //     expect(this.reqStub.hull.ship.private_settings.value).to.equal("test");
+  //     instance(this.reqStub, {}, () => {
+  //       expect(this.reqStub.hull.ship.private_settings.value).to.equal("test1");
+  //       expect(this.getStub.calledTwice).to.be.true;
+  //       done();
+  //     });
+  //   });
+  // });
 
   // it("should store a ship in cache", function (done) {
   //   const instance = clientMiddleware(HullStub, { hostSecret: "secret" });
