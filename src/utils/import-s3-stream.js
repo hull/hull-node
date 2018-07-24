@@ -12,23 +12,38 @@ const debug = require("debug")("hull-import-s3-stream");
  * const hullImportStream = new HullImportStream()
  */
 class ImportS3Stream extends Writable {
-  hullClient: Object;
-  s3: AWS.S3;
+  /*
+   * Dependencies
+   */
+  hullClient: Object; // authorized HullClient instance
+  s3: AWS.S3; // authorized s3 client
 
+  /*
+   * Options
+   */
   s3Bucket: string;
   s3ACL: string;
   s3KeyTemplate: string
+
+  gzipEnabled: boolean;
+  partSize: number;
+
   importId: string;
   overwrite: boolean;
-  partSize: number;
+  notify: boolean;
+  emitEvent: boolean;
   importType: "users" | "accounts" | "events";
   importDelay: number;
   importNameTemplate: string;
 
-  currentUploadStream: null | Writable;
+  /*
+   * Internals
+   */
+  currentUploadStream: null | Writable; // contains current uploadImport stream
   currentObjectIndex: number;
   currentPartIndex: number;
   uploadAndImportPromises: Array<Promise<*>>;
+  partEndIndexes: { [partIndex: number]: number };
 
   constructor(dependencies, options: Object) {
     if (typeof dependencies.hullClient !== "object") {
@@ -49,11 +64,14 @@ class ImportS3Stream extends Writable {
     this.hullClient = dependencies.hullClient;
     this.s3 = dependencies.s3;
 
+    this.gzipEnabled = options.gzipEnabled !== undefined ? options.gzipEnabled : true;
     this.s3Bucket = options.s3Bucket;
     this.s3ACL = options.s3ACL || "private";
     this.s3KeyTemplate = options.s3KeyTemplate || "<%= partIndex %>.json";
     this.importId = options.importId || uuid();
     this.overwrite = options.overwrite || false;
+    this.notify = options.notify || false;
+    this.emitEvent = options.emitEvent || false;
     this.importType = options.importType || "users";
     this.importDelay = options.importDelay || 0;
     this.partSize = options.partSize || 10000;
@@ -63,89 +81,194 @@ class ImportS3Stream extends Writable {
     this.currentObjectIndex = 0;
     this.currentPartIndex = 0;
     this.uploadAndImportPromises = [];
+    this.partEndIndexes = {};
     debug("intialized writable stream", {
       importId: this.importId
     });
+
+    this.once("error", (error) => {
+      setTimeout(() => {
+        this.emit("error", error);
+      }, 500);
+      this._final(() => {
+        this.emit("finish", error);
+      });
+    });
   }
 
+  /**
+   * The main method which perform the upload-import stream rotation.
+   * First it checks if we have an existing `this.currentUploadStream`.
+   * If so it writes the object into the stream.
+   * After finishing the write operation it checks if we are at the end of the `this.partSize`.
+   * If so we end the current stream and after this operation we save the `this.partEndIndexes` and continue.
+   * Otherwise we just continue.
+   *
+   * @see    https://nodejs.org/docs/latest-v8.x/api/stream.html#stream_writable_write_chunk_encoding_callback_1
+   * @param  {Object} object:   Object
+   * @param  {string} encoding: string
+   * @param  {Function} callback: Function
+   * @return {void}
+   */
   _write(object: Object, encoding: string, callback: Function) {
-    debug("writing %o", {
+    const debugPayload = {
+      objectType: typeof object,
       currentUploadStream: this.currentUploadStream !== null,
       currentObjectIndex: this.currentObjectIndex,
       currentPartIndex: this.currentPartIndex,
       uploadAndImportPromises: this.uploadAndImportPromises.length
-    });
-    if (this.currentUploadStream === null || (this.currentObjectIndex + 1) % this.partSize === 0) {
-      this.currentPartIndex += 1;
-      if (this.currentUploadStream !== null) {
-        debug("ending currentUploadStream");
-        this.currentUploadStream.end();
-      }
+    };
+    debug("_write %o", debugPayload);
+
+    if (this.currentUploadStream === null) {
       const newUploadAndImportJob = this.createUploadAndImportJob(this.currentPartIndex, this.currentObjectIndex);
+      this.currentUploadStreamStartIndex = this.currentObjectIndex;
       this.currentUploadStream = newUploadAndImportJob.uploadStream;
       this.uploadAndImportPromises.push(newUploadAndImportJob.uploadAndImportPromise);
+      this.emit("upload-stream-new", debugPayload);
+      debug("upload-stream-new %o", debugPayload);
     }
+
     this.currentUploadStream.write(`${JSON.stringify(object)}\n`, (err) => {
-      debug("wrote", { error: typeof err });
-      this.currentObjectIndex += 1;
-      callback(err);
+      debug("write-callback %o", { error: typeof err });
+      // we are done with this partSize, let's close the current stream
+      if ((this.currentObjectIndex + 1) % this.partSize === 0) {
+        this.emit("upload-stream-end", debugPayload);
+        debug("upload-stream-end %o", debugPayload);
+        this.currentUploadStream.end(() => {
+          // let's store the indexes when we ended the stream for future reference,
+          // then up the current indexes, clear current stream and continue
+          this.partEndIndexes[this.currentPartIndex] = this.currentObjectIndex;
+          this.currentObjectIndex += 1;
+          this.currentPartIndex += 1;
+          this.currentUploadStream = null;
+          callback(err);
+        });
+      } else {
+        // otherwise lets just up the `this.currentObjectIndex` and continue
+        this.currentObjectIndex += 1;
+        callback(err);
+      }
     });
   }
 
+  /**
+   * This is the method delaying the `finish` stream event.
+   * It's responsible for waiting for all upload-import promises to finish.
+   * Additionally if we end in the middle of last `this.partSize` we end the current stream before waiting for all promises.
+   *
+   * @see    https://nodejs.org/docs/latest-v8.x/api/stream.html#stream_writable_final_callback
+   * @param  {Function} callback: Function
+   * @return {void}
+   */
   _final(callback: Function) {
-    debug("_final", { uploadAndImportPromises: this.uploadAndImportPromises });
-    this.currentUploadStream.end();
-    Promise.all(this.uploadAndImportPromises)
-      .then(() => callback())
-      .catch(error => callback(error));
+    debug("_final %o", { uploadAndImportPromises: this.uploadAndImportPromises, currentUploadStream: typeof this.currentUploadStream });
+    const finalize = () => {
+      Promise.all(this.uploadAndImportPromises)
+        .then(() => callback())
+        .catch(error => callback(error));
+    };
+    if (this.currentUploadStream !== null) {
+      this.currentUploadStream.end(() => {
+        this.partEndIndexes[this.currentPartIndex] = this.currentObjectIndex;
+        this.currentUploadStream = null;
+        finalize();
+      });
+    } else {
+      finalize();
+    }
   }
 
+  /**
+   * This method initiates the "upload-import" job which consists of a writable Stream and a promise.
+   *
+   * If the upload promise is rejected we make sure that the `uploadStream` is destroyed.
+   * Then we make sure that the `this.currentUploadStream` is the same stream and set the property to null meaning that the stream
+   * ended and cannot accept any more writes. Then we emit `error` event on the `ImportS3Stream`, so it stops accepting more data and try to finalize what was started.
+   *
+   * If the import operation fails we emit `error` event stopping the `ImportS3Stream` to accept more data. It will trigger a finalize to wait for all pending promises to resolve.
+   */
   createUploadAndImportJob(partIndex: number, objectIndex: number): {
     uploadAndImportPromise: Promise<*>,
     uploadStream: Writable
   } {
-    const key = "example";
     const { uploadPromise, uploadStream } = this.createS3Upload({ partIndex, objectIndex });
-    this.emit("part-upload-start");
-    debug("part-upload-start");
+    this.emit("part-upload-start", { partIndex, objectIndex, partStopIndexes: this.partStopIndexes });
+    debug("part-upload-start %o", { partIndex, objectIndex });
     const uploadAndImportPromise = uploadPromise
-      .then(uploadResult => {
-        const size = this.currentObjectIndex - objectIndex;
+      .catch((uploadError) => {
+        this.emit("part-upload-error", uploadError);
+        debug("part-upload-error", uploadError.message);
+        this.currentUploadStream.destroy(uploadError);
+        if (this.currentUploadStream === uploadStream) {
+          this.currentUploadStream = null;
+        }
+        this.emit("error", uploadError);
+        return Promise.reject(uploadError);
+      })
+      .then((uploadResult) => {
+        const size = (this.partEndIndexes[partIndex] - objectIndex) + 1;
         const url = uploadResult.Location;
-        this.emit("part-upload-complete %o", uploadResult);
-        debug("part-upload-complete", { uploadResult, currentObjectIndex: this.currentObjectIndex, objectIndex });
-        return this.postImportJob(url, { partIndex, size, objectIndex });
-      }).then(importResult => {
+        const eventPayload = { partIndex, objectIndex, uploadResult, size, stopObjectIndex: this.partEndIndexes[partIndex] };
+        this.emit("part-upload-complete", eventPayload);
+        debug("part-upload-complete %o", eventPayload);
+        return this.postImportJob(url, { partIndex, objectIndex, size })
+          .catch((importError) => {
+            this.emit("part-import-error", importError);
+            debug("part-import-error", importError.message);
+            this.emit("error", importError);
+            return Promise.reject(importError);
+          });
+      })
+      .then((importResult) => {
         this.emit("part-import-complete", importResult);
-        debug("part-import-complete");
+        debug("part-import-complete %o", importResult);
         return importResult;
-      });
+      })
+      .catch(() => {});
     return {
       uploadAndImportPromise,
       uploadStream
     };
   }
 
+  /**
+   * If any internal `PassThrough` stream errors out we abort the upload resulting in `uploadPromise` rejection.
+   * Refer to `createUploadAndImportJob` method to see how this case is handled.
+   * Both internal streams are destroyed and cleanedup.
+   */
   createS3Upload({ partIndex, objectIndex }): {
     uploadPromise: Promise<{ Location: string }>,
     uploadStream: Writable
   } {
     const uploadStream = new PassThrough();
-    const internalUploadStream = new PassThrough();
+    let gzippedUploadStream;
     const params = {
       Bucket: this.s3Bucket,
       Key: _.template(this.s3KeyTemplate)({ partIndex, objectIndex }),
-      Body: internalUploadStream,
+      Body: uploadStream,
       ContentType: "application/json",
       ContentEncoding: "gzip",
       ACL: this.s3ACL
     };
     debug("upload params %o", _.omit(params, "Body"));
     const upload = this.s3.upload(params);
-    uploadStream.pipe(zlib.createGzip()).pipe(internalUploadStream);
+    if (this.gzipEnabled === true) {
+      gzippedUploadStream = new PassThrough();
+      gzippedUploadStream.pipe(zlib.createGzip()).pipe(uploadStream);
+      gzippedUploadStream.on("error", (error) => {
+        gzippedUploadStream.destroy(error);
+        uploadStream.destroy(error);
+        upload.abort();
+      });
+    }
+    uploadStream.on("error", (error) => {
+      uploadStream.destroy(error);
+      upload.abort();
+    });
     return {
       uploadPromise: upload.promise(),
-      uploadStream
+      uploadStream: gzippedUploadStream || uploadStream
     };
   }
 
@@ -153,8 +276,8 @@ class ImportS3Stream extends Writable {
     const params = {
       url,
       format: "json",
-      notify: true,
-      emit_event: false,
+      notify: this.notify,
+      emit_event: this.emitEvent,
       overwrite: this.overwrite,
       name: _.template(this.importNameTemplate)({ partIndex, size, objectIndex }),
       // schedule_at: moment().add(this.importDelay + (2 * partNumber), "minutes").toISOString(),
