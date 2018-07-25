@@ -24,3 +24,7 @@ module.exports.devMode = require("./dev-mode");
 module.exports.pipeStreamToPromise = require("./pipe-stream-to-promise");
 module.exports.promiseToReadableStream = require("./promise-to-readable-stream");
 module.exports.promiseToWritableStream = require("./promise-to-writable-stream");
+
+module.exports.settingsUpdate = require("./settings-update");
+module.exports.extractRequest = require("./extract-request");
+module.exports.extractStream = require("./extract-stream");

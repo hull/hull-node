@@ -9,14 +9,14 @@ const { TransientError } = require("../../errors");
 
 function notificationHandlerErrorMiddlewareFactory() {
   return function notificationHandlerErrorMiddleware(err: Error, req: HullRequestFull, res: $Response, _next: NextFunction) {
-    debug("got error", err);
+    debug("got error", err.message);
     if (typeof req.hull.notification !== "object") {
       return res.status(500).json({ error: "didn't get a correct notification" });
     }
     const { channel } = req.hull.notification;
     if (err.message === "Channel unsupported") {
       const defaultUnsupportedFlowControl = notificationDefaultFlowControl(req.hull, channel, "unsupported");
-      return res.status(404).json(defaultUnsupportedFlowControl);
+      return res.status(200).json(defaultUnsupportedFlowControl);
     }
 
     if (err instanceof TransientError) {

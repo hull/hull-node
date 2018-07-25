@@ -146,6 +146,7 @@ class HullConnector {
      * Unhandled error middleware
      */
     app.use((err: Error, req: HullRequest, res: $Response, next: NextFunction) => { // eslint-disable-line no-unused-vars
+      debug("unhandled-error", err.message);
       return res.status(500).send("unhandled-error");
     });
 

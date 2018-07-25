@@ -1,5 +1,9 @@
-# 0.14.0-beta.8
+# 0.14.0-beta.9
 * introduce import stream utility
+* improve error reporting
+* minor fixes
+
+# 0.14.0-beta.8
 * simplify handlers and change the way we require them
 
 # 0.14.0-beta.7
