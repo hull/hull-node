@@ -1,10 +1,12 @@
-const Promise = require("bluebird");
+// @flow
 const CSVStream = require("csv-stream");
 const JSONStream = require("JSONStream");
 const requestClient = require("request");
-const ps = require("promise-streams");
 const BatchStream = require("batch-stream");
 const _ = require("lodash");
+const promisePipe = require("promisepipe");
+
+const promiseToWritableStream = require("./promise-to-writable-stream");
 
 /**
  * Helper function to handle JSON extract sent to batch endpoint
@@ -16,13 +18,12 @@ const _ = require("lodash");
  * @param {Object}   options
  * @param {Object}   options.body       request body object (req.body)
  * @param {Object}   options.batchSize  size of the chunk we want to pass to handler
- * @param {Function} options.handler    callback returning a Promise (will be called with array of elements)
+ * @param {Function} options.callback    callback returning a Promise (will be called with array of elements)
  * @param {Function} options.onResponse callback called on successful inital response
  * @param {Function} options.onError    callback called during error
  * @return {Promise}
  */
-module.exports = function handleExtract(ctx, { body, batchSize, handler, onResponse, onError }) {
-  const { logger } = ctx.client;
+function extractStream({ body, batchSize, callback, onResponse, onError }: Object): Promise<*> {
   const { url, format } = body;
   if (!url) return Promise.reject(new Error("Missing URL"));
   const decoder = format === "csv" ? CSVStream.createStream({ escapeChar: "\"", enclosedChar: "\"" }) : JSONStream.parse();
@@ -34,7 +35,7 @@ module.exports = function handleExtract(ctx, { body, batchSize, handler, onRespo
 
   const batch = new BatchStream({ size: batchSize });
 
-  return requestClient({ url })
+  const responseStream = requestClient({ url })
     .on("response", (response) => {
       if (_.isFunction(onResponse)) {
         onResponse(response);
@@ -44,17 +45,14 @@ module.exports = function handleExtract(ctx, { body, batchSize, handler, onRespo
       if (_.isFunction(onError)) {
         onError(error);
       }
-    })
-    .pipe(decoder)
-    .pipe(batch)
-    .pipe(ps.map({ concurrent: 1 }, (...args) => {
-      try {
-        return handler(...args);
-      } catch (e) {
-        logger.error("ExtractAgent.handleExtract.error", e.stack || e);
-        return Promise.reject(e);
-      }
-    }))
-    .promise()
-    .then(() => true);
-};
+    });
+  const targetStream = promiseToWritableStream(callback);
+  return promisePipe(
+    responseStream,
+    decoder,
+    batch,
+    targetStream
+  );
+}
+
+module.exports = extractStream;

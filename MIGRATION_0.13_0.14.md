@@ -1,24 +1,15 @@
 # 0.13 -> 0.14 migration guide
 
-1. change the way handlers are required:
-    ```js
-    // before
-    const { oAuthHandler } = require("hull/lib/utils");
-    const { devMode } = require("hull/lib/utils");
-    // after
-    const { oAuthHandler } = require("hull").handlers;
-    const { devMode } = require("hull/lib/utils");
-    ```
-    All handlers were moved to `Hull.handlers` rest of the utils are available as before
-2. rename `smartNotifierHandler` with `notificationHandler`
+1. rename `smartNotifierHandler` with `notificationHandler`
     ```js
     // before
     const { smartNotifierHandler } = require("hull/lib/utils");
     // after
-    const { notificationHandler } = require("hull").handlers;
+    const { notificationHandler } = require("hull/lib/utils");
     ```
-3. use `batchHandler` instead of `smartNotifierHandler` and `notifHandler`
-4. use [`HullNotificationHandlerConfiguration`](src/types.js#L154) flow type object when setting up `notificationHandler` and `batchHandler`. The main difference is that we do not wrap everything in `handlers` param and we can optionally pass `callback` and `options` params instead of function
+3. use `batchHandler` instead of `smartNotifierHandler` and `notifHandler` for `batch` endpoints
+4. use [`HullHandlersConfiguration`](src/types.js#L167) flow type object when setting up `notificationHandler` and `batchHandler`. The main difference is that we do not wrap everything in `handlers` param and we can optionally pass `callback` and `options` params instead of function.
+When using `scheduleHandler` or `actionHandler` you need to pass `HullHandlersConfigurationEntry`.
     ```js
     // before
     app.use("/notification", smartNotificationHandler({
@@ -37,7 +28,7 @@
     ```
 5. although all routes of the connector communicating with the platform should be usiing appropriate handler, if you need to use plain expressjs routes you can use `credsFromQueryMiddlewares` utility to get full `req.hull` context:
     ```js
-    const { credsFromQueryMiddlewares } = require("hull").utils;
+    const { credsFromQueryMiddlewares } = require("hull/lib/utils");
     app.post(
       "/custom-endpoint",
       ...credsFromQueryMiddlewares(),
@@ -52,8 +43,9 @@
 10. `const Hull = require("hull");` is not a `HullClient` class anymore, so you need to change:
     ```js
     // before
-    Hull.logger.transports.console.level;
+    Hull.logger.transports.console.level = "debug";
     // after
     Hull.Client.logger.transports.console.level = "debug";
     ```
-11. filter-notifications helper is not available anymore, implement custom filterUtil
+11. `Hull.Middleware` or `Hull.middleware` is not available anymore, you need to use `const { clientMiddleware } = require("hull/lib/middlewares");`
+12. `req.hull.helpers` object was removed. Some of the helpers were moved to `utils`. `filterNotifications` helper is not available anymore, implement custom filterUtil

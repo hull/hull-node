@@ -43,6 +43,7 @@ export type HullContextBase = {
   hostname: string, // req.hostname
   options: Object, // req.query
   isBatch: boolean,
+  HullClient: typeof HullClient,
 
   connectorConfig: HullConnectorOptions, // configuration passed to Hull.Connector
   clientConfig: HullClientConfiguration, // configuration which will be applied to Hull Client
@@ -68,8 +69,7 @@ export type HullContextWithCredentials = {
 export type HullContextWithClient = {
   /*:: ...$Exact<HullContextWithCredentials>, */
   clientCredentialsToken: string,
-  client: HullClient,
-  helpers: Object
+  client: HullClient
 };
 
 /**
@@ -89,6 +89,8 @@ export type HullContextFull = {
     flow_control: HullNotificationFlowControl
   }
 };
+
+export type HullContext = HullContextFull;
 
 export type HullRequestBase = {
   ...$Request,
@@ -125,6 +127,8 @@ export type HullRequestFull = {
   ...$Request,
   hull: HullContextFull
 };
+
+export type HullRequest = HullRequestFull;
 
 // TODO: evolve this introducing envelope etc.
 export type HullSendResponse = Promise<*>;

@@ -19,9 +19,8 @@ const _ = require("lodash");
  * @example
  * req.hull.helpers.requestExtract({ segment = null, path, fields = [], additionalQuery = {} });
  */
-module.exports = function requestExtract(ctx, { segment = null, format = "json", path = "batch", fields = [], additionalQuery = {} } = {}) {
-  const { client, hostname } = ctx;
-  const conf = client.configuration();
+function extractRequest({ hullClient, hostname, segment = null, format = "json", path = "batch", fields = [], additionalQuery = {} } = {}) {
+  const conf = hullClient.configuration();
   const search = _.merge({
     ship: conf.id,
     secret: conf.secret,
@@ -47,11 +46,13 @@ module.exports = function requestExtract(ctx, { segment = null, format = "json",
     if (segment.query) {
       return Promise.resolve(segment);
     }
-    return client.get(segment.id);
+    return hullClient.get(segment.id);
   })()
   .then(({ query }) => {
     const params = { query, format, url, fields };
-    client.logger.debug("connector.requestExtract.params", params);
-    return client.post("extract/user_reports", params);
+    hullClient.logger.debug("connector.requestExtract.params", params);
+    return hullClient.post("extract/user_reports", params);
   });
-};
+}
+
+module.exports = extractRequest;

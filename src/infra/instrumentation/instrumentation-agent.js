@@ -98,7 +98,7 @@ class InstrumentationAgent {
     }
   }
 
-  catchError(err = {}, extra = {}, tags = {}) {
+  captureException(err = {}, extra = {}, tags = {}) {
     if (this.raven && err) {
       this.raven.captureException(err, {
         extra,
@@ -134,33 +134,30 @@ class InstrumentationAgent {
     return new MetricAgent(ctx, this);
   }
 
-  ravenContextMiddleware() {
-    return (req, res, next) => {
-      const info = {
-        connector: "",
-        organization: ""
-      };
-      if (req.hull && req.hull.client) {
-        const config = req.hull.client.configuration();
-        info.connector = config.id;
-        info.organization = config.organization;
-      }
-      if (this.raven) {
-        Raven.mergeContext({
-          tags: {
-            organization: info.organization,
-            connector: info.connector
-          },
-          extra: {
-            body: req.body,
-            query: req.query,
-            method: req.method,
-            url: url.parse(req.url).pathname,
-          }
-        });
-      }
-      next();
+  mergeContext(req) {
+    const info = {
+      connector: "",
+      organization: ""
     };
+    if (req.hull && req.hull.client) {
+      const config = req.hull.client.configuration();
+      info.connector = config.id;
+      info.organization = config.organization;
+    }
+    if (this.raven) {
+      Raven.mergeContext({
+        tags: {
+          organization: info.organization,
+          connector: info.connector
+        },
+        extra: {
+          body: req.body,
+          query: req.query,
+          method: req.method,
+          url: url.parse(req.url).pathname,
+        }
+      });
+    }
   }
 
   metricVal(metric, value = 1) {

@@ -1,6 +1,6 @@
 // @flow
 import type { $Application, $Response, NextFunction, Middleware } from "express";
-import type { HullConnectorOptions, HullRequestBase } from "../types";
+import type { HullConnectorOptions, HullRequestBase, HullRequest } from "../types";
 
 const Promise = require("bluebird");
 const fs = require("fs");
@@ -114,15 +114,14 @@ class HullConnector {
       queue: this.queue,
       cache: this.cache,
       connectorConfig: this.connectorConfig,
-      clientConfig: this.clientConfig
+      clientConfig: this.clientConfig,
+      HullClient: this.HullClient
     }));
 
     app.engine("html", renderFile);
 
     app.set("views", `${process.cwd()}/views`);
     app.set("view engine", "ejs");
-
-    app.use(this.instrumentation.ravenContextMiddleware());
     app.use((req: HullRequestBase, res: $Response, next: NextFunction) => {
       req.hull.metric.increment("connector.request", 1);
       next();
@@ -139,25 +138,6 @@ class HullConnector {
    */
   startApp(app: $Application) {
     /**
-     * Transient Middleware
-     */
-    // app.use((err: Error, req: HullRequest, res: $Response, next: NextFunction) => {
-    //   if (err instanceof TransientError || (err.name === "ServiceUnavailableError" && err.message === "Response timeout")) {
-    //     req.hull.metric.increment("connector.transient_error", 1, [
-    //       `error_name:${_.snakeCase(err.name)}`,
-    //       `error_message:${_.snakeCase(err.message)}`
-    //     ]);
-    //     if (req.hull.smartNotifierResponse) {
-    //       const response = req.hull.smartNotifierResponse;
-    //       return res.status(err.status || 503).json(response.toJSON());
-    //     }
-    //     return res.status(err.status || 503).send("transient-error");
-    //   }
-    //   // pass the error
-    //   return next(err);
-    // });
-
-    /**
      * Instrumentation Middleware
      */
     app.use(this.instrumentation.stopMiddleware());
@@ -165,13 +145,9 @@ class HullConnector {
     /**
      * Unhandled error middleware
      */
-    // app.use((err: Error, req: HullRequest, res: $Response, next: NextFunction) => { // eslint-disable-line no-unused-vars
-    //   if (req.hull && req.hull.smartNotifierResponse) {
-    //     const response = req.hull.smartNotifierResponse;
-    //     return res.status(500).json(response.toJSON());
-    //   }
-    //   return res.status(500).send("unhandled-error");
-    // });
+    app.use((err: Error, req: HullRequest, res: $Response, next: NextFunction) => { // eslint-disable-line no-unused-vars
+      return res.status(500).send("unhandled-error");
+    });
 
     return app.listen(this.port, () => {
       debug("connector.server.listen", { port: this.port });
@@ -189,10 +165,11 @@ class HullConnector {
       queue: this.queue,
       cache: this.cache,
       connectorConfig: this.connectorConfig,
-      clientConfig: this.clientConfig
+      clientConfig: this.clientConfig,
+      HullClient: this.HullClient
     }));
     this._worker.use(credentialsFromQueryMiddleware());
-    this._worker.use(clientMiddleware({ HullClient: this.HullClient }));
+    this._worker.use(clientMiddleware());
     this._worker.use(fullContextFetchMiddleware());
     this.middlewares.map(middleware => this._worker.use(middleware));
 

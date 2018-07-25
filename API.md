@@ -363,32 +363,7 @@ agent
 
 Returns **[Function][8]** function to use as superagent plugin
 
-## Context
-
-An object that's available in all action handlers and routers as `req.hull`.
-It's a set of parameters and modules to work in the context of current organization and connector instance.
-
-### helpers
-
-This is a set of additional helper functions being exposed at `req.hull.helpers`. They allow to perform common operation in the context of current request. They are similar o `req.hull.client.utils`, but operate at higher level, ensure good practises and should be used in the first place before falling back to raw utils.
-
-#### handleExtract
-
-Helper function to handle JSON extract sent to batch endpoint
-
-**Parameters**
-
--   `ctx` **[Object][1]** Hull request context
--   `options` **[Object][1]** 
-    -   `options.body` **[Object][1]** request body object (req.body)
-    -   `options.batchSize` **[Object][1]** size of the chunk we want to pass to handler
-    -   `options.handler` **[Function][8]** callback returning a Promise (will be called with array of elements)
-    -   `options.onResponse` **[Function][8]** callback called on successful inital response
-    -   `options.onError` **[Function][8]** callback called during error
-
-Returns **[Promise][10]** 
-
-#### requestExtract
+## requestExtract
 
 This is a method to request an extract of user base to be sent back to the Connector to a selected `path` which should be handled by `notifHandler`.
 
@@ -410,7 +385,23 @@ req.hull.helpers.requestExtract({ segment = null, path, fields = [], additionalQ
 
 Returns **[Promise][10]** 
 
-#### updateSettings
+## handleExtract
+
+Helper function to handle JSON extract sent to batch endpoint
+
+**Parameters**
+
+-   `ctx` **[Object][1]** Hull request context
+-   `options` **[Object][1]** 
+    -   `options.body` **[Object][1]** request body object (req.body)
+    -   `options.batchSize` **[Object][1]** size of the chunk we want to pass to handler
+    -   `options.callback` **[Function][8]** callback returning a Promise (will be called with array of elements)
+    -   `options.onResponse` **[Function][8]** callback called on successful inital response
+    -   `options.onError` **[Function][8]** callback called during error
+
+Returns **[Promise][10]** 
+
+## updateSettings
 
 Allows to update selected settings of the ship `private_settings` object. This is a wrapper over `hullClient.utils.settings.update()` call. On top of that it makes sure that the current context ship object is updated, and the ship cache is refreshed.
 It will emit `ship:update` notify event.
@@ -427,6 +418,11 @@ req.hull.helpers.updateSettings({ newSettings });
 ```
 
 Returns **[Promise][10]** 
+
+## Context
+
+An object that's available in all action handlers and routers as `req.hull`.
+It's a set of parameters and modules to work in the context of current organization and connector instance.
 
 ### cache
 

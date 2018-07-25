@@ -3,9 +3,8 @@ import type { $Response, NextFunction } from "express";
 import type { HullRequestWithCredentials } from "../types";
 
 const debug = require("debug")("hull-connector:client-middleware");
-const _ = require("lodash");
 const jwt = require("jwt-simple");
-const helperFunctions = require("../helpers");
+const HullClient = require("hull-client");
 
 /**
  * This middleware initiates client and helpers,
@@ -30,10 +29,7 @@ const helperFunctions = require("../helpers");
  *     .then(connector => req.end("ok"));
  * });
  */
-function clientMiddlewareFactory({ HullClient }: Object) {
-  if (HullClient === undefined) {
-    throw new Error("clientMiddleware require HullClient class as dependency");
-  }
+function clientMiddlewareFactory() {
   return function clientMiddleware(req: HullRequestWithCredentials, res: $Response, next: NextFunction) {
     try {
       if (!req.hull) {
@@ -45,16 +41,16 @@ function clientMiddlewareFactory({ HullClient }: Object) {
       if (!req.hull.clientCredentials) {
         throw new Error("Missing clientCredentials");
       }
+      const HullClientClass = req.hull.HullClient || HullClient;
+
       const { hostSecret } = req.hull.connectorConfig;
       const mergedClientConfig = Object.assign({}, req.hull.clientConfig || {}, req.hull.clientCredentials);
       debug("configuration %o", mergedClientConfig);
-      const client = new HullClient(mergedClientConfig);
-      const helpers = _.mapValues(helperFunctions, func => func.bind(null, req.hull));
+      const client = new HullClientClass(mergedClientConfig);
       const clientCredentialsToken = jwt.encode(req.hull.clientCredentials, hostSecret);
       // $FlowFixMe
       req.hull = Object.assign(req.hull, {
         client,
-        helpers,
         clientCredentialsToken
       });
       next();

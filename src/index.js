@@ -13,20 +13,11 @@
 const HullClient = require("hull-client");
 
 const Worker = require("./connector/worker");
-const clientMiddleware = require("./middlewares/client");
-const HullConnectorClass = require("./connector/hull-connector");
-const handlers = require("./handlers");
+const HullConnector = require("./connector/hull-connector");
 
-const boundClientMiddleware = clientMiddleware.bind(undefined, { HullClient });
-const boundHullConnector = HullConnectorClass.bind(undefined, { Worker, HullClient });
-const boundHandlers = (Object.keys(handlers): Array<string>).reduce((bound: Object, key: string) => {
-  bound[key] = handlers[key].bind(undefined, { HullClient });
-  return bound;
-}, {});
+const boundHullConnector = HullConnector.bind(undefined, { Worker, HullClient });
 
 module.exports = {
-  Client: HullClient,
-  middleware: boundClientMiddleware,
   Connector: boundHullConnector,
-  handlers: boundHandlers,
+  Client: HullClient
 };

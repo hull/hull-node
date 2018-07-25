@@ -6,7 +6,7 @@ import type { HullContextBase, HullRequestBase } from "../types";
  * This middleware is responsible for setting HullContextBase - the base part of the context.
  */
 function contextBaseMiddlewareFactory({
-  instrumentation, queue, cache, connectorConfig, clientConfig
+  instrumentation, queue, cache, connectorConfig, clientConfig, HullClient
 }: Object) {
   return function contextBaseMiddleware(req: HullRequestBase, res: $Response, next: NextFunction) {
     const context = {};
@@ -18,6 +18,7 @@ function contextBaseMiddlewareFactory({
     context.cache = cache.getConnectorCache(context);
     context.metric = instrumentation.getMetric(context);
     context.enqueue = queue.getEnqueue(context);
+    context.HullClient = HullClient;
 
     req.hull = (context: HullContextBase);
     next();

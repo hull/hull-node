@@ -1,6 +1,6 @@
 // @flow
 import type { $Response, NextFunction } from "express";
-import type { HullHandlersConfigurationEntry, HullRequestFull } from "../types";
+import type { HullHandlersConfigurationEntry, HullRequestFull } from "../../types";
 
 // type HullActionHandlerOptions = {
 //   cache?: {
@@ -13,8 +13,8 @@ import type { HullHandlersConfigurationEntry, HullRequestFull } from "../types";
 const debug = require("debug")("hull-connector:action-handler");
 const { Router } = require("express");
 
-const { credentialsFromQueryMiddleware, fullContextFetchMiddleware, timeoutMiddleware, haltOnTimedoutMiddleware, clientMiddleware } = require("../middlewares");
-const { normalizeHandlersConfigurationEntry } = require("../utils");
+const { credentialsFromQueryMiddleware, fullContextFetchMiddleware, timeoutMiddleware, haltOnTimedoutMiddleware, clientMiddleware, instrumentationContextMiddleware } = require("../../middlewares");
+const { normalizeHandlersConfigurationEntry } = require("../../utils");
 
 /**
  * This handler allows to handle simple, authorized HTTP calls.
@@ -41,7 +41,7 @@ const { normalizeHandlersConfigurationEntry } = require("../utils");
  * const { actionHandler } = require("hull").handlers;
  * app.use("/list", actionHandler((ctx) => {}))
  */
-function actionHandlerFactory({ HullClient }: Object, configurationEntry: HullHandlersConfigurationEntry): Router {
+function actionHandlerFactory(configurationEntry: HullHandlersConfigurationEntry): Router {
   const { callback, options } = normalizeHandlersConfigurationEntry(configurationEntry);
   const {
     cache = {},
@@ -51,8 +51,10 @@ function actionHandlerFactory({ HullClient }: Object, configurationEntry: HullHa
 
   const router = Router();
   router.use(credentialsFromQueryMiddleware()); // parse config from query
-  router.use(clientMiddleware({ HullClient })); // initialize client
   router.use(timeoutMiddleware());
+  router.use(clientMiddleware()); // initialize client
+  router.use(haltOnTimedoutMiddleware());
+  router.use(instrumentationContextMiddleware());
   router.use(fullContextFetchMiddleware({ requestName: "action" }));
   router.use(haltOnTimedoutMiddleware());
   router.use(function actionHandler(req: HullRequestFull, res: $Response, next: NextFunction) {

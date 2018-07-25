@@ -1,10 +1,10 @@
 // @flow
 import type { $Response, NextFunction } from "express";
-import type { HullRequestFull } from "../types";
+import type { HullRequestFull } from "../../types";
 
 const { Router } = require("express");
 
-const { credentialsFromQueryMiddleware, clientMiddleware, fullContextFetchMiddleware, timeoutMiddleware, haltOnTimedoutMiddleware } = require("../middlewares");
+const { credentialsFromQueryMiddleware, clientMiddleware, fullContextFetchMiddleware, timeoutMiddleware, haltOnTimedoutMiddleware, instrumentationContextMiddleware } = require("../../middlewares");
 
 /**
  * This handler allows to handle simple, authorized HTTP calls.
@@ -23,11 +23,13 @@ const { credentialsFromQueryMiddleware, clientMiddleware, fullContextFetchMiddle
  * @example
  * app.use("/list", actionHandler((ctx) => {}))
  */
-function actionHandler({ HullClient }: Object, jobName: string, options: Object) {
+function actionHandler(jobName: string, options: Object) {
   const router = Router();
   router.use(credentialsFromQueryMiddleware()); // parse config from query
-  router.use(clientMiddleware({ HullClient })); // initialize client
   router.use(timeoutMiddleware());
+  router.use(clientMiddleware()); // initialize client
+  router.use(haltOnTimedoutMiddleware());
+  router.use(instrumentationContextMiddleware());
   router.use(fullContextFetchMiddleware({ requestName: "action" }));
   router.use(haltOnTimedoutMiddleware());
   router.use((req: HullRequestFull, res: $Response, next: NextFunction) => {

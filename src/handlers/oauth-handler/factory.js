@@ -4,7 +4,7 @@ const passport = require("passport");
 const bodyParser = require("body-parser");
 const querystring = require("querystring");
 
-const { credentialsFromQueryMiddleware, clientMiddleware, fullContextFetchMiddleware, timeoutMiddleware, haltOnTimedoutMiddleware } = require("../middlewares");
+const { credentialsFromQueryMiddleware, hullClientMiddleware, fullContextFetchMiddleware, timeoutMiddleware, haltOnTimedoutMiddleware } = require("../../middlewares");
 
 const HOME_URL = "/";
 const LOGIN_URL = "/login";
@@ -108,7 +108,7 @@ function fetchToken(req, res, next) {
  *   ship: ship //The entire Ship instance's config
  * }
  */
-function oAuthHandlerFactory({ HullClient }, {
+function oAuthHandlerFactory({
   name,
   tokenInUrl = true,
   isSetup = function setup() { return Promise.resolve(); },
@@ -136,7 +136,7 @@ function oAuthHandlerFactory({ HullClient }, {
 
   router.use(fetchToken);
   router.use(credentialsFromQueryMiddleware()); // parse config from token
-  router.use(clientMiddleware({ HullClient })); // initialize client
+  router.use(hullClientMiddleware()); // initialize client
   router.use(timeoutMiddleware());
   router.use(fullContextFetchMiddleware({ requestName: "oAuth" }));
   router.use(haltOnTimedoutMiddleware());

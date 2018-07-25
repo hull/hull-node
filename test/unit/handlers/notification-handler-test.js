@@ -2,7 +2,7 @@
 const { expect, should } = require("chai");
 const sinon = require("sinon");
 
-const notificationHandler = require("../../../src/handlers/notification-handler");
+const notificationHandler = require("../../../src/handlers/notification-handler/factory");
 
 
 describe("notificationHandler", () => {

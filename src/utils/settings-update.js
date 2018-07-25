@@ -11,7 +11,7 @@
  * @example
  * req.hull.helpers.updateSettings({ newSettings });
  */
-module.exports = function updateSettings(ctx, newSettings) {
+function settingsUpdate(ctx, newSettings) {
   const { client, cache } = ctx;
   return client.utils.settings.update(newSettings)
     .then((ship) => {
@@ -22,4 +22,6 @@ module.exports = function updateSettings(ctx, newSettings) {
       return cache.del(ship.id)
         .then(() => ship);
     });
-};
+}
+
+module.exports = settingsUpdate;

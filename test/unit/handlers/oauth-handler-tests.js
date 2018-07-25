@@ -8,7 +8,7 @@ const passport = require("passport");
 
 const HullStub = require("../support/hull-stub");
 
-const oauthHandler = require("../../../src/handlers/oauth-handler");
+const oauthHandler = require("../../../src/handlers/oauth-handler/factory");
 
 class StrategyStub extends passport.Strategy {
   constructor() {

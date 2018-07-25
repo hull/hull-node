@@ -6,7 +6,7 @@ const { EventEmitter } = require("events");
 const Promise = require("bluebird");
 const HullStub = require("../support/hull-stub");
 
-const actionHandler = require("../../../src/handlers/action-handler");
+const actionHandler = require("../../../src/handlers/action-handler/factory");
 
 const deps = {
   HullClient: HullStub

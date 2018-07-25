@@ -9,13 +9,13 @@ function timeoutMiddlewareFactory({ emitError = true, onTimeout = null } = {}) {
       if (res.headersSent) {
         return;
       }
-      originalJson.bind(res)(data);
+      originalJson.call(res, data);
     };
     res.send = function customSend(data) {
       if (res.headersSent) {
         return;
       }
-      originalSend.bind(res)(data);
+      originalSend.call(res, data);
     };
     if (onTimeout) {
       req.on("timeout", onTimeout(timeout, next));

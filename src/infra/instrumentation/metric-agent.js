@@ -24,7 +24,12 @@ class MetricAgent {
   logFunction: Function;
   metrics: Object;
 
+  mergeContext: Function;
+  captureException: Function;
+
   constructor(ctx: HullContextFull, instrumentationAgent: Object) {
+    this.mergeContext = instrumentationAgent.mergeContext.bind(instrumentationAgent);
+    this.captureException = instrumentationAgent.captureException.bind(instrumentationAgent);
     this.metrics = instrumentationAgent.metrics;
     this.dogapi = instrumentationAgent.dogapi;
     this.manifest = instrumentationAgent.manifest;

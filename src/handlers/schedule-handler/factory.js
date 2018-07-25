@@ -1,6 +1,6 @@
 // @flow
 import type { $Response, NextFunction } from "express";
-import type { HullRequestFull, HullHandlersConfigurationEntry } from "../types";
+import type { HullRequestFull, HullHandlersConfigurationEntry } from "../../types";
 
 // type HullSchedulerHandlerCallback = (ctx: HullContextFull) => Promise<*>;
 // type HullSchedulerHandlerOptions = {
@@ -9,8 +9,8 @@ import type { HullRequestFull, HullHandlersConfigurationEntry } from "../types";
 
 const { Router } = require("express");
 
-const { credentialsFromQueryMiddleware, clientMiddleware, fullContextBodyMiddleware, timeoutMiddleware, haltOnTimedoutMiddleware } = require("../middlewares");
-const { normalizeHandlersConfigurationEntry } = require("../utils");
+const { credentialsFromQueryMiddleware, clientMiddleware, fullContextBodyMiddleware, timeoutMiddleware, haltOnTimedoutMiddleware, instrumentationContextMiddleware } = require("../../middlewares");
+const { normalizeHandlersConfigurationEntry } = require("../../utils");
 /**
  * This handler allows to handle simple, authorized HTTP calls.
  * By default it picks authorization configuration from query.
@@ -29,7 +29,7 @@ const { normalizeHandlersConfigurationEntry } = require("../utils");
  * @example
  * app.use("/list", actionHandler((ctx) => {}))
  */
-function scheduleHandlerFactory({ HullClient }: Object, configurationEntry: HullHandlersConfigurationEntry) {
+function scheduleHandlerFactory(configurationEntry: HullHandlersConfigurationEntry) {
   const router = Router();
   const { callback, options } = normalizeHandlersConfigurationEntry(configurationEntry);
   const { disableErrorHandling = false } = options;
@@ -37,8 +37,9 @@ function scheduleHandlerFactory({ HullClient }: Object, configurationEntry: Hull
   router.use(timeoutMiddleware());
   router.use(credentialsFromQueryMiddleware()); // parse query
   router.use(haltOnTimedoutMiddleware());
-  router.use(clientMiddleware({ HullClient })); // initialize client
+  router.use(clientMiddleware()); // initialize client
   router.use(haltOnTimedoutMiddleware());
+  router.use(instrumentationContextMiddleware());
   router.use(fullContextBodyMiddleware({ requestName: "scheduler" })); // get rest of the context from body
   router.use(haltOnTimedoutMiddleware());
   router.use(function scheduleHandler(req: HullRequestFull, res: $Response, next: NextFunction) {
