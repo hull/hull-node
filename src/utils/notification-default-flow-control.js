@@ -15,6 +15,24 @@ const _ = require("lodash");
  * @return {[type]}          [description]
  */
 function notificationDefaultFlowControl(ctx: HullContextFull, channel: string, result: HullNotificationResult): HullNotificationFlowControl {
+  const defaultValues = {
+    success: {
+      size: 10,
+      in: 5,
+      in_time: 10
+    },
+    error: {
+      size: 10,
+      in: 5,
+      in_time: 10
+    },
+    unsupported: {
+      size: 10,
+      in: 5,
+      in_time: 10
+    }
+  };
+
   function pickPrivateSettings(param: string): number {
     const settingName = _.snakeCase(`flow_control_${channel}_${result}_${param}`);
     return parseInt(ctx.connector.private_settings[settingName], 10);
@@ -29,9 +47,9 @@ function notificationDefaultFlowControl(ctx: HullContextFull, channel: string, r
   }
   return {
     type,
-    size: pickPrivateSettings("size") || pickEnv("size"),
-    in: pickPrivateSettings("in") || pickEnv("in"),
-    in_time: pickPrivateSettings("in_time") || pickEnv("in_time")
+    size: pickPrivateSettings("size") || pickEnv("size") || defaultValues[result].size,
+    in: pickPrivateSettings("in") || pickEnv("in") || defaultValues[result].in,
+    in_time: pickPrivateSettings("in_time") || pickEnv("in_time") || defaultValues[result].in_time
   };
 }
 

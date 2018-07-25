@@ -45,7 +45,7 @@ class ImportS3Stream extends Writable {
   uploadAndImportPromises: Array<Promise<*>>;
   partEndIndexes: { [partIndex: number]: number };
 
-  constructor(dependencies, options: Object) {
+  constructor(dependencies: Object, options: Object) {
     if (typeof dependencies.hullClient !== "object") {
       throw new Error("HullImportS3Stream requires HullClient instance");
     }
@@ -110,6 +110,7 @@ class ImportS3Stream extends Writable {
    * @param  {Function} callback: Function
    * @return {void}
    */
+  // $FlowFixMe
   _write(object: Object, encoding: string, callback: Function) {
     const debugPayload = {
       objectType: typeof object,
@@ -122,19 +123,20 @@ class ImportS3Stream extends Writable {
 
     if (this.currentUploadStream === null) {
       const newUploadAndImportJob = this.createUploadAndImportJob(this.currentPartIndex, this.currentObjectIndex);
-      this.currentUploadStreamStartIndex = this.currentObjectIndex;
       this.currentUploadStream = newUploadAndImportJob.uploadStream;
       this.uploadAndImportPromises.push(newUploadAndImportJob.uploadAndImportPromise);
       this.emit("upload-stream-new", debugPayload);
       debug("upload-stream-new %o", debugPayload);
     }
 
+    // $FlowFixMe
     this.currentUploadStream.write(`${JSON.stringify(object)}\n`, (err) => {
       debug("write-callback %o", { error: typeof err });
       // we are done with this partSize, let's close the current stream
       if ((this.currentObjectIndex + 1) % this.partSize === 0) {
         this.emit("upload-stream-end", debugPayload);
         debug("upload-stream-end %o", debugPayload);
+        // $FlowFixMe
         this.currentUploadStream.end(() => {
           // let's store the indexes when we ended the stream for future reference,
           // then up the current indexes, clear current stream and continue
@@ -169,6 +171,7 @@ class ImportS3Stream extends Writable {
         .catch(error => callback(error));
     };
     if (this.currentUploadStream !== null) {
+      // $FlowFixMe
       this.currentUploadStream.end(() => {
         this.partEndIndexes[this.currentPartIndex] = this.currentObjectIndex;
         this.currentUploadStream = null;
@@ -193,12 +196,13 @@ class ImportS3Stream extends Writable {
     uploadStream: Writable
   } {
     const { uploadPromise, uploadStream } = this.createS3Upload({ partIndex, objectIndex });
-    this.emit("part-upload-start", { partIndex, objectIndex, partStopIndexes: this.partStopIndexes });
+    this.emit("part-upload-start", { partIndex, objectIndex, partEndIndexes: this.partEndIndexes });
     debug("part-upload-start %o", { partIndex, objectIndex });
     const uploadAndImportPromise = uploadPromise
       .catch((uploadError) => {
         this.emit("part-upload-error", uploadError);
         debug("part-upload-error", uploadError.message);
+        // $FlowFixMe
         this.currentUploadStream.destroy(uploadError);
         if (this.currentUploadStream === uploadStream) {
           this.currentUploadStream = null;
@@ -237,7 +241,7 @@ class ImportS3Stream extends Writable {
    * Refer to `createUploadAndImportJob` method to see how this case is handled.
    * Both internal streams are destroyed and cleanedup.
    */
-  createS3Upload({ partIndex, objectIndex }): {
+  createS3Upload({ partIndex, objectIndex }: Object): {
     uploadPromise: Promise<{ Location: string }>,
     uploadStream: Writable
   } {
@@ -257,12 +261,15 @@ class ImportS3Stream extends Writable {
       gzippedUploadStream = new PassThrough();
       gzippedUploadStream.pipe(zlib.createGzip()).pipe(uploadStream);
       gzippedUploadStream.on("error", (error) => {
+        // $FlowFixMe
         gzippedUploadStream.destroy(error);
+        // $FlowFixMe
         uploadStream.destroy(error);
         upload.abort();
       });
     }
     uploadStream.on("error", (error) => {
+      // $FlowFixMe
       uploadStream.destroy(error);
       upload.abort();
     });
