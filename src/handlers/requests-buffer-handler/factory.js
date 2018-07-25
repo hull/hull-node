@@ -17,7 +17,6 @@ const { clientMiddleware, fullContextFetchMiddleware, timeoutMiddleware, haltOnT
 const Batcher = require("../../infra/batcher");
 
 /**
- * @param {Object}   dependencies
  * @param {Object|Function} callback         [description]
  * @param {Object}   options [description]
  * @param {number}   options.maxSize [description]

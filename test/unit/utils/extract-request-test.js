@@ -5,9 +5,9 @@ const sinon = require("sinon");
 
 const HullStub = require("../support/hull-stub");
 
-const requestExtract = require("../../../src/helpers/request-extract");
+const extractRequest = require("../../../src/utils/extract-request");
 
-describe("extract.request", () => {
+describe("extractRequest", () => {
   beforeEach(function beforeEachHandler() {
     this.postStub = sinon.stub(HullStub.prototype, "post");
   });
@@ -18,7 +18,7 @@ describe("extract.request", () => {
 
   it("should allow to perform `extract/user_reports` call", function test1(done) {
     const stub = new HullStub;
-    requestExtract({ client: stub, hostname: "localhost" })
+    extractRequest({ client: stub, hostname: "localhost" })
       .then(() => {
         expect(this.postStub.calledOnce).to.be.true;
         expect(this.postStub.calledWith("extract/user_reports", {
@@ -33,7 +33,7 @@ describe("extract.request", () => {
 
   it("should allow to pass additionalQuery", function test1(done) {
     const stub = new HullStub;
-    requestExtract({ client: stub, hostname: "localhost" }, { additionalQuery: { foo: "bar" } })
+    extractRequest({ client: stub, hostname: "localhost", additionalQuery: { foo: "bar" } })
       .then(() => {
         expect(this.postStub.calledOnce).to.be.true;
         expect(this.postStub.calledWith("extract/user_reports", {

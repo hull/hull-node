@@ -19,7 +19,6 @@ const { normalizeHandlersConfigurationEntry } = require("../../utils");
  *
  * Optionally it can cache the response, then provide options.cache object with key
  *
- * @param  {Objecct}  dependencies
  * @param  {Object|Function} configurationEntry [description]
  * @param  {Object}   [configurationEntry.options]
  * @param  {Object}   [configurationEntry.options.cache]

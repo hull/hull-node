@@ -217,6 +217,63 @@ app.use(
 
 Returns **[Function][8]** OAuth handler to use with expressjs
 
+### requestExtract
+
+This is a method to request an extract of user base to be sent back to the Connector to a selected `path` which should be handled by `notifHandler`.
+
+**Parameters**
+
+-   `options` **[Object][1]** ={}
+    -   `options.client` **[Object][1]** 
+    -   `options.hostname` **[string][2]** 
+    -   `options.segment` **[Object][1]**  (optional, default `null`)
+    -   `options.format` **[Object][1]**  (optional, default `json`)
+    -   `options.path` **[Object][1]**  (optional, default `/batch`)
+    -   `options.fields` **[Object][1]**  (optional, default `[]`)
+    -   `options.additionalQuery` **[Object][1]**  (optional, default `{}`)
+
+**Examples**
+
+```javascript
+req.hull.helpers.requestExtract({ segment = null, path, fields = [], additionalQuery = {} });
+```
+
+Returns **[Promise][10]** 
+
+### handleExtract
+
+Helper function to handle JSON extract sent to batch endpoint
+
+**Parameters**
+
+-   `ctx` **[Object][1]** Hull request context
+-   `options` **[Object][1]** 
+    -   `options.body` **[Object][1]** request body object (req.body)
+    -   `options.batchSize` **[Object][1]** size of the chunk we want to pass to handler
+    -   `options.callback` **[Function][8]** callback returning a Promise (will be called with array of elements)
+    -   `options.onResponse` **[Function][8]** callback called on successful inital response
+    -   `options.onError` **[Function][8]** callback called during error
+
+Returns **[Promise][10]** 
+
+### updateSettings
+
+Allows to update selected settings of the ship `private_settings` object. This is a wrapper over `hullClient.utils.settings.update()` call. On top of that it makes sure that the current context ship object is updated, and the ship cache is refreshed.
+It will emit `ship:update` notify event.
+
+**Parameters**
+
+-   `ctx` **[Object][1]** The Context Object
+-   `newSettings` **[Object][1]** settings to update
+
+**Examples**
+
+```javascript
+req.hull.helpers.updateSettings({ newSettings });
+```
+
+Returns **[Promise][10]** 
+
 ### superagentErrorPlugin
 
 This is a general error handling SuperAgent plugin.
@@ -362,62 +419,6 @@ agent
 ```
 
 Returns **[Function][8]** function to use as superagent plugin
-
-## requestExtract
-
-This is a method to request an extract of user base to be sent back to the Connector to a selected `path` which should be handled by `notifHandler`.
-
-**Parameters**
-
--   `ctx` **[Object][1]** Hull request context
--   `options` **[Object][1]**  (optional, default `{}`)
-    -   `options.segment` **[Object][1]**  (optional, default `null`)
-    -   `options.format` **[Object][1]**  (optional, default `json`)
-    -   `options.path` **[Object][1]**  (optional, default `/batch`)
-    -   `options.fields` **[Object][1]**  (optional, default `[]`)
-    -   `options.additionalQuery` **[Object][1]**  (optional, default `{}`)
-
-**Examples**
-
-```javascript
-req.hull.helpers.requestExtract({ segment = null, path, fields = [], additionalQuery = {} });
-```
-
-Returns **[Promise][10]** 
-
-## handleExtract
-
-Helper function to handle JSON extract sent to batch endpoint
-
-**Parameters**
-
--   `ctx` **[Object][1]** Hull request context
--   `options` **[Object][1]** 
-    -   `options.body` **[Object][1]** request body object (req.body)
-    -   `options.batchSize` **[Object][1]** size of the chunk we want to pass to handler
-    -   `options.callback` **[Function][8]** callback returning a Promise (will be called with array of elements)
-    -   `options.onResponse` **[Function][8]** callback called on successful inital response
-    -   `options.onError` **[Function][8]** callback called during error
-
-Returns **[Promise][10]** 
-
-## updateSettings
-
-Allows to update selected settings of the ship `private_settings` object. This is a wrapper over `hullClient.utils.settings.update()` call. On top of that it makes sure that the current context ship object is updated, and the ship cache is refreshed.
-It will emit `ship:update` notify event.
-
-**Parameters**
-
--   `ctx` **[Object][1]** The Context Object
--   `newSettings` **[Object][1]** settings to update
-
-**Examples**
-
-```javascript
-req.hull.helpers.updateSettings({ newSettings });
-```
-
-Returns **[Promise][10]** 
 
 ## Context
 

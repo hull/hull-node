@@ -1,3 +1,7 @@
+# 0.14.0-beta.8
+* introduce import stream utility
+* simplify handlers and change the way we require them
+
 # 0.14.0-beta.7
 * various fixes
 * introduce stream related utils

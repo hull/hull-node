@@ -13,7 +13,7 @@ const promiseToWritableStream = require("./promise-to-writable-stream");
  *
  * @name handleExtract
  * @public
- * @memberof Context.helpers
+ * @memberof Utils
  * @param {Object}   ctx Hull request context
  * @param {Object}   options
  * @param {Object}   options.body       request body object (req.body)

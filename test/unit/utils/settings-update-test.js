@@ -3,12 +3,12 @@ const { expect } = require("chai");
 const sinon = require("sinon");
 const Promise = require("bluebird");
 
-const { updateSettings } = require("../../../src/helpers");
+const settingsUpdate = require("../../../src/utils/settings-update");
 
-describe("updateSettings", () => {
+describe("settingsUpdate", () => {
   it("should call utils.settings.update in the background", (done) => {
     const updateStub = sinon.stub().returns(Promise.resolve({}));
-    updateSettings({
+    settingsUpdate({
       client: {
         utils: {
           settings: { update: updateStub }
@@ -23,7 +23,7 @@ describe("updateSettings", () => {
 
   it("should clear cache if possible", (done) => {
     const cacheStub = sinon.stub().returns(Promise.resolve({}));
-    updateSettings({
+    settingsUpdate({
       client: {
         utils: {
           settings: { update: () => Promise.resolve({}) }

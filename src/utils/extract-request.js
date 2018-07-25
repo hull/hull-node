@@ -7,9 +7,10 @@ const _ = require("lodash");
  *
  * @public
  * @name requestExtract
- * @memberof Context.helpers
- * @param {Object}   ctx Hull request context
- * @param {Object} [options={}]
+ * @memberof Utils
+ * @param {Object} options={}
+ * @param {Object} options.client
+ * @param {string} options.hostname
  * @param {Object} [options.segment=null]
  * @param {Object} [options.format=json]
  * @param {Object} [options.path=/batch]
@@ -19,8 +20,8 @@ const _ = require("lodash");
  * @example
  * req.hull.helpers.requestExtract({ segment = null, path, fields = [], additionalQuery = {} });
  */
-function extractRequest({ hullClient, hostname, segment = null, format = "json", path = "batch", fields = [], additionalQuery = {} } = {}) {
-  const conf = hullClient.configuration();
+function extractRequest({ client, hostname, segment = null, format = "json", path = "batch", fields = [], additionalQuery = {} }) {
+  const conf = client.configuration();
   const search = _.merge({
     ship: conf.id,
     secret: conf.secret,
@@ -46,12 +47,12 @@ function extractRequest({ hullClient, hostname, segment = null, format = "json",
     if (segment.query) {
       return Promise.resolve(segment);
     }
-    return hullClient.get(segment.id);
+    return client.get(segment.id);
   })()
   .then(({ query }) => {
     const params = { query, format, url, fields };
-    hullClient.logger.debug("connector.requestExtract.params", params);
-    return hullClient.post("extract/user_reports", params);
+    client.logger.debug("connector.requestExtract.params", params);
+    return client.post("extract/user_reports", params);
   });
 }
 

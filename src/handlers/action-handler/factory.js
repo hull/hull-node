@@ -29,7 +29,6 @@ const { normalizeHandlersConfigurationEntry } = require("../../utils");
  * connector.action-handler.api-calls
  *
  *
- * @param  {Object}
  * @param  {Object|Function} configurationEntry [description]
  * @param  {Object} [configurationEntry.options]
  * @param  {Object} [configurationEntry.options.disableErrorHandling] if you want to disable internal
