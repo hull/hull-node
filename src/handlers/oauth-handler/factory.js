@@ -4,7 +4,7 @@ const passport = require("passport");
 const bodyParser = require("body-parser");
 const querystring = require("querystring");
 
-const { clientMiddleware, credentialsFromQueryMiddleware, hullClientMiddleware, fullContextFetchMiddleware, timeoutMiddleware, haltOnTimedoutMiddleware } = require("../../middlewares");
+const { clientMiddleware, credentialsFromQueryMiddleware, fullContextFetchMiddleware, timeoutMiddleware, haltOnTimedoutMiddleware } = require("../../middlewares");
 
 const HOME_URL = "/";
 const LOGIN_URL = "/login";

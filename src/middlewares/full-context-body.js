@@ -58,6 +58,7 @@ function fullContextBodyMiddlewareFactory({ requestName, strict = true }: Object
         usersSegments,
         // $FlowFixMe
         accountsSegments,
+        // $FlowFixMe
         notification: body
       });
       return next();

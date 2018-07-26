@@ -14,13 +14,13 @@
 function settingsUpdate(ctx, newSettings) {
   const { client, cache } = ctx;
   return client.utils.settings.update(newSettings)
-    .then((ship) => {
-      ctx.ship = ship;
+    .then((connector) => {
+      ctx.connector = connector;
       if (!cache) {
-        return ship;
+        return connector;
       }
-      return cache.del(ship.id)
-        .then(() => ship);
+      return cache.del(connector.id)
+        .then(() => connector);
     });
 }
 

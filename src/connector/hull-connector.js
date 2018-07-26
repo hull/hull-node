@@ -1,6 +1,6 @@
 // @flow
 import type { $Application, $Response, NextFunction, Middleware } from "express";
-import type { HullConnectorOptions, HullRequestBase, HullRequest } from "../types";
+import type { HullConnectorOptions, HullRequest } from "../types";
 
 const Promise = require("bluebird");
 const fs = require("fs");
@@ -122,16 +122,15 @@ class HullConnector {
 
     app.set("views", `${process.cwd()}/views`);
     app.set("view engine", "ejs");
-    app.use((req: HullRequestBase, res: $Response, next: NextFunction) => {
-      req.hull.metric.increment("connector.request", 1);
-      next();
-    });
     this.middlewares.map(middleware => app.use(middleware));
     return app;
   }
 
   /**
    * This is a supplement method which calls `app.listen` internally and also terminates instrumentation of the application calls.
+   * If any error is not caught on handler level it will first go through instrumentation handler reporting it to sentry
+   * and then a `500 Unhandled Error` response will be send back to the client.
+   * The response can be provided by the handler before passing it here.
    * @public
    * @param  {express} app expressjs application
    * @return {http.Server}
@@ -147,7 +146,9 @@ class HullConnector {
      */
     app.use((err: Error, req: HullRequest, res: $Response, next: NextFunction) => { // eslint-disable-line no-unused-vars
       debug("unhandled-error", err.message);
-      return res.status(500).send("unhandled-error");
+      if (!res.headersSent) {
+        res.status(500).send("unhandled-error");
+      }
     });
 
     return app.listen(this.port, () => {

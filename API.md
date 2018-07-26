@@ -37,6 +37,9 @@ Returns **express** expressjs application
 ### startApp
 
 This is a supplement method which calls `app.listen` internally and also terminates instrumentation of the application calls.
+If any error is not caught on handler level it will first go through instrumentation handler reporting it to sentry
+and then a `500 Unhandled Error` response will be send back to the client.
+The response can be provided by the handler before passing it here.
 
 **Parameters**
 

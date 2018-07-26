@@ -8,7 +8,9 @@ import type { HullRequestFull, HullHandlersConfigurationEntry } from "../../type
 // };
 
 const { Router } = require("express");
+const debug = require("debug")("hull-connector:schedule-handler");
 
+const { TransientError } = require("../../errors");
 const { credentialsFromQueryMiddleware, clientMiddleware, fullContextBodyMiddleware, timeoutMiddleware, haltOnTimedoutMiddleware, instrumentationContextMiddleware } = require("../../middlewares");
 const { normalizeHandlersConfigurationEntry } = require("../../utils");
 /**
@@ -50,8 +52,14 @@ function scheduleHandlerFactory(configurationEntry: HullHandlersConfigurationEnt
       .catch(error => next(error));
   });
   if (disableErrorHandling === true) {
-    router.use((err: Error, req: HullRequestFull, res: $Response, _next: NextFunction) => {
-      res.status(503).end("err");
+    router.use((err: Error, req: HullRequestFull, res: $Response, next: NextFunction) => {
+      debug("error", err);
+      // if we have transient error
+      if (err instanceof TransientError) {
+        return res.status(503).end("transient-error");
+      }
+      // else pass it to the global error middleware
+      return next(err);
     });
   }
   return router;

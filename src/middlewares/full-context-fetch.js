@@ -12,7 +12,7 @@ function fetchConnector(ctx): Promise<*> {
   return ctx.cache.wrap("connector", () => {
     debug("fetchConnector - calling API");
     return ctx.client.get("app", {});
-  });
+  }, { ttl: 60000 });
 }
 
 function fetchSegments(ctx, entityType = "users") {
@@ -37,7 +37,7 @@ function fetchSegments(ctx, entityType = "users") {
         retry: 1000
       }
     );
-  });
+  }, { ttl: 60000 });
 }
 
 /**
@@ -54,6 +54,10 @@ function fullContextFetchMiddlewareFactory({ requestName, strict = true }: Objec
     if (req.hull === undefined || req.hull.client === undefined) {
       return next(new Error("We need initialized client to fetch connector settings and segments lists"));
     }
+    if (req.hull.notification && req.hull.notification.channel === "ship:update") {
+      req.hull.cache.del("connector");
+    }
+
     return Promise.all([
       fetchConnector(req.hull),
       fetchSegments(req.hull, "user"),

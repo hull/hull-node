@@ -1,13 +1,13 @@
 # 0.13 -> 0.14 migration guide
 
-1. rename `smartNotifierHandler` with `notificationHandler`
+1. rename `smartNotifierHandler` to `notificationHandler`
     ```js
     // before
     const { smartNotifierHandler } = require("hull/lib/utils");
     // after
     const { notificationHandler } = require("hull/lib/utils");
     ```
-3. use `batchHandler` instead of `smartNotifierHandler` and `notifHandler` for `batch` endpoints
+3. use `batchHandler` instead of `smartNotifierHandler` or `notifHandler` to handle `/batch` endpoints
 4. use [`HullHandlersConfiguration`](src/types.js#L167) flow type object when setting up `notificationHandler` and `batchHandler`. The main difference is that we do not wrap everything in `handlers` param and we can optionally pass `callback` and `options` params instead of function.
 When using `scheduleHandler` or `actionHandler` you need to pass `HullHandlersConfigurationEntry`.
     ```js
@@ -26,7 +26,7 @@ When using `scheduleHandler` or `actionHandler` you need to pass `HullHandlersCo
       }
     }));
     ```
-5. although all routes of the connector communicating with the platform should be usiing appropriate handler, if you need to use plain expressjs routes you can use `credsFromQueryMiddlewares` utility to get full `req.hull` context:
+5. although all routes of the connector application communicating with the platform should be using appropriate handler, if you need to use plain expressjs routes you can use `credsFromQueryMiddlewares` utility to get full `req.hull` context. This is a breaking change, version 0.13 was preparing `req.hull` object on `connector.setupApp` level not on the handler level.
     ```js
     const { credsFromQueryMiddlewares } = require("hull/lib/utils");
     app.post(
@@ -48,4 +48,21 @@ When using `scheduleHandler` or `actionHandler` you need to pass `HullHandlersCo
     Hull.Client.logger.transports.console.level = "debug";
     ```
 11. `Hull.Middleware` or `Hull.middleware` is not available anymore, you need to use `const { clientMiddleware } = require("hull/lib/middlewares");`
-12. `req.hull.helpers` object was removed. Some of the helpers were moved to `utils`. `filterNotifications` helper is not available anymore, implement custom filterUtil
+12. `req.hull.helpers` object was removed. Some of the helpers were moved to `utils`. `filterNotifications` helper is not available anymore, implement custom `filterUtil`.
+    ```js
+    // before
+    app.post("/", (req, res) => {
+      req.hull.helpers.updateSettings({ newSettings });
+    });
+
+    // after
+    const { settingsUpdate } = require("hull/lib/utils");
+    const { credsFromQueryMiddlewares } = require("hull/lib/utils");
+    app.post(
+      "/",
+      ...credsFromQueryMiddlewares(),
+      (req, res) => {
+        settingsUpdate(req.hull, { newSettings });
+      }
+    );
+    ```

@@ -10,7 +10,8 @@ const {
   haltOnTimedoutMiddleware,
   fullContextBodyMiddleware,
   fullContextFetchMiddleware,
-  instrumentationContextMiddleware
+  instrumentationContextMiddleware,
+  instrumentationTransientError
 } = require("../../middlewares");
 const { normalizeHandlersConfiguration } = require("../../utils");
 
@@ -33,11 +34,12 @@ function batchExtractHandlerFactory(configuration: HullHandlersConfiguration): *
   router.use(credentialsFromQueryMiddleware()); // parse query
   router.use(clientMiddleware()); // initialize client
   router.use(haltOnTimedoutMiddleware());
-  router.use(instrumentationContextMiddleware());
+  router.use(instrumentationContextMiddleware({ handler: "batch" }));
   router.use(fullContextBodyMiddleware({ requestName: "batch", strict: false })); // get rest of the context from body
   router.use(fullContextFetchMiddleware({ requestName: "batch" })); // if something is missing at body
   router.use(haltOnTimedoutMiddleware());
   router.use(processingMiddleware(normalizedConfiguration));
+  router.use(instrumentationTransientError());
   router.use(errorMiddleware());
   return router;
 }

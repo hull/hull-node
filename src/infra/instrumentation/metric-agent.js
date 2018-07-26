@@ -26,10 +26,11 @@ class MetricAgent {
 
   mergeContext: Function;
   captureException: Function;
+  _captureException: Function;
 
   constructor(ctx: HullContextFull, instrumentationAgent: Object) {
     this.mergeContext = instrumentationAgent.mergeContext.bind(instrumentationAgent);
-    this.captureException = instrumentationAgent.captureException.bind(instrumentationAgent);
+    this._captureException = instrumentationAgent.captureException.bind(instrumentationAgent);
     this.metrics = instrumentationAgent.metrics;
     this.dogapi = instrumentationAgent.dogapi;
     this.manifest = instrumentationAgent.manifest;
@@ -54,7 +55,7 @@ class MetricAgent {
       return null;
     }
     try {
-      return this.metrics.gauge(metric, parseFloat(value), _.union(this.getMetricTags(), additionalTags));
+      return this.metrics.gauge(metric, parseFloat(value), _.union(this.getMetricTagsArray(), additionalTags));
     } catch (err) {
       console.warn("metricVal.error", err);
     }
@@ -76,7 +77,7 @@ class MetricAgent {
       return null;
     }
     try {
-      return this.metrics.increment(metric, parseFloat(value), _.union(this.getMetricTags(), additionalTags));
+      return this.metrics.increment(metric, parseFloat(value), _.union(this.getMetricTagsArray(), additionalTags));
     } catch (err) {
       console.warn("metricInc.error", err);
     }
@@ -97,22 +98,38 @@ class MetricAgent {
       return null;
     }
     return this.dogapi.event.create(`${this.manifest.name}.${title}`, text, _.merge({}, properties, {
-      tags: this.getMetricTags()
+      tags: this.getMetricTagsArray()
     }));
   }
 
-  getMetricTags() {
+  captureException(err: Error, extra: Object = {}, tags: Object = {}) {
+    return this._captureException(err, extra, _.merge({}, this.getMetricTagsObject(), tags));
+  }
+
+  getMetricTagsObject() {
     const { organization = "none", id = "none" } = this.ctx.client !== undefined ? this.ctx.client.configuration() : {};
     const hullHost = organization.split(".").slice(1).join(".");
-    const tags = [
-      "source:ship", "source:connector",
-      `ship_version:${this.manifest.version}`, `connector_version:${this.manifest.version}`,
-      `ship_name:${this.manifest.name}`, `connector_name:${this.manifest.name}`,
-      `ship_env:${process.env.NODE_ENV || "production"}`, `connector_env:${process.env.NODE_ENV || "production"}`,
-      `hull_env:${process.env.HULL_ENV || "production"}`, `hull_host:${hullHost}`, `organization:${organization}`,
-      `ship:${id}`, `connector:${id}`
-    ];
+    const tags = {
+      source: "ship",
+      ship_version: this.manifest.version,
+      connector_version: this.manifest.version,
+      ship_name: this.manifest.name,
+      connector_name: this.manifest.name,
+      ship_env: process.env.NODE_ENV || "production",
+      connector_env: process.env.NODE_ENV || "production",
+      hull_env: process.env.HULL_ENV || "production",
+      hull_host: hullHost,
+      organization,
+      ship: id,
+      connector: id,
+      handler_name: this.ctx.handlerName || "none"
+    };
     return tags;
+  }
+
+  getMetricTagsArray() {
+    const tagsObject = this.getMetricTagsObject();
+    return _.toPairs(tagsObject).map(([key, value]) => `${key}:${value}`);
   }
 }
 

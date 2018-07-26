@@ -69,7 +69,8 @@ export type HullContextWithCredentials = {
 export type HullContextWithClient = {
   /*:: ...$Exact<HullContextWithCredentials>, */
   clientCredentialsToken: string,
-  client: HullClient
+  client: HullClient,
+  notification?: HullNotification
 };
 
 /**
@@ -87,7 +88,8 @@ export type HullContextFull = {
   notification?: HullNotification,
   notificationResponse?: {
     flow_control: HullNotificationFlowControl
-  }
+  },
+  handlerName?: string
 };
 
 export type HullContext = HullContextFull;

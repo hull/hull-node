@@ -9,7 +9,8 @@ const {
   timeoutMiddleware,
   haltOnTimedoutMiddleware,
   fullContextBodyMiddleware,
-  instrumentationContextMiddleware
+  instrumentationContextMiddleware,
+  instrumentationTransientError
 } = require("../../middlewares");
 
 const processingMiddleware = require("./processing-middleware");
@@ -33,9 +34,10 @@ function notificationHandlerFactory(configuration: HullHandlersConfiguration): *
   router.use(haltOnTimedoutMiddleware());
   router.use(clientMiddleware());
   router.use(haltOnTimedoutMiddleware());
-  router.use(instrumentationContextMiddleware());
+  router.use(instrumentationContextMiddleware({ handlerName: "notification" }));
   router.use(fullContextBodyMiddleware({ requestName: "notification" }));
   router.use(processingMiddleware(normalizedConfiguration));
+  router.use(instrumentationTransientError());
   router.use(errorMiddleware());
   return router;
 }

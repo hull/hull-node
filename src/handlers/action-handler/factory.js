@@ -13,6 +13,7 @@ import type { HullHandlersConfigurationEntry, HullRequestFull } from "../../type
 const debug = require("debug")("hull-connector:action-handler");
 const { Router } = require("express");
 
+const { TransientError } = require("../../errors");
 const { credentialsFromQueryMiddleware, fullContextFetchMiddleware, timeoutMiddleware, haltOnTimedoutMiddleware, clientMiddleware, instrumentationContextMiddleware } = require("../../middlewares");
 const { normalizeHandlersConfigurationEntry } = require("../../utils");
 
@@ -76,13 +77,21 @@ function actionHandlerFactory(configurationEntry: HullHandlersConfigurationEntry
       .catch(error => next(error));
   });
   if (disableErrorHandling !== true) {
-    router.use(function actionHandlerErrorMiddleware(err: Error, req: HullRequestFull, res: $Response, _next: NextFunction) {
+    router.use(function actionHandlerErrorMiddleware(err: Error, req: HullRequestFull, res: $Response, next: NextFunction) {
       debug("error", err);
-      res.status(500);
+
       if (respondWithError) {
-        return res.end(err.toString());
+        res.end(err.toString());
+      } else {
+        res.end("error");
       }
-      return res.end("error");
+      // if we have non transient error
+      if (err instanceof TransientError) {
+        res.status(503);
+      } else {
+        res.status(500);
+        next(err);
+      }
     });
   }
 

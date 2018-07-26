@@ -1,4 +1,5 @@
 const connectTimeout = require("connect-timeout");
+const { TransientError } = require("../errors");
 
 function timeoutMiddlewareFactory({ emitError = true, onTimeout = null } = {}) {
   return function timeoutMiddleware(req, res, next) {
@@ -21,7 +22,7 @@ function timeoutMiddlewareFactory({ emitError = true, onTimeout = null } = {}) {
       req.on("timeout", onTimeout(timeout, next));
     }
     if (emitError) {
-      const error = new Error("Response timeout");
+      const error = new TransientError("Response timeout");
       req.on("timeout", () => next(error));
     }
     connectTimeout(timeout, { respond: false })(req, res, next);
