@@ -1,4 +1,5 @@
 const sinon = require("sinon");
+const { expect } = require("chai");
 const { Readable } = require("stream");
 const ImportS3Stream = require("../../../src/utils/import-s3-stream");
 
@@ -45,6 +46,9 @@ function getHullClientStub({ error = false } = {}) {
 function getS3Stub({ delay = 0, errorAt = null } = {}) {
   let index = 0;
   return {
+    getSignedUrl: () => {
+      return "foo://bar?signedUrl"
+    },
     upload: (options) => {
       const { Body } = options;
       let rejectNewPromise;
@@ -153,6 +157,9 @@ describe("ImportS3Stream", () => {
   });
 
   it("should handle an error on SourceStream", (done) => {
+    // when there is an error on source stream
+    // the ImportS3Stream will try to process as much as possible and then
+    // finish succesfully if there is no other internal error
     const hullClient = getHullClientStub();
     const s3 = getS3Stub();
     const importS3Stream = new ImportS3Stream({
@@ -168,6 +175,8 @@ describe("ImportS3Stream", () => {
     exampleStream.pipe(importS3Stream);
     exampleStream.on("error", () => {});
     importS3Stream.on("finish", () => {
+      expect(importS3Stream.importResults[0].size).to.equal(10);
+      expect(importS3Stream.importResults[1].size).to.equal(5);
       done();
     });
   });
@@ -187,8 +196,7 @@ describe("ImportS3Stream", () => {
     const exampleStream = new SourceStream({ max: 30 });
 
     exampleStream.pipe(importS3Stream);
-    importS3Stream.on("finish", (error) => {
-      console.log("finish", error);
+    importS3Stream.on("error", () => {
       done();
     });
   });
@@ -207,8 +215,7 @@ describe("ImportS3Stream", () => {
     const exampleStream = new SourceStream({ max: 30 });
 
     exampleStream.pipe(importS3Stream);
-    importS3Stream.on("finish", (error) => {
-      console.log("finish", error);
+    importS3Stream.on("error", () => {
       done();
     });
   });

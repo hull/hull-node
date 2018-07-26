@@ -5,6 +5,7 @@ const uuid = require("uuid/v1");
 const zlib = require("zlib");
 const _ = require("lodash");
 const debug = require("debug")("hull-import-s3-stream");
+const moment = require("moment");
 
 /**
  * This
@@ -23,7 +24,8 @@ class ImportS3Stream extends Writable {
    */
   s3Bucket: string;
   s3ACL: string;
-  s3KeyTemplate: string
+  s3KeyTemplate: string;
+  s3SignedUrlExpires: number;
 
   gzipEnabled: boolean;
   partSize: number;
@@ -33,7 +35,7 @@ class ImportS3Stream extends Writable {
   notify: boolean;
   emitEvent: boolean;
   importType: "users" | "accounts" | "events";
-  importDelay: number;
+  importScheduleAt: (partIndex: number) => string;
   importNameTemplate: string;
 
   /*
@@ -44,6 +46,8 @@ class ImportS3Stream extends Writable {
   currentPartIndex: number;
   uploadAndImportPromises: Array<Promise<*>>;
   partEndIndexes: { [partIndex: number]: number };
+  uploadResults: Array<Object>;
+  importResults: Array<Object>;
 
   constructor(dependencies: Object, options: Object) {
     if (typeof dependencies.hullClient !== "object") {
@@ -68,12 +72,15 @@ class ImportS3Stream extends Writable {
     this.s3Bucket = options.s3Bucket;
     this.s3ACL = options.s3ACL || "private";
     this.s3KeyTemplate = options.s3KeyTemplate || "<%= partIndex %>.json";
+    this.s3SignedUrlExpires = options.s3SignedUrlExpires || 86400; // seconds
     this.importId = options.importId || uuid();
     this.overwrite = options.overwrite || false;
     this.notify = options.notify || false;
     this.emitEvent = options.emitEvent || false;
     this.importType = options.importType || "users";
-    this.importDelay = options.importDelay || 0;
+    this.importScheduleAt = options.importScheduleAt || ((partIndex) => {
+      return moment().add((2 * partIndex), "minutes").toISOString();
+    });
     this.partSize = options.partSize || 10000;
     this.importNameTemplate = options.importNameTemplate || "Import - part <%= partIndex %>";
 
@@ -82,16 +89,22 @@ class ImportS3Stream extends Writable {
     this.currentPartIndex = 0;
     this.uploadAndImportPromises = [];
     this.partEndIndexes = {};
+    this.uploadResults = [];
+    this.importResults = [];
     debug("intialized writable stream", {
       importId: this.importId
     });
 
-    this.once("error", (error) => {
-      setTimeout(() => {
+    this.once("internal-error", (error) => {
+      debug("internal-error-handler", error);
+      const timeoutId = setTimeout(() => {
         this.emit("error", error);
       }, 500);
       this._final(() => {
-        this.emit("finish", error);
+        if (timeoutId) {
+          clearTimeout(timeoutId);
+        }
+        this.emit("error", error);
       });
     });
   }
@@ -207,12 +220,13 @@ class ImportS3Stream extends Writable {
         if (this.currentUploadStream === uploadStream) {
           this.currentUploadStream = null;
         }
-        this.emit("error", uploadError);
+        this.emit("internal-error", uploadError);
         return Promise.reject(uploadError);
       })
       .then((uploadResult) => {
+        this.uploadResults.push(uploadResult);
         const size = (this.partEndIndexes[partIndex] - objectIndex) + 1;
-        const url = uploadResult.Location;
+        const url = uploadResult.SignedUrl;
         const eventPayload = { partIndex, objectIndex, uploadResult, size, stopObjectIndex: this.partEndIndexes[partIndex] };
         this.emit("part-upload-complete", eventPayload);
         debug("part-upload-complete %o", eventPayload);
@@ -220,11 +234,12 @@ class ImportS3Stream extends Writable {
           .catch((importError) => {
             this.emit("part-import-error", importError);
             debug("part-import-error", importError.message);
-            this.emit("error", importError);
+            this.emit("internal-error", importError);
             return Promise.reject(importError);
           });
       })
       .then((importResult) => {
+        this.importResults.push(importResult);
         this.emit("part-import-complete", importResult);
         debug("part-import-complete %o", importResult);
         return importResult;
@@ -242,7 +257,7 @@ class ImportS3Stream extends Writable {
    * Both internal streams are destroyed and cleanedup.
    */
   createS3Upload({ partIndex, objectIndex }: Object): {
-    uploadPromise: Promise<{ Location: string }>,
+    uploadPromise: Promise<{ SignedUrl: string }>,
     uploadStream: Writable
   } {
     const uploadStream = new PassThrough();
@@ -273,8 +288,13 @@ class ImportS3Stream extends Writable {
       uploadStream.destroy(error);
       upload.abort();
     });
+    const uploadPromise = upload.promise().then((uploadResult) => {
+      const url = this.s3.getSignedUrl("getObject", { Bucket: params.Bucket, Key: params.Key, Expires: this.s3SignedUrlExpires });
+      uploadResult.SignedUrl = url;
+      return uploadResult;
+    });
     return {
-      uploadPromise: upload.promise(),
+      uploadPromise,
       uploadStream: gzippedUploadStream || uploadStream
     };
   }
@@ -287,7 +307,7 @@ class ImportS3Stream extends Writable {
       emit_event: this.emitEvent,
       overwrite: this.overwrite,
       name: _.template(this.importNameTemplate)({ partIndex, size, objectIndex }),
-      // schedule_at: moment().add(this.importDelay + (2 * partNumber), "minutes").toISOString(),
+      schedule_at: this.importScheduleAt(partIndex),
       stats: { size },
       size,
       import_id: this.importId,

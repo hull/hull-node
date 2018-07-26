@@ -4,7 +4,7 @@ const passport = require("passport");
 const bodyParser = require("body-parser");
 const querystring = require("querystring");
 
-const { credentialsFromQueryMiddleware, hullClientMiddleware, fullContextFetchMiddleware, timeoutMiddleware, haltOnTimedoutMiddleware } = require("../../middlewares");
+const { clientMiddleware, credentialsFromQueryMiddleware, hullClientMiddleware, fullContextFetchMiddleware, timeoutMiddleware, haltOnTimedoutMiddleware } = require("../../middlewares");
 
 const HOME_URL = "/";
 const LOGIN_URL = "/login";
@@ -136,7 +136,7 @@ function oAuthHandlerFactory({
 
   router.use(fetchToken);
   router.use(credentialsFromQueryMiddleware()); // parse config from token
-  router.use(hullClientMiddleware()); // initialize client
+  router.use(clientMiddleware()); // initialize client
   router.use(timeoutMiddleware());
   router.use(fullContextFetchMiddleware({ requestName: "oAuth" }));
   router.use(haltOnTimedoutMiddleware());

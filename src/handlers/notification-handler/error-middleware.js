@@ -16,7 +16,7 @@ function notificationHandlerErrorMiddlewareFactory() {
     const { channel } = req.hull.notification;
     if (err.message === "Channel unsupported") {
       const defaultUnsupportedFlowControl = notificationDefaultFlowControl(req.hull, channel, "unsupported");
-      return res.status(200).json(defaultUnsupportedFlowControl);
+      return res.status(200).json({ flow_control: defaultUnsupportedFlowControl });
     }
 
     if (err instanceof TransientError) {
@@ -24,7 +24,7 @@ function notificationHandlerErrorMiddlewareFactory() {
     }
 
     const defaultErrorFlowControl = notificationDefaultFlowControl(req.hull, channel, "error");
-    return res.status(500).json(defaultErrorFlowControl);
+    return res.status(500).json({ flow_control: defaultErrorFlowControl });
   };
 }
 
