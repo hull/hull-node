@@ -1,3 +1,8 @@
+# 0.14.0-beta.13
+* fix all tests
+* Node JS 8.x is only supported version now
+* multiple fixes
+
 # 0.14.0-beta.12
 * enhance import-s3-stream
 * multiple fixes
