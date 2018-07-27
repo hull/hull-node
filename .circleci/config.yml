@@ -54,8 +54,10 @@ workflows:
   version: 2
   build:
     jobs:
-      - "node-6.10"
-      - "node-6.11"
-      - "node-6.12"
       - "node-8.9"
       - "node-8.10"
+      - "node-8.11"
+      - "node-10.5"
+      - "node-10.6"
+      - "node-10.7"
+
