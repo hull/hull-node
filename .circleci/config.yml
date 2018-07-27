@@ -25,18 +25,6 @@ shared: &shared
           destination: /hull-node.tgz
 
 jobs:
-  "node-6.10":
-    <<: *shared
-    docker:
-      - image: circleci/node:6.10
-  "node-6.11":
-    <<: *shared
-    docker:
-      - image: circleci/node:6.11
-  "node-6.12":
-    <<: *shared
-    docker:
-      - image: circleci/node:6.12
   "node-8.9":
     <<: *shared
     docker:
@@ -45,6 +33,22 @@ jobs:
     <<: *shared
     docker:
       - image: circleci/node:8.10
+  "node-8.11":
+    <<: *shared
+    docker:
+      - image: circleci/node:8.11
+  "node-10.5":
+    <<: *shared
+    docker:
+      - image: circleci/node:10.5
+  "node-10.6":
+    <<: *shared
+    docker:
+      - image: circleci/node:10.6
+  "node-10.7":
+    <<: *shared
+    docker:
+      - image: circleci/node:10.7
 
 workflows:
   version: 2
