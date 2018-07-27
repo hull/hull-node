@@ -3,6 +3,8 @@
 This library provides a runtime framework to build and run connectors applications.
 It supports only currently active Node JS LTS version. It's line 8.x right now.
 
+**Upgrading hull-node from 0.13?** See migration guide [here](./MIGRATION_0.13_0.14.md).
+
 1. Get started
 2. Examples
   - Processing outgoing data flow
