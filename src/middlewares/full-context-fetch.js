@@ -54,9 +54,6 @@ function fullContextFetchMiddlewareFactory({ requestName, strict = true }: Objec
     if (req.hull === undefined || req.hull.client === undefined) {
       return next(new Error("We need initialized client to fetch connector settings and segments lists"));
     }
-    if (req.hull.notification && req.hull.notification.channel === "ship:update") {
-      req.hull.cache.del("connector");
-    }
 
     return Promise.all([
       fetchConnector(req.hull),

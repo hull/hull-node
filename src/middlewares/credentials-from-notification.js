@@ -13,8 +13,8 @@ const NotificationValidator = require("../utils/notification-validator");
  */
 function credentialsFromNotificationMiddlewareFactory() {
   return function credentialsFromNotificationMiddleware(req: HullRequestBase, res: $Response, next: NextFunction) {
-    const { skipSignatureValidation } = req.hull.connectorConfig;
-    const notificationValidator = new NotificationValidator();
+    const { skipSignatureValidation, notificationValidatorHttpClient } = req.hull.connectorConfig;
+    const notificationValidator = new NotificationValidator(notificationValidatorHttpClient);
 
     if (!skipSignatureValidation) {
       const headersError = notificationValidator.validateHeaders(req);
@@ -24,7 +24,7 @@ function credentialsFromNotificationMiddlewareFactory() {
     }
 
     return bodyParser.json({ limit: "10mb" })(req, res, (err) => {
-      debug("parsed json body");
+      debug("parsed json body", { skipSignatureValidation }, req.body);
       if (err !== undefined) {
         return next(err);
       }
@@ -34,7 +34,7 @@ function credentialsFromNotificationMiddlewareFactory() {
       }
 
       return (() => {
-        if (!skipSignatureValidation) {
+        if (skipSignatureValidation) {
           return Promise.resolve();
         }
         return notificationValidator.validateSignature(req);

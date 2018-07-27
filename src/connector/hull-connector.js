@@ -47,7 +47,7 @@ class HullConnector {
   static bind: Function;
 
   constructor(dependencies: Object, {
-    hostSecret, port, clientConfig = {}, instrumentation, cache, queue, connectorName, skipSignatureValidation, timeout
+    hostSecret, port, clientConfig = {}, instrumentation, cache, queue, connectorName, skipSignatureValidation, timeout, notificationValidatorHttpClient
   }: HullConnectorOptions = {}) {
     debug("clientConfig", clientConfig);
     this.HullClient = dependencies.HullClient;
@@ -74,6 +74,10 @@ class HullConnector {
 
     if (skipSignatureValidation) {
       this.connectorConfig.skipSignatureValidation = skipSignatureValidation;
+    }
+
+    if (notificationValidatorHttpClient) {
+      this.connectorConfig.notificationValidatorHttpClient = notificationValidatorHttpClient;
     }
 
     if (timeout) {

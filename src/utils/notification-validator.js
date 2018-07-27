@@ -7,6 +7,8 @@ const requestClient = require("request");
 const _ = require("lodash");
 const jwt = require("jsonwebtoken");
 
+const { NotificationValidationError } = require("../errors");
+
 const certCache = {};
 const supportedSignaturesVersions = ["v1"];
 
@@ -21,17 +23,17 @@ class NotificationValidator {
     }
   }
 
-  validateHeaders(req: HullRequestBase): Error | null {
+  validateHeaders(req: HullRequestBase): NotificationValidationError | null {
     if (!this.hasFlagHeader(req)) {
-      return new Error("Unsupported signature version");
+      return new NotificationValidationError("Missing flag header", "MISSING_FLAG_HEADER");
     }
 
     if (!this.validateSignatureVersion(req)) {
-      return new Error("Unsupported signature version");
+      return new NotificationValidationError("Unsupported signature version", "UNSUPPORTED_SIGNATURE_VERSION");
     }
 
     if (!this.validateSignatureHeaders(req)) {
-      return new Error("Missing signature header(s)");
+      return new NotificationValidationError("Missing signature header(s)", "MISSING_SIGNATURE_HEADERS");
     }
 
     return null;
@@ -41,13 +43,13 @@ class NotificationValidator {
     return _.has(req.headers, "x-hull-smart-notifier");
   }
 
-  validatePayload(req: HullRequestBase): Error | null {
+  validatePayload(req: HullRequestBase): NotificationValidationError | null {
     if (!req.body) {
-      return new Error("No notification in payload");
+      return new NotificationValidationError("No notification payload", "MISSING_NOTIFICATION_PAYLOAD");
     }
 
     if (!req.body.configuration) {
-      return new Error("No configuration in payload");
+      return new NotificationValidationError("No configuration in payload", "MISSING_CONFIGURATION");
     }
     return null;
   }
@@ -76,7 +78,7 @@ class NotificationValidator {
           if (decoded) {
             return Promise.resolve(true);
           }
-          return Promise.reject(new Error("Signature invalid"));
+          return Promise.reject(new NotificationValidationError("Signature invalid", "INVALID_SIGNATURE"));
         } catch (err) {
           return Promise.reject(err);
         }
@@ -97,7 +99,7 @@ class NotificationValidator {
           return reject(error);
         }
         if (!body.match("-----BEGIN PUBLIC KEY-----")) {
-          return reject(new Error("Invalid certificate"));
+          return reject(new NotificationValidationError("Invalid certificate", "INVALID_CERTIFICATE"));
         }
         certCache[certUrl] = body;
         return resolve(body);

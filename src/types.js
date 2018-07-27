@@ -22,6 +22,7 @@ export type HullConnectorOptions = {
   connectorName: string,
   segmentFilterSetting: any,
   skipSignatureValidation: boolean,
+  notificationValidatorHttpClient?: Object,
   timeout: number | string
 };
 

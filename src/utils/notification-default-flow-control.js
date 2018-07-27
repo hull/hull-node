@@ -23,7 +23,7 @@ function notificationDefaultFlowControl(ctx: HullContextFull, channel: string, r
     },
     error: {
       size: 10,
-      in: 5,
+      in: 1000,
       in_time: 10
     },
     unsupported: {
@@ -35,7 +35,8 @@ function notificationDefaultFlowControl(ctx: HullContextFull, channel: string, r
 
   function pickPrivateSettings(param: string): number {
     const settingName = _.snakeCase(`flow_control_${channel}_${result}_${param}`);
-    return parseInt(ctx.connector.private_settings[settingName], 10);
+    const privateSettings = ctx.connector && ctx.connector.private_settings || {};
+    return parseInt(privateSettings[settingName], 10);
   }
   function pickEnv(param: string): number {
     const envVarName = _.upperCase(_.snakeCase(`flow_control_${channel}_${result}_${param}`));

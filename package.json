@@ -97,7 +97,7 @@
     "flow-typed": "^2.4.0",
     "husky": "^0.14.3",
     "isparta": "^4.0.0",
-    "minihull": "^2.1.1",
+    "minihull": "^3.0.0",
     "mkdirp": "^0.5.1",
     "mocha": "^3.0.0",
     "nock": "^9.2.3",
