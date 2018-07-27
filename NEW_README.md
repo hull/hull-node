@@ -1,6 +1,7 @@
 # Hull Connector SDK
 
-This library provides a framework to build and run connectors applications.
+This library provides a runtime framework to build and run connectors applications.
+It supports only currently active Node JS LTS version. It's line 8.x right now.
 
 1. Get started
 2. Examples
@@ -11,34 +12,27 @@ This library provides a framework to build and run connectors applications.
   - Providing settings data
   - Triggering one time jobs
 3. Handlers
+  - Handlers Configuration
+  - notificationHandler
+  - batchHandler
+  - scheduleHandler
+  - oauthHandler
+  - actionHandler
+  - requestsBufferHandler
 4. Context
-
-## Handler Configuration
-
-```js
-// @flow
-import type { HullHandlersConfiguration } from "hull";
-
-const handlersConfiguration: HullHandlersConfiguration = {
-  "user:update": () => {},
-  "account:update": {
-    callback: () => {},
-    options: {},
-  }
-  "scheduler:fetch": () => {},
-  "incoming:webook": {
-    callback: () => {},
-    options: {}
-  }
-};
-```
+5. Utils
+  - Hull API helpers
+  - Superagent Plugins
+  - Stream helpers
+  - Misc utils
+6. Development
 
 ## Get started
 
 ```js
 const express = require("express");
 const { Connector } = require("hull");
-const { notificationHandler } = require("hull").handlers;
+const { notificationHandler } = require("hull/lib/handlers");
 
 const connector = new Connector({ ...options });
 
@@ -95,6 +89,8 @@ connector.startApp(app);
 ```
 
 ### Processing data replay
+batchHandler
+
 ### Fetching incoming data
 
 **manifest.json**
@@ -125,9 +121,11 @@ app.use("/fetch-users", scheduleHandler("schedule:fetch-users", {
   }
 }));
 
-connec
+connec;
+```
 
 ### Processing incoming webhooks
+
 If external service connector integrates with provides sending it's updates as webhook requests we provide a way to handle then
 
 ```js
@@ -150,6 +148,8 @@ app.use("/incoming-webhook", requestsBufferHandler("incoming:webhook", {
 
 connector.startApp(app);
 ```
+### Handling oAuth authorization flow
+oauthHandler
 
 ### Triggering one time jobs
 
@@ -157,6 +157,26 @@ connector.startApp(app);
 
 
 ## Handlers
+
+### Handler Configuration
+
+```js
+// @flow
+import type { HullHandlersConfiguration } from "hull";
+
+const handlersConfiguration: HullHandlersConfiguration = {
+  "user:update": () => {},
+  "account:update": {
+    callback: () => {},
+    options: {},
+  }
+  "scheduler:fetch": () => {},
+  "incoming:webook": {
+    callback: () => {},
+    options: {}
+  }
+};
+```
 
 ### Notification Handler
 
@@ -230,6 +250,13 @@ It is being build by middleware stack in 4 steps:
     - full context is fetched from platform by [fetchFullContextMiddleware](src/middlewares/full-context-fetch.js)
     - the `HullContextFull` flow type is defined [here](src/types.js#79)
 
-## Debug
+## Utils
+
+### Hull API helpers
+### Superagent Plugins
+### Stream helpers
+### Misc utils
+
+## Development
 
 `DEBUG=hull-connector:*`
