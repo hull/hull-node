@@ -17,7 +17,7 @@ class HullStub {
   post(id) { return Promise.resolve({ id }); }
 
   configuration() {
-    return _.merge({ id: this.id, secret: "shutt", organization: "xxx.hulltest.rocks" }, this._configuration);
+    return _.merge({ id: this.id, secret: this.secret || "shutt", organization: "xxx.hulltest.rocks" }, this._configuration);
   }
 }
 

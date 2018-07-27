@@ -5,7 +5,7 @@ import type { HullRequestWithClient } from "../types";
 const debug = require("debug")("hull-connector:full-context-fetch-middleware");
 
 function fetchConnector(ctx): Promise<*> {
-  debug("fetchConnector");
+  debug("fetchConnector", typeof ctx.connector);
   if (ctx.connector) {
     return Promise.resolve(ctx.connector);
   }
@@ -16,7 +16,7 @@ function fetchConnector(ctx): Promise<*> {
 }
 
 function fetchSegments(ctx, entityType = "users") {
-  debug("fetchSegments", entityType);
+  debug("fetchSegments", entityType, typeof ctx[`${entityType}sSegments`]);
   if (ctx.client === undefined) {
     return Promise.reject(new Error("Missing client"));
   }
@@ -40,6 +40,15 @@ function fetchSegments(ctx, entityType = "users") {
   }, { ttl: 60000 });
 }
 
+
+function runNext(callback) {
+  try {
+    callback();
+  } catch (ex) {
+    // continue regardless of error
+  }
+}
+
 /**
  * This middleware is responsible for fetching all information
  * using initiated `req.hull.client`.
@@ -59,22 +68,23 @@ function fullContextFetchMiddlewareFactory({ requestName, strict = true }: Objec
       fetchConnector(req.hull),
       fetchSegments(req.hull, "user"),
       fetchSegments(req.hull, "account")
-    ]).then(([connector, usersSegments, accountsSegments]) => {
+    ])
+    .then(([connector, usersSegments, accountsSegments]) => {
       debug("received responses %o", {
         connector: typeof connector,
-        usersSegments: Array.isArray(usersSegments) && usersSegments.length,
-        accountsSegments: Array.isArray(accountsSegments) && accountsSegments.length
+        usersSegments: Array.isArray(usersSegments),
+        accountsSegments: Array.isArray(accountsSegments)
       });
       if (strict && typeof connector !== "object") {
-        return next(new Error("Body is missing connector object"));
+        return runNext(() => next(new Error("Unable to fetch connector object")));
       }
 
       if (strict && !Array.isArray(usersSegments)) {
-        return next(new Error("Body is missing segments array"));
+        return runNext(() => next(new Error("Unable to fetch usersSegments array")));
       }
 
       if (strict && !Array.isArray(accountsSegments)) {
-        return next(new Error("Body is missing accounts_segments array"));
+        return runNext(() => next(new Error("Unable to fetch accountsSegments array")));
       }
       const requestId = [requestName].join("-");
       req.hull = Object.assign(req.hull, {
@@ -83,8 +93,9 @@ function fullContextFetchMiddlewareFactory({ requestName, strict = true }: Objec
         usersSegments,
         accountsSegments
       });
-      return next();
-    }).catch(error => next(error));
+      return runNext(() => next());
+    })
+    .catch(error => runNext(() => next(error)));
   };
 }
 
