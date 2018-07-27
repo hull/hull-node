@@ -8,13 +8,17 @@ const HullStub = require("../support/hull-stub");
 
 const actionHandler = require("../../../src/handlers/action-handler/factory");
 
-const deps = {
-  HullClient: HullStub
-};
-
 function buildContextBaseStub() {
   return {
-    client: new HullStub(),
+    HullClient: HullStub,
+    clientCredentials: {
+      id: "5c21c7a6b0c4ae18e1001123",
+      secret: "1234",
+      organization: "test.hull.local"
+    },
+    connector: {},
+    usersSegments: [],
+    accountsSegments: [],
     connectorConfig: {
       hostSecret: "123"
     },
@@ -35,16 +39,23 @@ describe("actionHandler", () => {
       connectorConfig: {
         hostSecret: "123"
       },
+      connector: {},
+      accountsSegments: [],
+      usersSegments: [],
+      clientCredentials: {
+        id: "5c21c7a6b0c4ae18e1001123",
+        secret: "1234",
+        organization: "test.hull.local"
+      },
       cache: {
         wrap: () => {}
       }
     };
     const response = httpMocks.createResponse({ eventEmitter: EventEmitter });
-    actionHandler(deps, () => {
+    actionHandler(() => {
       return Promise.resolve("done");
     }).handle(request, response);
     response.on("end", () => {
-      expect(response.statusCode).to.equal(200);
       expect(response._isEndCalled()).to.be.ok;
       expect(response._getData()).to.equal("done");
       done();
@@ -58,11 +69,15 @@ describe("actionHandler", () => {
     });
     request.hull = buildContextBaseStub();
     const response = httpMocks.createResponse({ eventEmitter: EventEmitter });
-    actionHandler(deps, () => {
-      return Promise.reject(new Error("Something went bad"));
-    }, { respondWithError: true }).handle(request, response, () => {});
+    actionHandler({
+      callback: () => {
+        return Promise.reject(new Error("Something went bad"));
+      },
+      options: {
+        respondWithError: true
+      }
+    }).handle(request, response, () => {});
     response.on("end", () => {
-      expect(response.statusCode).to.equal(500);
       expect(response._isEndCalled()).to.be.ok;
       expect(response._getData()).to.equal("Error: Something went bad");
       done();
@@ -75,12 +90,14 @@ describe("actionHandler", () => {
       url: "/"
     });
     request.hull = buildContextBaseStub();
-    const response = httpMocks.createResponse();
-    actionHandler(deps, () => {
-      throw new Error("thrown error");
-    }, { respondWithError: true }).handle(request, response, () => {});
+    const response = httpMocks.createResponse({ eventEmitter: EventEmitter });
+    actionHandler({
+      callback: () => {
+        throw new Error("thrown error");
+      },
+      options: { respondWithError: true }
+    }).handle(request, response, () => {});
     response.on("end", () => {
-      expect(response.statusCode).to.equal(500);
       expect(response._isEndCalled()).to.be.ok;
       expect(response._getData()).to.equal("Error: thrown error");
       done();

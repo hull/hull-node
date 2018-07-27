@@ -9,7 +9,7 @@ function parseHandlersConfigurationEntry(configurationEntry: HullHandlersConfigu
   } else if (configurationEntry && typeof configurationEntry === "object" && typeof configurationEntry.callback === "function") {
     callback = configurationEntry.callback;
     options = typeof configurationEntry === "object" && typeof configurationEntry.options === "object"
-      ? options : {};
+      ? configurationEntry.options : {};
   }
   if (callback === undefined) {
     throw new Error("Callback is missing in handler configuration entry");

@@ -27,7 +27,15 @@ describe("OAuthHandler", () => {
       url: "/login"
     });
     request.hull = {
-      client: new HullStub(),
+      HullClient: HullStub,
+      clientCredentials: {
+        id: "123",
+        secret: "123",
+        organization: "123"
+      },
+      connector: {},
+      usersSegments: [],
+      accountsSegments: [],
       connectorConfig: {
         hostSecret: "123"
       },
@@ -36,7 +44,7 @@ describe("OAuthHandler", () => {
       }
     };
     const response = httpMocks.createResponse({ eventEmitter: EventEmitter });
-    oauthHandler({ HullClient: HullStub }, {
+    oauthHandler({
       name: "Test",
       Strategy: StrategyStub,
       views: {

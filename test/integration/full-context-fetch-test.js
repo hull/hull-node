@@ -10,7 +10,7 @@ const HullStub = require("../unit/support/hull-stub");
 
 let reqStub;
 
-describe.only("fullContextFetchfullContextFetchMiddleware", () => {
+describe("fullContextFetchfullContextFetchMiddleware", () => {
   beforeEach(function beforeEachHandler() {
     this.getStub = sinon.stub(HullStub.prototype, "get");
     this.getStub

@@ -35,7 +35,7 @@ function notificationDefaultFlowControl(ctx: HullContextFull, channel: string, r
 
   function pickPrivateSettings(param: string): number {
     const settingName = _.snakeCase(`flow_control_${channel}_${result}_${param}`);
-    const privateSettings = ctx.connector && ctx.connector.private_settings || {};
+    const privateSettings = (ctx.connector && ctx.connector.private_settings) || {};
     return parseInt(privateSettings[settingName], 10);
   }
   function pickEnv(param: string): number {

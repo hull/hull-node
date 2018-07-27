@@ -40,15 +40,6 @@ function fetchSegments(ctx, entityType = "users") {
   }, { ttl: 60000 });
 }
 
-
-function runNext(callback) {
-  try {
-    callback();
-  } catch (ex) {
-    // continue regardless of error
-  }
-}
-
 /**
  * This middleware is responsible for fetching all information
  * using initiated `req.hull.client`.
@@ -76,15 +67,15 @@ function fullContextFetchMiddlewareFactory({ requestName, strict = true }: Objec
         accountsSegments: Array.isArray(accountsSegments)
       });
       if (strict && typeof connector !== "object") {
-        return runNext(() => next(new Error("Unable to fetch connector object")));
+        return next(new Error("Unable to fetch connector object"));
       }
 
       if (strict && !Array.isArray(usersSegments)) {
-        return runNext(() => next(new Error("Unable to fetch usersSegments array")));
+        return next(new Error("Unable to fetch usersSegments array"));
       }
 
       if (strict && !Array.isArray(accountsSegments)) {
-        return runNext(() => next(new Error("Unable to fetch accountsSegments array")));
+        return next(new Error("Unable to fetch accountsSegments array"));
       }
       const requestId = [requestName].join("-");
       req.hull = Object.assign(req.hull, {
@@ -93,9 +84,9 @@ function fullContextFetchMiddlewareFactory({ requestName, strict = true }: Objec
         usersSegments,
         accountsSegments
       });
-      return runNext(() => next());
+      return next();
     })
-    .catch(error => runNext(() => next(error)));
+    .catch(error => next(error));
   };
 }
 

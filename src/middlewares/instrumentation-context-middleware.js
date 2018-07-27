@@ -1,11 +1,13 @@
 function instrumentationContextMiddlewareFactory({ handlerName } = {}) {
   return function instrumentationContextMiddleware(req, res, next) {
     const { metric } = req.hull;
-    metric.mergeContext(req);
-    if (handlerName) {
-      req.hull.handlerName = handlerName;
+    if (metric) {
+      metric.mergeContext(req);
+      if (handlerName) {
+        req.hull.handlerName = handlerName;
+      }
+      req.hull.metric.increment("connector.request", 1);
     }
-    req.hull.metric.increment("connector.request", 1);
     next();
   };
 }

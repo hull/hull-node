@@ -7,7 +7,7 @@ const _ = require("lodash");
 const clientMiddleware = require("../../../src/middlewares/client");
 const HullStub = require("../support/hull-stub");
 
-describe("Client clientMiddleware", () => {
+describe("clientMiddleware", () => {
   beforeEach(function beforeEachHandler() {
     this.reqStub = {
       query: {
@@ -36,9 +36,9 @@ describe("Client clientMiddleware", () => {
   });
 
   it("needs base request context", () => {
-    const instance = clientMiddleware({ HullClient: HullStub });
+    const instance = clientMiddleware();
     const next = sinon.spy();
-    instance({}, {}, next);
+    instance({ HullClient: HullStub }, {}, next);
     expect(next.calledOnce).to.be.true;
     expect(next.args[0][0]).to.be.an("error");
     expect(next.args[0][0].message).to.eql("Missing request context, you need to initiate it before");
@@ -47,12 +47,15 @@ describe("Client clientMiddleware", () => {
   it("should return a clientMiddleware function", () => {
     const instance = clientMiddleware({ HullClient: HullStub });
     const next = sinon.spy();
-    instance({}, {}, next);
+    instance({ HullClient: HullStub }, {}, next);
     expect(next.calledOnce).to.be.true;
   });
 
+  // TODO: notification request-id is handled by the notification middlewares/handler
+  // need to move this test there
   it.skip("should pick up the requestId from the request headers", function(done) {
     const reqStub = {
+      HullClient: HullStub,
       headers: {
         "x-hull-request-id": "smart-notifier:123:456:789"
       },
@@ -60,7 +63,7 @@ describe("Client clientMiddleware", () => {
         client: new HullStub()
       }
     };
-    const instance = clientMiddleware({ HullClient: HullStub });
+    const instance = clientMiddleware();
     instance(reqStub, {}, () => {
       const { requestId } = reqStub.hull.client.configuration();
       expect(requestId).to.equal(reqStub.headers["x-hull-request-id"]);
@@ -69,10 +72,21 @@ describe("Client clientMiddleware", () => {
   });
 
   it('should pick up the requestId from req.hull.requestId', function(done) {
-    const instance = clientMiddleware(HullStub, { hostSecret: "secret" });
+    const instance = clientMiddleware();
     const requestId = "custom:request:123";
-    this.reqStub.hull = { requestId };
-    instance(this.reqStub, {}, () => {
+    this.reqStub.hull = {
+      requestId,
+      HullClient: HullStub,
+      clientCredentials: {
+        organization: "local",
+        secret: "secret",
+        ship: "ship_id"
+      },
+      connectorConfig: {
+        hostSecret: "1234"
+      }
+    };
+    instance(this.reqStub, {}, (err) => {
       const conf = this.reqStub.hull.client.configuration();
       expect(conf.requestId).to.equal(requestId);
       done();

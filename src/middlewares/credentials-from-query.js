@@ -55,29 +55,33 @@ function parseToken(token, secret) {
  */
 function credentialsFromQueryMiddlewareFactory() {
   return function credentialsFromQueryMiddleware(req: HullRequestBase, res: $Response, next: NextFunction) {
-    if (!req.hull || !req.hull.connectorConfig) {
-      return next(new Error("Missing req.hull or req.hull.connectorConfig context object"));
-    }
-    const { hostSecret } = req.hull.connectorConfig;
-    const clientCredentialsToken = req.hull.clientCredentialsToken || getToken(req.query);
-    const clientCredentials =
-      req.hull.clientCredentials ||
-      parseToken(clientCredentialsToken, hostSecret) ||
-      parseQueryString(req.query);
+    try {
+      if (!req.hull || !req.hull.connectorConfig) {
+        return next(new Error("Missing req.hull or req.hull.connectorConfig context object"));
+      }
+      const { hostSecret } = req.hull.connectorConfig;
+      const clientCredentialsToken = req.hull.clientCredentialsToken || getToken(req.query);
+      const clientCredentials =
+        req.hull.clientCredentials ||
+        parseToken(clientCredentialsToken, hostSecret) ||
+        parseQueryString(req.query);
 
-    if (clientCredentials === undefined) {
-      return next(new Error("Could not resolve clientCredentials"));
+      if (clientCredentials === undefined) {
+        return next(new Error("Could not resolve clientCredentials"));
+      }
+      // handle legacy naming
+      if (clientCredentials.ship && typeof clientCredentials.ship === "string") {
+        clientCredentials.id = clientCredentials.ship;
+      }
+      debug("resolved configuration");
+      req.hull = Object.assign(req.hull, {
+        clientCredentials,
+        clientCredentialsToken
+      });
+      return next();
+    } catch (error) {
+      return next(error);
     }
-    // handle legacy naming
-    if (clientCredentials.ship && typeof clientCredentials.ship === "string") {
-      clientCredentials.id = clientCredentials.ship;
-    }
-    debug("resolved configuration");
-    req.hull = Object.assign(req.hull, {
-      clientCredentials,
-      clientCredentialsToken
-    });
-    return next();
   };
 }
 

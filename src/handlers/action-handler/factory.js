@@ -48,7 +48,7 @@ function actionHandlerFactory(configurationEntry: HullHandlersConfigurationEntry
     disableErrorHandling = false,
     respondWithError = false
   } = options;
-
+  debug("options", options);
   const router = Router();
   router.use(credentialsFromQueryMiddleware()); // parse config from query
   router.use(timeoutMiddleware());
@@ -78,18 +78,20 @@ function actionHandlerFactory(configurationEntry: HullHandlersConfigurationEntry
   });
   if (disableErrorHandling !== true) {
     router.use(function actionHandlerErrorMiddleware(err: Error, req: HullRequestFull, res: $Response, next: NextFunction) {
-      debug("error", err);
+      debug("error", err.message, err.constructor.name, { respondWithError });
 
-      if (respondWithError) {
-        res.end(err.toString());
-      } else {
-        res.end("error");
-      }
       // if we have non transient error
       if (err instanceof TransientError) {
         res.status(503);
+      }
+
+      if (respondWithError) {
+        res.send(err.toString());
       } else {
-        res.status(500);
+        res.send("error");
+      }
+      // if we have non transient error
+      if (!(err instanceof TransientError)) {
         next(err);
       }
     });
