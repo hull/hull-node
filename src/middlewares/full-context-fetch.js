@@ -77,13 +77,15 @@ function fullContextFetchMiddlewareFactory({ requestName, strict = true }: Objec
       if (strict && !Array.isArray(accountsSegments)) {
         return next(new Error("Unable to fetch accountsSegments array"));
       }
-      const requestId = [requestName].join("-");
       req.hull = Object.assign(req.hull, {
-        requestId,
         connector,
         usersSegments,
         accountsSegments
       });
+
+      if (requestName) {
+        req.hull.requestId = [requestName].join("-");
+      }
       return next();
     })
     .catch(error => next(error));

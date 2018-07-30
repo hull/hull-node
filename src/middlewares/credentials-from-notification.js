@@ -24,7 +24,7 @@ function credentialsFromNotificationMiddlewareFactory() {
     }
 
     return bodyParser.json({ limit: "10mb" })(req, res, (err) => {
-      debug("parsed json body", { skipSignatureValidation }, req.body);
+      debug("parsed json body", { skipSignatureValidation, body: typeof req.body, error: err && err.message });
       if (err !== undefined) {
         return next(err);
       }

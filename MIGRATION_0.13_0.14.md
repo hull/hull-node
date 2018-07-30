@@ -7,9 +7,10 @@
     // after
     const { notificationHandler } = require("hull/lib/utils");
     ```
-2. use `batchHandler` instead of `smartNotifierHandler` or `notifHandler` to handle `/batch` endpoints
+2. use `batchHandler` instead of `smartNotifierHandler` or `notifHandler` to handle `/batch` endpoints. At some point we integrated batch feature support within those two handlers, but since batch is a very different behavior from technical perspective we decided to bring back a separate handler. The problem which we wanted to solve by hiding batch feature within other handlers was not to repeat outgoing traffic logic, but now we found a better way to do so, to centrialize handlers configuration object:
     ```js
     // before
+    
     // after
     ```
 3. use [`HullHandlersConfiguration`](src/types.js#L167) flow type object when setting up `notificationHandler` and `batchHandler`. The main difference is that we do not wrap everything in `handlers` param and we can optionally pass `callback` and `options` params instead of function.
