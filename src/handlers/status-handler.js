@@ -26,7 +26,7 @@ function statusHandler(checks) {
     const messages = [];
     let globalStatus = 0;
 
-    const promises = Promise.mapSeries(checks, (check) => {
+    const promises = Promise.mapSeries(checks, check => {
       check(req.hull).then(({ status, message }) => {
         messages.push(message);
         const statusNumeric = _.flip(statusMap)[status] || 2;
@@ -34,16 +34,19 @@ function statusHandler(checks) {
       });
     });
 
-    promises.then(() => {
-      res.json({
-        messages,
-        status: statusMap[globalStatus] || "error"
-      });
-    }, () => {
-      res.status(500).json({
-        status: "error"
-      });
-    });
+    promises.then(
+      () => {
+        res.json({
+          messages,
+          status: statusMap[globalStatus] || "error",
+        });
+      },
+      () => {
+        res.status(500).json({
+          status: "error",
+        });
+      }
+    );
   });
 
   return router;

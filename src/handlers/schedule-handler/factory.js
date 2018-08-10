@@ -1,6 +1,9 @@
 // @flow
 import type { $Response, NextFunction } from "express";
-import type { HullRequestFull, HullHandlersConfigurationEntry } from "../../types";
+import type {
+  HullRequestFull,
+  HullHandlersConfigurationEntry,
+} from "../../types";
 
 // type HullSchedulerHandlerCallback = (ctx: HullContextFull) => Promise<*>;
 // type HullSchedulerHandlerOptions = {
@@ -11,7 +14,14 @@ const { Router } = require("express");
 const debug = require("debug")("hull-connector:schedule-handler");
 
 const { TransientError } = require("../../errors");
-const { credentialsFromQueryMiddleware, clientMiddleware, fullContextBodyMiddleware, timeoutMiddleware, haltOnTimedoutMiddleware, instrumentationContextMiddleware } = require("../../middlewares");
+const {
+  credentialsFromQueryMiddleware,
+  clientMiddleware,
+  fullContextBodyMiddleware,
+  timeoutMiddleware,
+  haltOnTimedoutMiddleware,
+  instrumentationContextMiddleware,
+} = require("../../middlewares");
 const { normalizeHandlersConfigurationEntry } = require("../../utils");
 /**
  * This handler allows to handle simple, authorized HTTP calls.
@@ -30,7 +40,9 @@ const { normalizeHandlersConfigurationEntry } = require("../../utils");
  * @example
  * app.use("/list", actionHandler((ctx) => {}))
  */
-function scheduleHandlerFactory(configurationEntry: HullHandlersConfigurationEntry) {
+function scheduleHandlerFactory(
+  configurationEntry: HullHandlersConfigurationEntry
+) {
   const router = Router();
   const { callback } = normalizeHandlersConfigurationEntry(configurationEntry);
 
@@ -42,23 +54,25 @@ function scheduleHandlerFactory(configurationEntry: HullHandlersConfigurationEnt
   router.use(instrumentationContextMiddleware());
   router.use(fullContextBodyMiddleware({ requestName: "scheduler" })); // get rest of the context from body
   router.use(haltOnTimedoutMiddleware());
-  router.use(function scheduleHandler(req: HullRequestFull, res: $Response, next: NextFunction) {
+  router.use((req: HullRequestFull, res: $Response, next: NextFunction) => {
     // $FlowFixMe
     callback(req.hull)
-      .then((response) => {
+      .then(response => {
         res.json(response);
       })
       .catch(error => next(error));
   });
-  router.use((err: Error, req: HullRequestFull, res: $Response, next: NextFunction) => {
-    debug("error", err);
-    // if we have transient error
-    if (err instanceof TransientError) {
-      return res.status(503).end("transient-error");
+  router.use(
+    (err: Error, req: HullRequestFull, res: $Response, next: NextFunction) => {
+      debug("error", err);
+      // if we have transient error
+      if (err instanceof TransientError) {
+        return res.status(503).end("transient-error");
+      }
+      // else pass it to the global error middleware
+      return next(err);
     }
-    // else pass it to the global error middleware
-    return next(err);
-  });
+  );
   return router;
 }
 

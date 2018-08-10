@@ -11,7 +11,7 @@ const {
   fullContextBodyMiddleware,
   fullContextFetchMiddleware,
   instrumentationContextMiddleware,
-  instrumentationTransientError
+  instrumentationTransientError,
 } = require("../../middlewares");
 const { normalizeHandlersConfiguration } = require("../../utils");
 
@@ -27,7 +27,9 @@ const errorMiddleware = require("./error-middleware");
  *   "user:update": (ctx, message) => {}
  * }));
  */
-function batchExtractHandlerFactory(configuration: HullHandlersConfiguration): * {
+function batchExtractHandlerFactory(
+  configuration: HullHandlersConfiguration
+): * {
   const router = Router();
   const normalizedConfiguration = normalizeHandlersConfiguration(configuration);
   router.use(timeoutMiddleware());
@@ -35,7 +37,9 @@ function batchExtractHandlerFactory(configuration: HullHandlersConfiguration): *
   router.use(clientMiddleware()); // initialize client
   router.use(haltOnTimedoutMiddleware());
   router.use(instrumentationContextMiddleware({ handler: "batch" }));
-  router.use(fullContextBodyMiddleware({ requestName: "batch", strict: false })); // get rest of the context from body
+  router.use(
+    fullContextBodyMiddleware({ requestName: "batch", strict: false })
+  ); // get rest of the context from body
   router.use(fullContextFetchMiddleware({ requestName: "batch" })); // if something is missing at body
   router.use(haltOnTimedoutMiddleware());
   router.use(processingMiddleware(normalizedConfiguration));

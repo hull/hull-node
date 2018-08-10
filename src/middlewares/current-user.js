@@ -1,9 +1,11 @@
 const crypto = require("hull-client/lib/lib/crypto");
 
 function parseSignedCookie(signedCookie) {
-  if (!signedCookie) { return null; }
+  if (!signedCookie) {
+    return null;
+  }
   try {
-    return JSON.parse(new Buffer(signedCookie, "base64").toString("utf8"));
+    return JSON.parse(Buffer.from(signedCookie, "base64").toString("utf8"));
   } catch (e) {
     console.warn("Error parsing signed cookie", signedCookie, e.message);
   }

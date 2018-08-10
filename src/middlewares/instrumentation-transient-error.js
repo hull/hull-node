@@ -8,12 +8,11 @@ function instrumentationTransientErrorFactory() {
       debug("transient-error metric");
       req.hull.metric.increment("connector.transient_error", 1, [
         `error_name:${_.snakeCase(err.name)}`,
-        `error_message:${_.snakeCase(err.message)}`
+        `error_message:${_.snakeCase(err.message)}`,
       ]);
     }
     next(err);
   };
 }
-
 
 module.exports = instrumentationTransientErrorFactory;

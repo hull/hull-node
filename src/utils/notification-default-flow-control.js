@@ -14,32 +14,41 @@ const _ = require("lodash");
  * @param  {[type]} result:  HullNotificationResult [description]
  * @return {[type]}          [description]
  */
-function notificationDefaultFlowControl(ctx: HullContextFull, channel: string, result: HullNotificationResult): HullNotificationFlowControl {
+function notificationDefaultFlowControl(
+  ctx: HullContextFull,
+  channel: string,
+  result: HullNotificationResult
+): HullNotificationFlowControl {
   const defaultValues = {
     success: {
       size: 10,
       in: 5,
-      in_time: 10
+      in_time: 10,
     },
     error: {
       size: 10,
       in: 1000,
-      in_time: 10
+      in_time: 10,
     },
     unsupported: {
       size: 10,
       in: 5,
-      in_time: 10
-    }
+      in_time: 10,
+    },
   };
 
   function pickPrivateSettings(param: string): number {
-    const settingName = _.snakeCase(`flow_control_${channel}_${result}_${param}`);
-    const privateSettings = (ctx.connector && ctx.connector.private_settings) || {};
+    const settingName = _.snakeCase(
+      `flow_control_${channel}_${result}_${param}`
+    );
+    const privateSettings =
+      (ctx.connector && ctx.connector.private_settings) || {};
     return parseInt(privateSettings[settingName], 10);
   }
   function pickEnv(param: string): number {
-    const envVarName = _.upperCase(_.snakeCase(`flow_control_${channel}_${result}_${param}`));
+    const envVarName = _.upperCase(
+      _.snakeCase(`flow_control_${channel}_${result}_${param}`)
+    );
     return parseInt(process.env[envVarName], 10);
   }
   let type = "retry";
@@ -48,9 +57,15 @@ function notificationDefaultFlowControl(ctx: HullContextFull, channel: string, r
   }
   return {
     type,
-    size: pickPrivateSettings("size") || pickEnv("size") || defaultValues[result].size,
+    size:
+      pickPrivateSettings("size") ||
+      pickEnv("size") ||
+      defaultValues[result].size,
     in: pickPrivateSettings("in") || pickEnv("in") || defaultValues[result].in,
-    in_time: pickPrivateSettings("in_time") || pickEnv("in_time") || defaultValues[result].in_time
+    in_time:
+      pickPrivateSettings("in_time") ||
+      pickEnv("in_time") ||
+      defaultValues[result].in_time,
   };
 }
 

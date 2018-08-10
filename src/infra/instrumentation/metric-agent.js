@@ -19,18 +19,28 @@ const debug = require("debug")("hull-connector:metric-agent");
  */
 class MetricAgent {
   ctx: HullContextFull;
+
   manifest: Object;
+
   dogapi: Object;
+
   logFunction: Function;
+
   metrics: Object;
 
   mergeContext: Function;
+
   captureException: Function;
+
   _captureException: Function;
 
   constructor(ctx: HullContextFull, instrumentationAgent: Object) {
-    this.mergeContext = instrumentationAgent.mergeContext.bind(instrumentationAgent);
-    this._captureException = instrumentationAgent.captureException.bind(instrumentationAgent);
+    this.mergeContext = instrumentationAgent.mergeContext.bind(
+      instrumentationAgent
+    );
+    this._captureException = instrumentationAgent.captureException.bind(
+      instrumentationAgent
+    );
     this.metrics = instrumentationAgent.metrics;
     this.dogapi = instrumentationAgent.dogapi;
     this.manifest = instrumentationAgent.manifest;
@@ -55,7 +65,11 @@ class MetricAgent {
       return null;
     }
     try {
-      return this.metrics.gauge(metric, parseFloat(value), _.union(this.getMetricTagsArray(), additionalTags));
+      return this.metrics.gauge(
+        metric,
+        parseFloat(value),
+        _.union(this.getMetricTagsArray(), additionalTags)
+      );
     } catch (err) {
       console.warn("metricVal.error", err);
     }
@@ -71,13 +85,21 @@ class MetricAgent {
    * @param  {Array}  [additionalTags=[]] additional tags in form of `["tag_name:tag_value"]`
    * @return {mixed}
    */
-  increment(metric: string, value: number = 1, additionalTags: Array<string> = []) {
+  increment(
+    metric: string,
+    value: number = 1,
+    additionalTags: Array<string> = []
+  ) {
     this.logFunction("metric.increment", { metric, value, additionalTags });
     if (!this.metrics) {
       return null;
     }
     try {
-      return this.metrics.increment(metric, parseFloat(value), _.union(this.getMetricTagsArray(), additionalTags));
+      return this.metrics.increment(
+        metric,
+        parseFloat(value),
+        _.union(this.getMetricTagsArray(), additionalTags)
+      );
     } catch (err) {
       console.warn("metricInc.error", err);
     }
@@ -97,18 +119,30 @@ class MetricAgent {
     if (!this.dogapi) {
       return null;
     }
-    return this.dogapi.event.create(`${this.manifest.name}.${title}`, text, _.merge({}, properties, {
-      tags: this.getMetricTagsArray()
-    }));
+    return this.dogapi.event.create(
+      `${this.manifest.name}.${title}`,
+      text,
+      _.merge({}, properties, {
+        tags: this.getMetricTagsArray(),
+      })
+    );
   }
 
   captureException(err: Error, extra: Object = {}, tags: Object = {}) {
-    return this._captureException(err, extra, _.merge({}, this.getMetricTagsObject(), tags));
+    return this._captureException(
+      err,
+      extra,
+      _.merge({}, this.getMetricTagsObject(), tags)
+    );
   }
 
   getMetricTagsObject() {
-    const { organization = "none", id = "none" } = this.ctx.client !== undefined ? this.ctx.client.configuration() : {};
-    const hullHost = organization.split(".").slice(1).join(".");
+    const { organization = "none", id = "none" } =
+      this.ctx.client !== undefined ? this.ctx.client.configuration() : {};
+    const hullHost = organization
+      .split(".")
+      .slice(1)
+      .join(".");
     const tags = {
       source: "ship",
       ship_version: this.manifest.version,
@@ -122,7 +156,7 @@ class MetricAgent {
       organization,
       ship: id,
       connector: id,
-      handler_name: this.ctx.handlerName || "none"
+      handler_name: this.ctx.handlerName || "none",
     };
     return tags;
   }

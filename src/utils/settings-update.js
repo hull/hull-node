@@ -13,15 +13,13 @@
  */
 function settingsUpdate(ctx, newSettings) {
   const { client, cache } = ctx;
-  return client.utils.settings.update(newSettings)
-    .then((connector) => {
-      ctx.connector = connector;
-      if (!cache) {
-        return connector;
-      }
-      return cache.del(connector.id)
-        .then(() => connector);
-    });
+  return client.utils.settings.update(newSettings).then(connector => {
+    ctx.connector = connector;
+    if (!cache) {
+      return connector;
+    }
+    return cache.del(connector.id).then(() => connector);
+  });
 }
 
 module.exports = settingsUpdate;

@@ -12,9 +12,18 @@ const NotificationValidator = require("../utils/notification-validator");
  * As a result it sets `req.hull.clientCredentials`.
  */
 function credentialsFromNotificationMiddlewareFactory() {
-  return function credentialsFromNotificationMiddleware(req: HullRequestBase, res: $Response, next: NextFunction) {
-    const { skipSignatureValidation, notificationValidatorHttpClient } = req.hull.connectorConfig;
-    const notificationValidator = new NotificationValidator(notificationValidatorHttpClient);
+  return function credentialsFromNotificationMiddleware(
+    req: HullRequestBase,
+    res: $Response,
+    next: NextFunction
+  ) {
+    const {
+      skipSignatureValidation,
+      notificationValidatorHttpClient,
+    } = req.hull.connectorConfig;
+    const notificationValidator = new NotificationValidator(
+      notificationValidatorHttpClient
+    );
 
     if (!skipSignatureValidation) {
       const headersError = notificationValidator.validateHeaders(req);
@@ -23,8 +32,12 @@ function credentialsFromNotificationMiddlewareFactory() {
       }
     }
 
-    return bodyParser.json({ limit: "10mb" })(req, res, (err) => {
-      debug("parsed json body", { skipSignatureValidation, body: typeof req.body, error: err && err.message });
+    return bodyParser.json({ limit: "10mb" })(req, res, err => {
+      debug("parsed json body", {
+        skipSignatureValidation,
+        body: typeof req.body,
+        error: err && err.message,
+      });
       if (err !== undefined) {
         return next(err);
       }
@@ -39,26 +52,30 @@ function credentialsFromNotificationMiddlewareFactory() {
         }
         return notificationValidator.validateSignature(req);
       })()
-      .then(() => {
-        const { body } = req;
-        if (body === null || typeof body !== "object") {
-          return next(new Error("Missing payload body"));
-        }
-        const clientCredentials = body.configuration;
-        if (!req.hull.requestId && body.notification_id) {
-          const timestamp = Math.floor(new Date().getTime() / 1000);
-          req.hull.requestId = ["smart-notifier", timestamp, body.notification_id].join(":");
-        }
-        // $FlowFixMe
-        req.hull = Object.assign(req.hull, {
+        .then(() => {
+          const { body } = req;
+          if (body === null || typeof body !== "object") {
+            return next(new Error("Missing payload body"));
+          }
+          const clientCredentials = body.configuration;
+          if (!req.hull.requestId && body.notification_id) {
+            const timestamp = Math.floor(new Date().getTime() / 1000);
+            req.hull.requestId = [
+              "smart-notifier",
+              timestamp,
+              body.notification_id,
+            ].join(":");
+          }
           // $FlowFixMe
-          clientCredentials
+          req.hull = Object.assign(req.hull, {
+            // $FlowFixMe
+            clientCredentials,
+          });
+          return next();
+        })
+        .catch(error => {
+          next(error);
         });
-        return next();
-      })
-      .catch((error) => {
-        next(error);
-      });
     });
   };
 }

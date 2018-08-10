@@ -46,16 +46,17 @@ const PromiseReuser = require("../../utils/promise-reuser");
 class CacheAgent {
   constructor(options = {}) {
     _.defaults(options, {
-      ttl: 60, /* seconds */
-      max: 100, /* items */
-      store: "memory"
+      ttl: 60 /* seconds */,
+      max: 100 /* items */,
+      store: "memory",
     });
     this.cache = cacheManager.caching(options);
     this.getConnectorCache = this.getConnectorCache.bind(this);
     this.promiseReuser = new PromiseReuser();
   }
 
-  getConnectorCache(ctx) { // eslint-disable-line class-methods-use-this
+  getConnectorCache(ctx) {
+    // eslint-disable-line class-methods-use-this
     return new ConnectorCache(ctx, this.cache, this.promiseReuser);
   }
 }

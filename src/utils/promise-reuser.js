@@ -7,8 +7,9 @@ const _ = require("lodash");
  * Based on https://github.com/elado/reuse-promise
  */
 module.exports = class PromiseReuser {
-  options: Object
-  promiseMapsByArgs: Object
+  options: Object;
+
+  promiseMapsByArgs: Object;
 
   constructor(options: Object = {}) {
     /**
@@ -38,13 +39,16 @@ module.exports = class PromiseReuser {
       const forgetPromise = () => delete self.promiseMapsByArgs[key];
 
       const origPromise = origFn.apply(this, args);
-      const promise = origPromise.then((value) => {
-        forgetPromise();
-        return value;
-      }, (err) => {
-        forgetPromise();
-        throw err;
-      });
+      const promise = origPromise.then(
+        value => {
+          forgetPromise();
+          return value;
+        },
+        err => {
+          forgetPromise();
+          throw err;
+        }
+      );
       self.promiseMapsByArgs[key] = promise;
 
       return promise;

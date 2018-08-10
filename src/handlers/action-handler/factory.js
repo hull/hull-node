@@ -1,6 +1,9 @@
 // @flow
 import type { $Response, NextFunction } from "express";
-import type { HullHandlersConfigurationEntry, HullRequestFull } from "../../types";
+import type {
+  HullHandlersConfigurationEntry,
+  HullRequestFull,
+} from "../../types";
 
 // type HullActionHandlerOptions = {
 //   cache?: {
@@ -14,7 +17,14 @@ const debug = require("debug")("hull-connector:action-handler");
 const { Router } = require("express");
 
 const { TransientError } = require("../../errors");
-const { credentialsFromQueryMiddleware, fullContextFetchMiddleware, timeoutMiddleware, haltOnTimedoutMiddleware, clientMiddleware, instrumentationContextMiddleware } = require("../../middlewares");
+const {
+  credentialsFromQueryMiddleware,
+  fullContextFetchMiddleware,
+  timeoutMiddleware,
+  haltOnTimedoutMiddleware,
+  clientMiddleware,
+  instrumentationContextMiddleware,
+} = require("../../middlewares");
 const { normalizeHandlersConfigurationEntry } = require("../../utils");
 
 /**
@@ -41,12 +51,16 @@ const { normalizeHandlersConfigurationEntry } = require("../../utils");
  * const { actionHandler } = require("hull").handlers;
  * app.use("/list", actionHandler((ctx) => {}))
  */
-function actionHandlerFactory(configurationEntry: HullHandlersConfigurationEntry): Router {
-  const { callback, options } = normalizeHandlersConfigurationEntry(configurationEntry);
+function actionHandlerFactory(
+  configurationEntry: HullHandlersConfigurationEntry
+): Router {
+  const { callback, options } = normalizeHandlersConfigurationEntry(
+    configurationEntry
+  );
   const {
     cache = {},
     disableErrorHandling = false,
-    respondWithError = false
+    respondWithError = false,
   } = options;
   debug("options", options);
   const router = Router();
@@ -57,44 +71,55 @@ function actionHandlerFactory(configurationEntry: HullHandlersConfigurationEntry
   router.use(instrumentationContextMiddleware());
   router.use(fullContextFetchMiddleware({ requestName: "action" }));
   router.use(haltOnTimedoutMiddleware());
-  router.use(function actionHandler(req: HullRequestFull, res: $Response, next: NextFunction) {
+  router.use((req: HullRequestFull, res: $Response, next: NextFunction) => {
     (() => {
       debug("processing");
       if (cache && cache.key) {
-        return req.hull.cache.wrap(cache.key, () => {
-          // $FlowFixMe
-          return callback(req.hull);
-        }, cache.options || {});
+        return req.hull.cache.wrap(
+          cache.key,
+          () => {
+            // $FlowFixMe
+            return callback(req.hull);
+          },
+          cache.options || {}
+        );
       }
       debug("calling callback");
       // $FlowFixMe
       return callback(req.hull);
     })()
-      .then((response) => {
+      .then(response => {
         debug("callback response", response);
         res.end(response);
       })
       .catch(error => next(error));
   });
   if (disableErrorHandling !== true) {
-    router.use(function actionHandlerErrorMiddleware(err: Error, req: HullRequestFull, res: $Response, next: NextFunction) {
-      debug("error", err.message, err.constructor.name, { respondWithError });
+    router.use(
+      (
+        err: Error,
+        req: HullRequestFull,
+        res: $Response,
+        next: NextFunction
+      ) => {
+        debug("error", err.message, err.constructor.name, { respondWithError });
 
-      // if we have non transient error
-      if (err instanceof TransientError) {
-        res.status(503);
-      }
+        // if we have non transient error
+        if (err instanceof TransientError) {
+          res.status(503);
+        }
 
-      if (respondWithError) {
-        res.send(err.toString());
-      } else {
-        res.send("error");
+        if (respondWithError) {
+          res.send(err.toString());
+        } else {
+          res.send("error");
+        }
+        // if we have non transient error
+        if (!(err instanceof TransientError)) {
+          next(err);
+        }
       }
-      // if we have non transient error
-      if (!(err instanceof TransientError)) {
-        next(err);
-      }
-    });
+    );
   }
 
   return router;

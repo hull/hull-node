@@ -5,7 +5,7 @@ import type { HullRequestBase } from "../types";
 const debug = require("debug")("hull-connector:credentials-from-query");
 const jwt = require("jwt-simple");
 
-function getToken(query: $PropertyType<HullRequestBase, 'query'>): string {
+function getToken(query: $PropertyType<HullRequestBase, "query">): string {
   if (query) {
     if (typeof query.hullToken === "string") {
       return query.hullToken;
@@ -22,7 +22,9 @@ function getToken(query: $PropertyType<HullRequestBase, 'query'>): string {
   return "";
 }
 
-function parseQueryString(query: $PropertyType<HullRequestBase, 'query'>): { [string]: string | void } {
+function parseQueryString(
+  query: $PropertyType<HullRequestBase, "query">
+): { [string]: string | void } {
   return ["organization", "ship", "secret"].reduce((cfg, k) => {
     const val = (query && typeof query[k] === "string" ? query[k] : "").trim();
     if (typeof val === "string") {
@@ -35,7 +37,9 @@ function parseQueryString(query: $PropertyType<HullRequestBase, 'query'>): { [st
 }
 
 function parseToken(token, secret) {
-  if (!token || !secret) { return false; }
+  if (!token || !secret) {
+    return false;
+  }
   try {
     const config = jwt.decode(token, secret);
     return config;
@@ -54,13 +58,22 @@ function parseToken(token, secret) {
  * If those two steps fails to find information it parse `req.query` looking for direct connector configuration
  */
 function credentialsFromQueryMiddlewareFactory() {
-  return function credentialsFromQueryMiddleware(req: HullRequestBase, res: $Response, next: NextFunction) {
+  return function credentialsFromQueryMiddleware(
+    req: HullRequestBase,
+    res: $Response,
+    next: NextFunction
+  ) {
     try {
       if (!req.hull || !req.hull.connectorConfig) {
-        return next(new Error("Missing req.hull or req.hull.connectorConfig context object"));
+        return next(
+          new Error(
+            "Missing req.hull or req.hull.connectorConfig context object"
+          )
+        );
       }
       const { hostSecret } = req.hull.connectorConfig;
-      const clientCredentialsToken = req.hull.clientCredentialsToken || getToken(req.query);
+      const clientCredentialsToken =
+        req.hull.clientCredentialsToken || getToken(req.query);
       const clientCredentials =
         req.hull.clientCredentials ||
         parseToken(clientCredentialsToken, hostSecret) ||
@@ -70,13 +83,16 @@ function credentialsFromQueryMiddlewareFactory() {
         return next(new Error("Could not resolve clientCredentials"));
       }
       // handle legacy naming
-      if (clientCredentials.ship && typeof clientCredentials.ship === "string") {
+      if (
+        clientCredentials.ship &&
+        typeof clientCredentials.ship === "string"
+      ) {
         clientCredentials.id = clientCredentials.ship;
       }
       debug("resolved configuration");
       req.hull = Object.assign(req.hull, {
         clientCredentials,
-        clientCredentialsToken
+        clientCredentialsToken,
       });
       return next();
     } catch (error) {

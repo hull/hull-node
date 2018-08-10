@@ -25,15 +25,24 @@ class NotificationValidator {
 
   validateHeaders(req: HullRequestBase): NotificationValidationError | null {
     if (!this.hasFlagHeader(req)) {
-      return new NotificationValidationError("Missing flag header", "MISSING_FLAG_HEADER");
+      return new NotificationValidationError(
+        "Missing flag header",
+        "MISSING_FLAG_HEADER"
+      );
     }
 
     if (!this.validateSignatureVersion(req)) {
-      return new NotificationValidationError("Unsupported signature version", "UNSUPPORTED_SIGNATURE_VERSION");
+      return new NotificationValidationError(
+        "Unsupported signature version",
+        "UNSUPPORTED_SIGNATURE_VERSION"
+      );
     }
 
     if (!this.validateSignatureHeaders(req)) {
-      return new NotificationValidationError("Missing signature header(s)", "MISSING_SIGNATURE_HEADERS");
+      return new NotificationValidationError(
+        "Missing signature header(s)",
+        "MISSING_SIGNATURE_HEADERS"
+      );
     }
 
     return null;
@@ -45,65 +54,95 @@ class NotificationValidator {
 
   validatePayload(req: HullRequestBase): NotificationValidationError | null {
     if (!req.body) {
-      return new NotificationValidationError("No notification payload", "MISSING_NOTIFICATION_PAYLOAD");
+      return new NotificationValidationError(
+        "No notification payload",
+        "MISSING_NOTIFICATION_PAYLOAD"
+      );
     }
 
     if (!req.body.configuration) {
-      return new NotificationValidationError("No configuration in payload", "MISSING_CONFIGURATION");
+      return new NotificationValidationError(
+        "No configuration in payload",
+        "MISSING_CONFIGURATION"
+      );
     }
     return null;
   }
 
   validateSignatureVersion(req: HullRequestBase): boolean {
-    return _.has(req.headers, "x-hull-smart-notifier-signature-version") &&
-      _.indexOf(supportedSignaturesVersions, req.headers["x-hull-smart-notifier-signature-version"]) >= 0;
+    return (
+      _.has(req.headers, "x-hull-smart-notifier-signature-version") &&
+      _.indexOf(
+        supportedSignaturesVersions,
+        req.headers["x-hull-smart-notifier-signature-version"]
+      ) >= 0
+    );
   }
 
   validateSignatureHeaders(req: HullRequestBase): boolean {
-    return ["x-hull-smart-notifier-signature",
+    return [
+      "x-hull-smart-notifier-signature",
       "x-hull-smart-notifier-signature-version",
-      "x-hull-smart-notifier-signature-public-key-url"
+      "x-hull-smart-notifier-signature-public-key-url",
     ].every(h => _.has(req.headers, h));
   }
 
   validateSignature(req: HullRequestBase): Promise {
-    return this.getCertificate(req)
-      .then((certificate) => {
-        try {
-          const decoded = jwt.verify(req.headers["x-hull-smart-notifier-signature"], certificate, {
+    return this.getCertificate(req).then(certificate => {
+      try {
+        const decoded = jwt.verify(
+          req.headers["x-hull-smart-notifier-signature"],
+          certificate,
+          {
             algorithms: ["RS256"],
-            jwtid: (req.body && req.body.notification_id) || ""
-          });
-
-          if (decoded) {
-            return Promise.resolve(true);
+            jwtid: (req.body && req.body.notification_id) || "",
           }
-          return Promise.reject(new NotificationValidationError("Signature invalid", "INVALID_SIGNATURE"));
-        } catch (err) {
-          return Promise.reject(err);
+        );
+
+        if (decoded) {
+          return Promise.resolve(true);
         }
-      });
+        return Promise.reject(
+          new NotificationValidationError(
+            "Signature invalid",
+            "INVALID_SIGNATURE"
+          )
+        );
+      } catch (err) {
+        return Promise.reject(err);
+      }
+    });
   }
 
   getCertificate(req: HullRequestBase): Promise {
-    const certUrl = req.headers["x-hull-smart-notifier-signature-public-key-url"];
+    const certUrl =
+      req.headers["x-hull-smart-notifier-signature-public-key-url"];
     const signature = req.headers["x-hull-smart-notifier-signature"];
     if (_.has(certCache, certUrl)) {
       return Promise.resolve(_.get(certCache, certUrl));
     }
     return new Promise((resolve, reject) => {
-      this.httpClient.post(certUrl, {
-        body: signature
-      }, (error, response, body) => {
-        if (error) {
-          return reject(error);
+      this.httpClient.post(
+        certUrl,
+        {
+          body: signature,
+        },
+        (error, response, body) => {
+          if (error) {
+            return reject(error);
+          }
+          if (!body.match("-----BEGIN PUBLIC KEY-----")) {
+            return reject(
+              new NotificationValidationError(
+                "Invalid certificate",
+                "INVALID_CERTIFICATE"
+              )
+            );
+          }
+          certCache[certUrl] = body;
+          return resolve(body);
         }
-        if (!body.match("-----BEGIN PUBLIC KEY-----")) {
-          return reject(new NotificationValidationError("Invalid certificate", "INVALID_CERTIFICATE"));
-        }
-        certCache[certUrl] = body;
-        return resolve(body);
-      });
+      );
     });
   }
 }

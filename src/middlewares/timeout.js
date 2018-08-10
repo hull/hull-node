@@ -30,4 +30,3 @@ function timeoutMiddlewareFactory({ emitError = true, onTimeout = null } = {}) {
 }
 
 module.exports = timeoutMiddlewareFactory;
-

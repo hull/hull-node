@@ -11,7 +11,7 @@ const {
   haltOnTimedoutMiddleware,
   fullContextBodyMiddleware,
   instrumentationContextMiddleware,
-  instrumentationTransientError
+  instrumentationTransientError,
 } = require("../../middlewares");
 
 const processingMiddleware = require("./processing-middleware");
@@ -26,7 +26,9 @@ const errorMiddleware = require("./error-middleware");
  *   "user:update": (ctx, message) => {}
  * }));
  */
-function notificationHandlerFactory(configuration: HullHandlersConfiguration): * {
+function notificationHandlerFactory(
+  configuration: HullHandlersConfiguration
+): * {
   const router = Router();
   const normalizedConfiguration = normalizeHandlersConfiguration(configuration);
 
@@ -38,7 +40,10 @@ function notificationHandlerFactory(configuration: HullHandlersConfiguration): *
   router.use(instrumentationContextMiddleware({ handlerName: "notification" }));
   router.use(fullContextBodyMiddleware({ requestName: "notification" }));
   router.use((req: HullRequest, res: $Response, next: NextFunction) => {
-    if (req.hull.notification && req.hull.notification.channel === "ship:update") {
+    if (
+      req.hull.notification &&
+      req.hull.notification.channel === "ship:update"
+    ) {
       req.hull.cache.del("connector");
     }
     next();

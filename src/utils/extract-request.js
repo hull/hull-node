@@ -20,14 +20,25 @@ const _ = require("lodash");
  * @example
  * req.hull.helpers.requestExtract({ segment = null, path, fields = [], additionalQuery = {} });
  */
-function extractRequest({ client, hostname, segment = null, format = "json", path = "batch", fields = [], additionalQuery = {} }) {
+function extractRequest({
+  client,
+  hostname,
+  segment = null,
+  format = "json",
+  path = "batch",
+  fields = [],
+  additionalQuery = {},
+}) {
   const conf = client.configuration();
-  const search = _.merge({
-    ship: conf.id,
-    secret: conf.secret,
-    organization: conf.organization,
-    source: "connector"
-  }, additionalQuery);
+  const search = _.merge(
+    {
+      ship: conf.id,
+      secret: conf.secret,
+      organization: conf.organization,
+      source: "connector",
+    },
+    additionalQuery
+  );
 
   if (segment) {
     search.segment_id = segment.id;
@@ -38,9 +49,9 @@ function extractRequest({ client, hostname, segment = null, format = "json", pat
     .toString();
 
   return (() => {
-    if (segment == null) {
+    if (segment === null) {
       return Promise.resolve({
-        query: {}
+        query: {},
       });
     }
 
@@ -48,9 +59,13 @@ function extractRequest({ client, hostname, segment = null, format = "json", pat
       return Promise.resolve(segment);
     }
     return client.get(segment.id);
-  })()
-  .then(({ query }) => {
-    const params = { query, format, url, fields };
+  })().then(({ query }) => {
+    const params = {
+      query,
+      format,
+      url,
+      fields,
+    };
     client.logger.debug("connector.requestExtract.params", params);
     return client.post("extract/user_reports", params);
   });

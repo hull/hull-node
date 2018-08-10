@@ -9,10 +9,14 @@ function fetchConnector(ctx): Promise<*> {
   if (ctx.connector) {
     return Promise.resolve(ctx.connector);
   }
-  return ctx.cache.wrap("connector", () => {
-    debug("fetchConnector - calling API");
-    return ctx.client.get("app", {});
-  }, { ttl: 60000 });
+  return ctx.cache.wrap(
+    "connector",
+    () => {
+      debug("fetchConnector - calling API");
+      return ctx.client.get("app", {});
+    },
+    { ttl: 60000 }
+  );
 }
 
 function fetchSegments(ctx, entityType = "users") {
@@ -24,20 +28,24 @@ function fetchSegments(ctx, entityType = "users") {
     return Promise.resolve(ctx[`${entityType}sSegments`]);
   }
   const { id } = ctx.client.configuration();
-  return ctx.cache.wrap(`${entityType}s_segments`, () => {
-    if (ctx.client === undefined) {
-      return Promise.reject(new Error("Missing client"));
-    }
-    debug("fetchSegments - calling API");
-    return ctx.client.get(
-      `/${entityType}s_segments`,
-      { shipId: id },
-      {
-        timeout: 5000,
-        retry: 1000
+  return ctx.cache.wrap(
+    `${entityType}s_segments`,
+    () => {
+      if (ctx.client === undefined) {
+        return Promise.reject(new Error("Missing client"));
       }
-    );
-  }, { ttl: 60000 });
+      debug("fetchSegments - calling API");
+      return ctx.client.get(
+        `/${entityType}s_segments`,
+        { shipId: id },
+        {
+          timeout: 5000,
+          retry: 1000,
+        }
+      );
+    },
+    { ttl: 60000 }
+  );
 }
 
 /**
@@ -49,46 +57,57 @@ function fetchSegments(ctx, entityType = "users") {
  * - `req.hull.accountsSegments`
  * It also honour existing values at this properties. If they are already set they won't be overwritten.
  */
-function fullContextFetchMiddlewareFactory({ requestName, strict = true }: Object = {}) {
-  return function fullContextFetchMiddleware(req: HullRequestWithClient, res: $Response, next: NextFunction) {
+function fullContextFetchMiddlewareFactory({
+  requestName,
+  strict = true,
+}: Object = {}) {
+  return function fullContextFetchMiddleware(
+    req: HullRequestWithClient,
+    res: $Response,
+    next: NextFunction
+  ) {
     if (req.hull === undefined || req.hull.client === undefined) {
-      return next(new Error("We need initialized client to fetch connector settings and segments lists"));
+      return next(
+        new Error(
+          "We need initialized client to fetch connector settings and segments lists"
+        )
+      );
     }
 
     return Promise.all([
       fetchConnector(req.hull),
       fetchSegments(req.hull, "user"),
-      fetchSegments(req.hull, "account")
+      fetchSegments(req.hull, "account"),
     ])
-    .then(([connector, usersSegments, accountsSegments]) => {
-      debug("received responses %o", {
-        connector: typeof connector,
-        usersSegments: Array.isArray(usersSegments),
-        accountsSegments: Array.isArray(accountsSegments)
-      });
-      if (strict && typeof connector !== "object") {
-        return next(new Error("Unable to fetch connector object"));
-      }
+      .then(([connector, usersSegments, accountsSegments]) => {
+        debug("received responses %o", {
+          connector: typeof connector,
+          usersSegments: Array.isArray(usersSegments),
+          accountsSegments: Array.isArray(accountsSegments),
+        });
+        if (strict && typeof connector !== "object") {
+          return next(new Error("Unable to fetch connector object"));
+        }
 
-      if (strict && !Array.isArray(usersSegments)) {
-        return next(new Error("Unable to fetch usersSegments array"));
-      }
+        if (strict && !Array.isArray(usersSegments)) {
+          return next(new Error("Unable to fetch usersSegments array"));
+        }
 
-      if (strict && !Array.isArray(accountsSegments)) {
-        return next(new Error("Unable to fetch accountsSegments array"));
-      }
-      req.hull = Object.assign(req.hull, {
-        connector,
-        usersSegments,
-        accountsSegments
-      });
+        if (strict && !Array.isArray(accountsSegments)) {
+          return next(new Error("Unable to fetch accountsSegments array"));
+        }
+        req.hull = Object.assign(req.hull, {
+          connector,
+          usersSegments,
+          accountsSegments,
+        });
 
-      if (requestName) {
-        req.hull.requestId = [requestName].join("-");
-      }
-      return next();
-    })
-    .catch(error => next(error));
+        if (requestName) {
+          req.hull.requestId = [requestName].join("-");
+        }
+        return next();
+      })
+      .catch(error => next(error));
   };
 }
 

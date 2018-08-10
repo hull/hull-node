@@ -27,11 +27,11 @@ function promiseToReadableStream(
           debug("promise resolved, pushing null to readable stream");
           this.push(null);
         })
-        .catch((error) => {
+        .catch(error => {
           debug("error while reading data from promise", error);
           this.destroy(error);
         });
-    }
+    },
   });
 }
 

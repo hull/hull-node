@@ -6,7 +6,7 @@ const ERROR_CODES = [
   "ETIMEDOUT",
   "EADDRINFO",
   "ESOCKETTIMEDOUT",
-  "ECONNABORTED"
+  "ECONNABORTED",
 ];
 
 /**
@@ -53,14 +53,14 @@ function superagentErrorPluginFactory({ retries = 2, timeout = 10000 } = {}) {
     const end = request.end;
 
     // for all network connection issues we return TransientError
-    request.end = (cb) => {
+    request.end = cb => {
       end.call(request, (err, res) => {
         let newError = err;
         // if we are having an error which is either a flaky connection issue
         // or an timeout, then we return a TransientError
         if (
-          (err && err.code && ERROR_CODES.indexOf(err.code) !== -1)
-          || (err && err.timeout)
+          (err && err.code && ERROR_CODES.indexOf(err.code) !== -1) ||
+          (err && err.timeout)
         ) {
           newError = new TransientError(err.message);
           newError.code = err.code;
@@ -73,7 +73,7 @@ function superagentErrorPluginFactory({ retries = 2, timeout = 10000 } = {}) {
     };
 
     // this retrial handler will only retry when we have a network connection issue
-    request.retry(retries, (err) => {
+    request.retry(retries, err => {
       if (err && err.code && ERROR_CODES.indexOf(err.code) !== -1) {
         return true;
       }

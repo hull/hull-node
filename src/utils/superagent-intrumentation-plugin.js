@@ -78,17 +78,17 @@ function superagentInstrumentationPluginFactory({ logger, metric }) {
           `endpoint:${method} ${url}`,
         ]);
       })
-      .on("response", (resData) => {
+      .on("response", resData => {
         const hrTime = process.hrtime(start);
         const status = resData.status;
-        const statusGroup = `${(status).toString().substring(0, 1)}xx`;
-        const elapsed = (hrTime[0] * 1000) + (hrTime[1] / 1000000);
+        const statusGroup = `${status.toString().substring(0, 1)}xx`;
+        const elapsed = hrTime[0] * 1000 + hrTime[1] / 1000000;
         logger.debug("connector.service_api.call", {
           responseTime: elapsed,
           method,
           url,
           status,
-          vars: request.urlTemplateVariables
+          vars: request.urlTemplateVariables,
         });
         // TODO: should be migrated to `connector.service_api.call`
         metric.increment("ship.service_api.call", 1, [

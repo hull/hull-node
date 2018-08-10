@@ -9,8 +9,8 @@
  * @memberof Errors
  */
 class TransientError extends Error {
-
   extra: Object;
+
   code: string;
 
   constructor(message: string, extra: Object) {

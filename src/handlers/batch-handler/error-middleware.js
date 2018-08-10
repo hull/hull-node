@@ -6,7 +6,12 @@ const debug = require("debug")("hull-connector:batch-handler");
 const { TransientError } = require("../../errors");
 
 function batchExtractErrorMiddlewareFactory() {
-  return function batchExtractErrorMiddleware(err: Error, req: HullRequestFull, res: $Response, next: NextFunction) {
+  return function batchExtractErrorMiddleware(
+    err: Error,
+    req: HullRequestFull,
+    res: $Response,
+    next: NextFunction
+  ) {
     debug("error", err);
     // if we have transient error
     if (err instanceof TransientError) {

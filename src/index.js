@@ -1,6 +1,6 @@
 /* @flow */
-/*:: export type * from "./types"; */
-/*:: export type * from "hull-client"; */
+/* :: export type * from "./types"; */
+/* :: export type * from "hull-client"; */
 
 /**
  * An object that's available in all action handlers and routers as `req.hull`.
@@ -15,9 +15,12 @@ const HullClient = require("hull-client");
 const Worker = require("./connector/worker");
 const HullConnector = require("./connector/hull-connector");
 
-const boundHullConnector = HullConnector.bind(undefined, { Worker, HullClient });
+const boundHullConnector = HullConnector.bind(undefined, {
+  Worker,
+  HullClient,
+});
 
 module.exports = {
   Connector: boundHullConnector,
-  Client: HullClient
+  Client: HullClient,
 };

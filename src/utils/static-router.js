@@ -8,7 +8,9 @@ function manifestRouteFactory(dirname) {
 }
 
 function readmeRoute(req, res) {
-  return res.redirect(`https://dashboard.hullapp.io/readme?url=https://${req.headers.host}`);
+  return res.redirect(
+    `https://dashboard.hullapp.io/readme?url=https://${req.headers.host}`
+  );
 }
 
 function staticRouter() {

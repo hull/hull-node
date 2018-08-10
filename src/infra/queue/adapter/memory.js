@@ -8,7 +8,13 @@ class MemoryAdapter {
   constructor() {
     this.queue = {};
     this.processors = {};
-    ["inactiveCount", "activeCount", "completeCount", "failedCount", "delayedCount"].forEach((name) => {
+    [
+      "inactiveCount",
+      "activeCount",
+      "completeCount",
+      "failedCount",
+      "delayedCount",
+    ].forEach(name => {
       this[name] = () => Promise.resolve(0);
     });
   }
@@ -31,9 +37,12 @@ class MemoryAdapter {
     this.queue[jobName] = this.queue[jobName] || [];
     this.queue[jobName].push({
       id: this.queue[jobName].length,
-      data: _.merge({
-        name: jobName,
-      }, jobPayload)
+      data: _.merge(
+        {
+          name: jobName,
+        },
+        jobPayload
+      ),
     });
     return this.processQueues();
   }
@@ -50,13 +59,15 @@ class MemoryAdapter {
   }
 
   processQueues() {
-    return Promise.all(_.map(this.processors, (jobCallback, jobName) => {
-      if (_.get(this.queue, jobName, []).length === 0) {
-        return Promise.resolve();
-      }
-      const job = this.queue[jobName].pop();
-      return jobCallback(job);
-    }));
+    return Promise.all(
+      _.map(this.processors, (jobCallback, jobName) => {
+        if (_.get(this.queue, jobName, []).length === 0) {
+          return Promise.resolve();
+        }
+        const job = this.queue[jobName].pop();
+        return jobCallback(job);
+      })
+    );
     // .then(() => {
     //   this.processQueues();
     // }, () => {

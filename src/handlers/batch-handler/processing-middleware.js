@@ -1,14 +1,23 @@
 // @flow
 import type { $Response, NextFunction } from "express";
-import type { HullRequestFull, HullNormalizedHandlersConfiguration } from "../../types";
+import type {
+  HullRequestFull,
+  HullNormalizedHandlersConfiguration,
+} from "../../types";
 
 const _ = require("lodash");
 const debug = require("debug")("hull-connector:batch-handler");
 
 const extractStream = require("../../utils/extract-stream");
 
-function batchExtractProcessingMiddlewareFactory(normalizedConfiguration: HullNormalizedHandlersConfiguration) {
-  return function batchExtractProcessingMiddleware(req: HullRequestFull, res: $Response, next: NextFunction) {
+function batchExtractProcessingMiddlewareFactory(
+  normalizedConfiguration: HullNormalizedHandlersConfiguration
+) {
+  return function batchExtractProcessingMiddleware(
+    req: HullRequestFull,
+    res: $Response,
+    next: NextFunction
+  ) {
     const { client } = req.hull;
     if (!req.body || typeof req.body !== "object") {
       return next(new Error("Missing body payload"));
@@ -31,23 +40,30 @@ function batchExtractProcessingMiddlewareFactory(normalizedConfiguration: HullNo
     debug("entityType", entityType);
     debug("handlerCallback", typeof callback);
     if (!url || !format) {
-      return next(new Error("Missing any of required payload parameters: `url`, `format`."));
+      return next(
+        new Error(
+          "Missing any of required payload parameters: `url`, `format`."
+        )
+      );
     }
     req.hull.isBatch = true;
     return extractStream({
       body,
       batchSize: options.maxSize || 100,
       onResponse: () => res.end("ok"),
-      onError: (err) => {
+      onError: err => {
         client.logger.error("connector.batch.error", err.stack);
         res.sendStatus(400);
       },
-      callback: (entities) => {
+      callback: entities => {
         const segmentId = (req.query && req.query.segment_id) || null;
 
-        const segmentsList = req.hull[`${entityType}sSegments`].map(s => _.pick(s, ["id", "name", "type", "created_at", "updated_at"]));
-        const entitySegmentsKey = entityType === "user" ? "segments" : "account_segments";
-        const messages = entities.map((entity) => {
+        const segmentsList = req.hull[`${entityType}sSegments`].map(s =>
+          _.pick(s, ["id", "name", "type", "created_at", "updated_at"])
+        );
+        const entitySegmentsKey =
+          entityType === "user" ? "segments" : "account_segments";
+        const messages = entities.map(entity => {
           const segmentIds = _.compact(
             _.uniq(_.concat(entity.segment_ids || [], [segmentId]))
           );
@@ -55,7 +71,7 @@ function batchExtractProcessingMiddlewareFactory(normalizedConfiguration: HullNo
             [entityType]: _.omit(entity, "segment_ids"),
             [entitySegmentsKey]: _.compact(
               segmentIds.map(id => _.find(segmentsList, { id }))
-            )
+            ),
           };
           if (entityType === "user") {
             message.user = _.omit(entity, "account");
@@ -65,9 +81,8 @@ function batchExtractProcessingMiddlewareFactory(normalizedConfiguration: HullNo
         });
         // $FlowFixMe
         return callback(req.hull, messages);
-      }
-    })
-    .catch(error => next(error));
+      },
+    }).catch(error => next(error));
   };
 }
 

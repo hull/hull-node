@@ -1,16 +1,26 @@
 // @flow
-import type { HullHandlersConfiguration, HullNormalizedHandlersConfiguration } from "../types";
+import type {
+  HullHandlersConfiguration,
+  HullNormalizedHandlersConfiguration,
+} from "../types";
 
 const normalizeHandlersConfigurationEntry = require("./normalize-handlers-configuration-entry");
 
-function normalizeHandlersConfiguration(configuration: HullHandlersConfiguration): HullNormalizedHandlersConfiguration {
+function normalizeHandlersConfiguration(
+  configuration: HullHandlersConfiguration
+): HullNormalizedHandlersConfiguration {
   if (configuration === undefined) {
-    throw new Error("normalizeHandlersConfiguration requires configuration object");
+    throw new Error(
+      "normalizeHandlersConfiguration requires configuration object"
+    );
   }
-  return Object.keys(configuration).reduce((normConf: HullNormalizedHandlersConfiguration, key: string) => {
-    normConf[key] = normalizeHandlersConfigurationEntry(configuration[key]);
-    return normConf;
-  }, {});
+  return Object.keys(configuration).reduce(
+    (normConf: HullNormalizedHandlersConfiguration, key: string) => {
+      normConf[key] = normalizeHandlersConfigurationEntry(configuration[key]);
+      return normConf;
+    },
+    {}
+  );
 }
 
 module.exports = normalizeHandlersConfiguration;

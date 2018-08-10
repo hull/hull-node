@@ -35,7 +35,6 @@ class InstrumentationAgent {
       this.manifest = {};
     }
 
-
     if (process.env.NEW_RELIC_LICENSE_KEY) {
       this.nr = require("newrelic"); // eslint-disable-line global-require
     }
@@ -49,15 +48,14 @@ class InstrumentationAgent {
       this.dogapi = dogapi;
     }
 
-
     if (process.env.SENTRY_URL) {
       debug("starting raven");
       this.raven = Raven.config(process.env.SENTRY_URL, {
         environment: process.env.HULL_ENV || "production",
         release: this.manifest.version,
         captureUnhandledRejections: false,
-        sampleRate: parseFloat(process.env.SENTRY_SAMPLE_RATE) || 1.0
-      }).install((err) => {
+        sampleRate: parseFloat(process.env.SENTRY_SAMPLE_RATE) || 1.0,
+      }).install(err => {
         console.error("connector.error", { err: err.stack || err });
         if (this.exitOnError) {
           if (process.listenerCount("gracefulExit") > 0) {
@@ -103,13 +101,13 @@ class InstrumentationAgent {
       this.raven.captureException(err, {
         extra,
         tags,
-        fingerprint: [
-          "{{ default }}",
-          err.message
-        ]
+        fingerprint: ["{{ default }}", err.message],
       });
     }
-    return console.error("connector.error", JSON.stringify({ message: err.message, stack: err.stack, tags }));
+    return console.error(
+      "connector.error",
+      JSON.stringify({ message: err.message, stack: err.stack, tags })
+    );
   }
 
   startMiddleware() {
@@ -130,14 +128,15 @@ class InstrumentationAgent {
     };
   }
 
-  getMetric(ctx) { // eslint-disable-line class-methods-use-this
+  getMetric(ctx) {
+    // eslint-disable-line class-methods-use-this
     return new MetricAgent(ctx, this);
   }
 
   mergeContext(req) {
     const info = {
       connector: "",
-      organization: ""
+      organization: "",
     };
     if (req.hull && req.hull.client) {
       const config = req.hull.client.configuration();
@@ -148,22 +147,21 @@ class InstrumentationAgent {
       Raven.mergeContext({
         tags: {
           organization: info.organization,
-          connector: info.connector
+          connector: info.connector,
         },
         extra: {
           body: req.body,
           query: req.query,
           method: req.method,
           url: url.parse(req.url).pathname,
-        }
+        },
       });
     }
   }
 
   metricVal(metric, value = 1) {
-    return (new MetricAgent({}, this)).value(metric, value);
+    return new MetricAgent({}, this).value(metric, value);
   }
 }
-
 
 module.exports = InstrumentationAgent;

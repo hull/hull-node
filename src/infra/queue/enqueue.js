@@ -25,9 +25,17 @@ import type { HullContextFull } from "../../types";
  *     });
  * });
  */
-module.exports = function enqueue(queueAdapter: Object, ctx: HullContextFull, jobName: string, jobPayload: Object, options: Object = {}): Promise<*> {
+module.exports = function enqueue(
+  queueAdapter: Object,
+  ctx: HullContextFull,
+  jobName: string,
+  jobPayload: Object,
+  options: Object = {}
+): Promise<*> {
   if (ctx.client === undefined) {
-    throw new Error("ctx.enqueue can be used only with initialized hull client");
+    throw new Error(
+      "ctx.enqueue can be used only with initialized hull client"
+    );
   }
   const { id, secret, organization } = ctx.client.configuration();
   const context = {
@@ -35,15 +43,18 @@ module.exports = function enqueue(queueAdapter: Object, ctx: HullContextFull, jo
     query: {
       ship: id,
       secret,
-      organization
-    }
+      organization,
+    },
   };
   const queueName = options.queueName || "queueApp";
 
-  return queueAdapter.create(queueName, {
-    name: jobName,
-    payload: jobPayload,
-    context
-  }, options);
+  return queueAdapter.create(
+    queueName,
+    {
+      name: jobName,
+      payload: jobPayload,
+      context,
+    },
+    options
+  );
 };
-
