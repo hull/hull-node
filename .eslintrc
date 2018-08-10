@@ -2,29 +2,35 @@
   "parser": "babel-eslint",
   "globals": {},
   "env": {
-    "es6": true
+    "es6": true,
+    "node": true
   },
   "rules": {
-    "comma-dangle": [0],
-    "max-len": [0],
+    "strict": 0,
+    "arrow-body-style": [0],
     "camelcase": [0],
     "class-methods-use-this": [0],
-    "quotes": [2, "double"],
-    "prefer-arrow-callback": [0],
-    "new-cap": [0],
-    "no-underscore-dangle": [0],
-    "arrow-body-style" : [0],
-    "no-param-reassign" : [0],
-    "no-console": [0],
     "eqeqeq": [1],
-    "spaced-comment": ["error", "always", { "markers": [":", "::"] }],
-    "no-unused-vars": ["error", { "argsIgnorePattern": "^_" }]
+    "flowtype-errors/show-errors": 2,
+    "max-len": [0],
+    "new-cap": [0],
+    "no-console": [0],
+    "no-param-reassign": [0],
+    "no-underscore-dangle": [0],
+    "no-unused-vars": [1],
+    "prefer-arrow-callback": [1],
+    "prefer-destructuring": [0],
+    "no-use-before-define": ["error", { "classes": false }]
   },
   "extends": [
-    "airbnb-base",
+    "prettier",
+    "prettier/flowtype",
+    "prettier/standard",
     "plugin:flowtype/recommended"
   ],
   "plugins": [
-    "flowtype"
+    "prettier",
+    "flowtype",
+    "flowtype-errors"
   ],
 }

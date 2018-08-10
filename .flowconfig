@@ -9,4 +9,4 @@
 all=warn
 
 [options]
-include_warnings=true
+include_warnings=false

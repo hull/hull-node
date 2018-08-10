@@ -1,6 +1,6 @@
 {
   "name": "hull",
-  "version": "0.14.0-beta.13",
+  "version": "0.14.0-beta.14",
   "description": "A Node.js client for hull.io",
   "main": "lib",
   "repository": {
@@ -17,8 +17,12 @@
   "author": "Romain Dardour <romain@hull.io>",
   "license": "MIT",
   "scripts": {
+    "flow": "flow",
+    "lint": "eslint src",
+    "documentation:lint": "documentation lint src",
+    "prettier": "prettier --write \"./src/**/*.{js,json}\"",
     "test": "npm run test:lint && npm run test:flow && npm run test:unit && npm run test:integration",
-    "test:lint": "eslint src && documentation lint src",
+    "test:lint": "yarn lint && yarn documentation:lint",
     "test:modules": "npm outdated --depth=0",
     "test:unit": "NODE_ENV=test mocha --require babel-register -R spec ./test/unit/*.js ./test/unit/**/*.js",
     "test:integration": "NODE_ENV=test mocha --require babel-register -R spec ./test/integration/*.js",
@@ -30,7 +34,21 @@
     "dev": "babel src -d lib -w",
     "prepublish": "npm run build",
     "documentation": "documentation build src -f md -o API.md --access public --markdownToc=false",
-    "precommit": "npm run documentation && git add API.md"
+    "precommit": "yarn lint && yarn flow && lint-staged && npm run documentation && git add API.md"
+  },
+  "lint-staged": {
+    "linters": {
+      "*.{js,jsx,css,less,json}": [
+        "prettier --write",
+        "git add"
+      ]
+    }
+  },
+  "prettier": {
+    "trailingComma": "es5",
+    "singleQuote": false,
+    "arrowParens": "avoid",
+    "semi": true
   },
   "dependencies": {
     "JSONStream": "^1.1.2",
@@ -80,29 +98,33 @@
     "newrelic": "^4.1.4"
   },
   "devDependencies": {
-    "babel": "^6.5.2",
+    "babel": "^6.23.0",
     "babel-cli": "^6.24.1",
-    "babel-eslint": "^7.1.1",
+    "babel-eslint": "^8.2.2",
     "babel-plugin-transform-flow-comments": "^6.22.0",
     "babel-plugin-transform-object-rest-spread": "^6.26.0",
-    "babel-register": "^6.9.0",
+    "babel-register": "^6.26.0",
     "chai": "^3.5.0",
     "chai-http": "^3.0.0",
     "documentation": "^6.3.3",
-    "eslint": "^3.2.2",
-    "eslint-config-airbnb-base": "^11.1.0",
-    "eslint-plugin-flowtype": "^2.39.1",
+    "eslint": "^5.3.0",
+    "eslint-config-prettier": "^2.9.0",
+    "eslint-plugin-flowtype": "^2.50.0",
+    "eslint-plugin-flowtype-errors": "^3.6.0",
     "eslint-plugin-import": "^2.2.0",
-    "flow-bin": "^0.74.0",
+    "eslint-plugin-prettier": "^2.6.2",
+    "flow-bin": "^0.78.0",
     "flow-typed": "^2.4.0",
     "husky": "^0.14.3",
     "isparta": "^4.0.0",
+    "lint-staged": "^7.2.0",
     "minihull": "^3.0.0",
     "mkdirp": "^0.5.1",
     "mocha": "^3.0.0",
     "nock": "^9.2.3",
     "node-mocks-http": "^1.7.0",
     "nyc": "^11.0.3",
+    "prettier": "^1.14.2",
     "rimraf": "^2.6.0",
     "sinon": "^2.2.0",
     "sinon-chai": "^2.10.0",

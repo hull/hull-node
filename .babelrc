@@ -1,3 +1,6 @@
 {
-  "plugins": ["transform-flow-comments", ["transform-object-rest-spread", { "useBuiltIns": true }]]
+  "plugins": [
+    "transform-flow-comments",
+    ["transform-object-rest-spread", { "useBuiltIns": true }]
+  ]
 }
