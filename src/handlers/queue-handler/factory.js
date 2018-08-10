@@ -48,8 +48,7 @@ function actionHandler(jobName: string, options: Object) {
       .catch(error => next(error));
   });
   router.use(
-    (err: Error, req: HullRequestFull, res: $Response, _next: NextFunction) => {
-      // eslint-disable-line no-unused-vars
+    (err: Error, req: HullRequestFull, res: $Response, _next: NextFunction) => { // eslint-disable-line no-unused-vars
       res.status(500).end("error");
     }
   );

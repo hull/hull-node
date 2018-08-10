@@ -27,13 +27,13 @@ const {
 
 const Batcher = require("../../infra/batcher");
 
-/**
- * @param
- * @param {Object|Function} callback         [description]
- * @param {Object}   options [description]
- * @param {number}   options.maxSize [description]
- * @param {number}   options.maxTime [description]
- */
+// /**
+//  * @param
+//  * @param {Object|Function} callback [description]
+//  * @param {Object}   options         [description]
+//  * @param {number}   options.maxSize [description]
+//  * @param {number}   options.maxTime [description]
+//  */
 function requestsBufferHandlerFactory(
   configurationEntry: HullHandlersConfigurationEntry
 ) {

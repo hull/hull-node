@@ -249,8 +249,7 @@ function oAuthHandlerFactory({
       );
   });
 
-  router.use((error, req, res, next) => {
-    // eslint-disable-line no-unused-vars
+  router.use((error, req, res, next) => { // eslint-disable-line no-unused-vars
     const { client } = req.hull;
     if (client) {
       client.logger.error("connector.oauth.error", error);
