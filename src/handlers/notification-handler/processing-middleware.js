@@ -2,6 +2,7 @@
 import type { $Response, NextFunction } from "express";
 import type {
   HullRequestFull,
+  HullNotificationResponse,
   HullNormalizedHandlersConfiguration,
 } from "../../types";
 
@@ -41,8 +42,8 @@ function notificationHandlerProcessingMiddlewareFactory(
 
     // $FlowFixMe
     return callback(req.hull, messages)
-      .then(() => {
-        res.status(200).json(req.hull.notificationResponse);
+      .then((response: HullNotificationResponse) => {
+        res.status(200).json(response || req.hull.notificationResponse);
       })
       .catch(error => next(error));
   };

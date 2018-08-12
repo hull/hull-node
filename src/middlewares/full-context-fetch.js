@@ -1,10 +1,11 @@
 // @flow
 import type { $Response, NextFunction } from "express";
 import type { HullRequestWithClient } from "../types";
+import type { HullSegment, HullConnector } from "hull-client";
 
 const debug = require("debug")("hull-connector:full-context-fetch-middleware");
 
-function fetchConnector(ctx): Promise<*> {
+function fetchConnector(ctx): Promise<HullConnector> {
   debug("fetchConnector", typeof ctx.connector);
   if (ctx.connector) {
     return Promise.resolve(ctx.connector);
@@ -19,7 +20,7 @@ function fetchConnector(ctx): Promise<*> {
   );
 }
 
-function fetchSegments(ctx, entityType = "users") {
+function fetchSegments(ctx, entityType = "users"): Promise<Array<HullSegment>> {
   debug("fetchSegments", entityType, typeof ctx[`${entityType}sSegments`]);
   if (ctx.client === undefined) {
     return Promise.reject(new Error("Missing client"));
@@ -66,7 +67,8 @@ function fullContextFetchMiddlewareFactory({
     res: $Response,
     next: NextFunction
   ) {
-    if (req.hull === undefined || req.hull.client === undefined) {
+    const { hull } = req;
+    if (hull === undefined || hull.client === undefined) {
       return next(
         new Error(
           "We need initialized client to fetch connector settings and segments lists"
@@ -75,16 +77,18 @@ function fullContextFetchMiddlewareFactory({
     }
 
     return Promise.all([
-      fetchConnector(req.hull),
-      fetchSegments(req.hull, "user"),
-      fetchSegments(req.hull, "account"),
+      fetchConnector(hull),
+      fetchSegments(hull, "user"),
+      fetchSegments(hull, "account"),
     ])
-      .then(([connector, usersSegments, accountsSegments]) => {
+      .then(([connector, usersSegments = [], accountsSegments = []]) => {
+
         debug("received responses %o", {
           connector: typeof connector,
           usersSegments: Array.isArray(usersSegments),
           accountsSegments: Array.isArray(accountsSegments),
         });
+
         if (strict && typeof connector !== "object") {
           return next(new Error("Unable to fetch connector object"));
         }
@@ -96,11 +100,10 @@ function fullContextFetchMiddlewareFactory({
         if (strict && !Array.isArray(accountsSegments)) {
           return next(new Error("Unable to fetch accountsSegments array"));
         }
-        req.hull = Object.assign(req.hull, {
-          connector,
-          usersSegments,
-          accountsSegments,
-        });
+
+        req.hull.connector = connector;
+        req.hull.usersSegments = usersSegments;
+        req.hull.accountsSegments = accountsSegments;
 
         if (requestName) {
           req.hull.requestId = [requestName].join("-");

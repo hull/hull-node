@@ -1,6 +1,6 @@
 // @flow
 import type { $Response, NextFunction } from "express";
-import type { HullHandlersConfiguration, HullRequest } from "../../types";
+import type { HullHandlersConfiguration, HullRequestFull } from "../../types";
 
 const { Router } = require("express");
 const { normalizeHandlersConfiguration } = require("../../utils");
@@ -39,7 +39,7 @@ function notificationHandlerFactory(
   router.use(haltOnTimedoutMiddleware());
   router.use(instrumentationContextMiddleware({ handlerName: "notification" }));
   router.use(fullContextBodyMiddleware({ requestName: "notification" }));
-  router.use((req: HullRequest, res: $Response, next: NextFunction) => {
+  router.use((req: HullRequestFull, res: $Response, next: NextFunction) => {
     if (
       req.hull.notification &&
       req.hull.notification.channel === "ship:update"

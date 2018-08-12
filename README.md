@@ -798,4 +798,3 @@ app.use("/smart-notifier", smartNotifierHandler({
   }
 }));
 ```
-

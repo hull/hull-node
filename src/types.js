@@ -13,6 +13,9 @@ const HullClient = require("hull-client");
 const ConnectorCache = require("./infra/cache/connector-cache");
 const MetricAgent = require("./infra/instrumentation/metric-agent");
 
+// IMPORTANT: FOR SPREAD SYNTAX:
+// https://github.com/facebook/flow/issues/3534#issuecomment-287580240
+
 /**
  * @module Types
  */
@@ -62,12 +65,13 @@ export type HullContextBase = {
     options?: Object
   ) => Promise<*>,
 
+  token?: string,
   clientCredentials?: HullClientCredentials, // HullClient credentials
   clientCredentialsToken?: string, // encrypted token with HullClient credentials
 };
 
 export type HullContextWithCredentials = {
-  /* :: ...$Exact<HullContextBase>, */
+  ...$Exact<HullContextBase>,
   clientCredentials: HullClientCredentials, // HullClient configuration
   clientCredentialsToken?: string,
 
@@ -77,11 +81,15 @@ export type HullContextWithCredentials = {
 };
 
 export type HullContextWithClient = {
-  /* :: ...$Exact<HullContextWithCredentials>, */
+  ...$Exact<HullContextWithCredentials>,
   clientCredentialsToken: string,
   client: HullClient,
   notification?: HullNotification,
 };
+
+export type HullNotificationResponse = {
+  flow_control: HullNotificationFlowControl
+}
 
 /**
  * Context added to the express app request by hull-node connector sdk.
@@ -90,19 +98,20 @@ export type HullContextWithClient = {
  * @memberof Types
  */
 export type HullContextFull = {
-  /* :: ...$Exact<HullContextWithClient>, */
+  ...$Exact<HullContextWithClient>,
   connector: HullConnector,
   usersSegments: Array<HullSegment>,
   accountsSegments: Array<HullSegment>,
 
   notification?: HullNotification,
-  notificationResponse?: {
-    flow_control: HullNotificationFlowControl,
-  },
+  notificationResponse?: HullNotificationResponse,
   handlerName?: string,
 };
 
-export type HullContext = HullContextFull;
+export type HullContext<Connector: HullConnector> = {
+  ...$Exact<HullContextFull>,
+  connector: Connector
+};
 
 export type HullRequestBase = {
   ...$Request,
@@ -139,7 +148,10 @@ export type HullRequestFull = {
   hull: HullContextFull,
 };
 
-export type HullRequest = HullRequestFull;
+export type HullRequest<Context> = {
+  ...$Exact<HullRequestFull>,
+  hull: Context
+};
 
 // TODO: evolve this introducing envelope etc.
 export type HullSendResponse = Promise<*>;

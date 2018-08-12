@@ -5,7 +5,7 @@ import type {
   NextFunction,
   Middleware,
 } from "express";
-import type { HullConnectorOptions, HullRequest } from "../types";
+import type { HullConnectorOptions, HullRequestFull } from "../types";
 
 const Promise = require("bluebird");
 const fs = require("fs");
@@ -181,7 +181,7 @@ class HullConnector {
      * Unhandled error middleware
      */
     app.use(
-      (err: Error, req: HullRequest, res: $Response, next: NextFunction) => { // eslint-disable-line no-unused-vars
+      (err: Error, req: HullRequestFull, res: $Response, next: NextFunction) => { // eslint-disable-line no-unused-vars
         debug("unhandled-error", err.message);
         if (!res.headersSent) {
           res.status(500).send("unhandled-error");
