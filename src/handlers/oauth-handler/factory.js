@@ -16,7 +16,7 @@ function fetchToken(req, res, next) {
   const token = req.query.token || req.query.state;
   if (token && token.split(".").length === 3) {
     req.hull = req.hull || {};
-    req.hull.token = token;
+    req.hull.clientCredentialsToken = token;
   }
   next();
 }
@@ -118,7 +118,7 @@ function oAuthHandlerFactory({
   views = {},
   options = {}
 }) {
-  function getURL(req, url, qs = { token: req.hull.token }) {
+  function getURL(req, url, qs = { token: req.hull.clientCredentialsToken }) {
     const host = `https://${req.hostname}${req.baseUrl}${url}`;
     if (qs === false) return host;
     return `${host}?${querystring.stringify(qs)}`;
@@ -174,7 +174,7 @@ function oAuthHandlerFactory({
     passport.authorize(strategy.name, _.merge(
       {},
       req.authParams,
-      { callbackURL: getURL(req, CALLBACK_URL, tokenInUrl ? { token: req.hull.token } : false) }
+      { callbackURL: getURL(req, CALLBACK_URL, tokenInUrl ? { token: req.hull.clientCredentialsToken } : false) }
     ))(req, res, next);
   }
 
@@ -188,7 +188,7 @@ function oAuthHandlerFactory({
     req.authParams = _.merge(
       {},
       req.authParams,
-      { state: req.hull.token }
+      { state: req.hull.clientCredentialsToken }
     );
     next();
   }, authorize);
