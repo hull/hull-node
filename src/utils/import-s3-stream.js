@@ -7,6 +7,24 @@ const _ = require("lodash");
 const debug = require("debug")("hull-import-s3-stream");
 const moment = require("moment");
 
+function inspectReadableStream(stream) {
+  const events = ["data", "end", "close", "error", "readable"];
+  events.forEach((event) => {
+    stream.on(event, () => {
+      require("debug")("inspect-stream:readable")(`on.${event} %o`, _.omit(stream._readableState, "pipes", "objectMode", "highWaterMark", "defaultEncoding"));
+    });
+  });
+}
+
+function inspectWritableStream(stream) {
+  const events = ["close", "drain", "error", "finish"];
+  events.forEach((event) => {
+    stream.on(event, () => {
+      require("debug")("inspect-stream:writable")(`on.${event} %o`, _.omit(stream._writableState, "pipes", "objectMode", "highWaterMark", "defaultEncoding"));
+    });
+  });
+}
+
 /**
  * This
  * @example
@@ -98,12 +116,15 @@ class ImportS3Stream extends Writable {
     this.once("internal-error", (error) => {
       debug("internal-error-handler", error);
       const timeoutId = setTimeout(() => {
+        console.log(">>>> EMIITING FROM TIMEOUT");
         this.emit("error", error);
       }, 500);
       this._final(() => {
+        console.log(">>>> CLEARING", typeof timeoutId);
         if (timeoutId) {
           clearTimeout(timeoutId);
         }
+        console.log(">>>> EMITTING FROM _FINAL");
         this.emit("error", error);
       });
     });
@@ -260,29 +281,33 @@ class ImportS3Stream extends Writable {
     uploadPromise: Promise<{ SignedUrl: string }>,
     uploadStream: Writable
   } {
+    // const uploadStream = zlib.createGzip();
     const uploadStream = new PassThrough();
+    // uploadStream.on("data", () => {});
+    // inspectReadableStream(uploadStream);
+    // inspectWritableStream(uploadStream);
     let gzippedUploadStream;
     const params = {
       Bucket: this.s3Bucket,
       Key: _.template(this.s3KeyTemplate)({ partIndex, objectIndex }),
       Body: uploadStream,
       ContentType: "application/json",
-      ContentEncoding: "gzip",
+      // ContentEncoding: "gzip",
       ACL: this.s3ACL
     };
     debug("upload params %o", _.omit(params, "Body"));
     const upload = this.s3.upload(params);
-    if (this.gzipEnabled === true) {
-      gzippedUploadStream = new PassThrough();
-      gzippedUploadStream.pipe(zlib.createGzip()).pipe(uploadStream);
-      gzippedUploadStream.on("error", (error) => {
-        // $FlowFixMe
-        gzippedUploadStream.destroy(error);
-        // $FlowFixMe
-        uploadStream.destroy(error);
-        upload.abort();
-      });
-    }
+    // if (this.gzipEnabled === true) {
+    //   gzippedUploadStream = new PassThrough();
+    //   gzippedUploadStream.pipe(zlib.createGzip()).pipe(uploadStream);
+    //   gzippedUploadStream.on("error", (error) => {
+    //     // $FlowFixMe
+    //     gzippedUploadStream.destroy(error);
+    //     // $FlowFixMe
+    //     uploadStream.destroy(error);
+    //     upload.abort();
+    //   });
+    // }
     uploadStream.on("error", (error) => {
       // $FlowFixMe
       uploadStream.destroy(error);

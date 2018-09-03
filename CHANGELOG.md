@@ -1,3 +1,6 @@
+# 0.14.0-beta.14
+* fix within oauth handler
+
 # 0.14.0-beta.13
 * fix all tests
 * Node JS 8.x is only supported version now
