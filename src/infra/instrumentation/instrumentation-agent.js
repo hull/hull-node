@@ -42,7 +42,7 @@ class InstrumentationAgent {
     if (process.env.DATADOG_API_KEY) {
       this.metrics = metrics;
       metrics.init({
-        host: process.env.HOST,
+        host: process.env.DATADOG_HOST || process.env.HOST,
       });
       dogapi.initialize({ api_key: process.env.DATADOG_API_KEY });
       this.dogapi = dogapi;
