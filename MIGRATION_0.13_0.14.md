@@ -1,11 +1,12 @@
 # 0.13 -> 0.14 migration guide
 
+1. load route handlers from `hull/lib/handlers` and not from `hull/lib/utils`
 1. rename `smartNotifierHandler` to `notificationHandler`
     ```js
     // before
     const { smartNotifierHandler } = require("hull/lib/utils");
     // after
-    const { notificationHandler } = require("hull/lib/utils");
+    const { notificationHandler } = require("hull/lib/handlers");
     ```
 2. use `batchHandler` instead of `smartNotifierHandler` or `notifHandler` to handle `/batch` endpoints
     ```js
@@ -32,28 +33,17 @@ When using `scheduleHandler` or `actionHandler` you need to pass `HullHandlersCo
     ```
 4. `req.hull.ship` was renamed to `req.hull.connector`
 5. `req.hull.segments` and `req.hull.users_segments` were renamed to `req.hull.usersSegments` and `req.hull.accounts_segments` was renamed to `req.hull.accountsSegments`
-6. although all routes of the connector application communicating with the platform should be using appropriate handler, if you need to use plain expressjs routes you can use `credsFromQueryMiddlewares` utility to get full `req.hull` context. This is a breaking change, version 0.13 was preparing `req.hull` object on `connector.setupApp` level not on the handler level.
-    ```js
-    const { credsFromQueryMiddlewares } = require("hull/lib/utils");
-    app.post(
-      "/custom-endpoint",
-      ...credsFromQueryMiddlewares(),
-      (req, res) => {
-        req.hull
-      }
-    );
-    ```
-7. `T` prefix was removed from flow types
-8. HullClient dependency was upgraded to version 2.0.0, see changes here: https://github.com/hull/hull-client-node/blob/master/CHANGELOG.md#200-beta1
-9. `const Hull = require("hull");` is not a `HullClient` class anymore, so you need to change:
+6. `T` prefix was removed from flow types
+7. HullClient dependency was upgraded to version 2.0.0, see changes here: https://github.com/hull/hull-client-node/blob/master/CHANGELOG.md#200
+8. `const Hull = require("hull");` is not a `HullClient` class anymore, so you need to change:
     ```js
     // before
     Hull.logger.transports.console.level = "debug";
     // after
     Hull.Client.logger.transports.console.level = "debug";
     ```
-10. `Hull.Middleware` or `Hull.middleware` is not available anymore, you need to use `const { clientMiddleware } = require("hull/lib/middlewares");`
-11. `req.hull.helpers` object was removed. Some of the helpers were moved to `utils`. `filterNotifications` helper is not available anymore, implement custom `filterUtil`.
+9. `Hull.Middleware` or `Hull.middleware` is not available anymore, you need to use `const { clientMiddleware } = require("hull/lib/middlewares");`
+10. `req.hull.helpers` object was removed. Some of the helpers were moved to `utils`. `filterNotifications` helper is not available anymore, implement custom `filterUtil`.
     ```js
     // before
     app.post("/", (req, res) => {
@@ -62,12 +52,10 @@ When using `scheduleHandler` or `actionHandler` you need to pass `HullHandlersCo
 
     // after
     const { settingsUpdate } = require("hull/lib/utils");
-    const { credsFromQueryMiddlewares } = require("hull/lib/utils");
-    app.post(
-      "/",
-      ...credsFromQueryMiddlewares(),
-      (req, res) => {
+
+    app.use("/notification", notificationHandler({
+      "ship:update": (ctx) => {
         settingsUpdate(req.hull, { newSettings });
       }
-    );
+    }));
     ```

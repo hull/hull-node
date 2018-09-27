@@ -58,7 +58,7 @@ export type HullContextBase = {
 };
 
 export type HullContextWithCredentials = {
-  /*:: ...$Exact<HullContextBase>, */
+  ...$Exact<HullContextBase>,
   clientCredentials: HullClientCredentials, // HullClient configuration
   clientCredentialsToken?: string,
 
@@ -68,20 +68,20 @@ export type HullContextWithCredentials = {
 };
 
 export type HullContextWithClient = {
-  /*:: ...$Exact<HullContextWithCredentials>, */
+  ...$Exact<HullContextWithCredentials>,
   clientCredentialsToken: string,
   client: HullClient,
   notification?: HullNotification
 };
 
-/**
+/*
  * Context added to the express app request by hull-node connector sdk.
  * Accessible via `req.hull` param.
  * @public
  * @memberof Types
  */
 export type HullContextFull = {
-  /*:: ...$Exact<HullContextWithClient>, */
+  ...$Exact<HullContextWithClient>,
   connector: HullConnector,
   usersSegments: Array<HullSegment>,
   accountsSegments: Array<HullSegment>,

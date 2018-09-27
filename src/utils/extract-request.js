@@ -1,3 +1,6 @@
+// @flow
+import type { HullContext } from "../types";
+
 const Promise = require("bluebird");
 const URI = require("urijs");
 const _ = require("lodash");
@@ -20,7 +23,8 @@ const _ = require("lodash");
  * @example
  * req.hull.helpers.requestExtract({ segment = null, path, fields = [], additionalQuery = {} });
  */
-function extractRequest({ client, hostname, segment = null, format = "json", path = "batch", fields = [], additionalQuery = {} }) {
+function extractRequest(ctx: HullContext, { segment = null, format = "json", path = "batch", fields = [], additionalQuery = {} }: Object) {
+  const { client, hostname } = ctx;
   const conf = client.configuration();
   const search = _.merge({
     ship: conf.id,
@@ -47,7 +51,7 @@ function extractRequest({ client, hostname, segment = null, format = "json", pat
     if (segment.query) {
       return Promise.resolve(segment);
     }
-    return client.get(segment.id);
+    return client.get(segment.id, {});
   })()
   .then(({ query }) => {
     const params = { query, format, url, fields };
