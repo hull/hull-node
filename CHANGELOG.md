@@ -1,3 +1,6 @@
+# 0.13.17
+* introduce a `DATADOG_HOST` environment variable which is required if Datadog integration is enabled
+
 # 0.13.16
 * Explicitly handle too large kraken notification payloads
 * Adds devMode utility
