@@ -43,7 +43,7 @@ function extractRequest({
   if (segment) {
     search.segment_id = segment.id;
   }
-  const url = URI(`https://${hostname}`)
+  const url = URI(`https://${hostname}`) //eslint-disable-line new-cap
     .path(path)
     .search(search)
     .toString();

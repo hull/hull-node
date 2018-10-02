@@ -3,7 +3,7 @@ import type { $Response, NextFunction } from "express";
 import type {
   HullRequestFull,
   // HullContextFull,
-  HullHandlersConfigurationEntry,
+  HullBatchHandlerConfigurationEntry
 } from "../../types";
 
 // type HullRequestsBufferHandlerCallback = (ctx: HullContextFull, requests: Array<{ body: mixed, query: mixed }>) => Promise<*>;
@@ -14,15 +14,14 @@ import type {
 // };
 
 const crypto = require("crypto");
-const { Router } = require("express");
+const express = require("express");
 
-const { normalizeHandlersConfigurationEntry } = require("../../utils");
 const {
   clientMiddleware,
   fullContextFetchMiddleware,
   timeoutMiddleware,
   haltOnTimedoutMiddleware,
-  instrumentationContextMiddleware,
+  instrumentationContextMiddleware
 } = require("../../middlewares");
 
 const Batcher = require("../../infra/batcher");
@@ -34,20 +33,18 @@ const Batcher = require("../../infra/batcher");
 //  * @param {number}   options.maxSize [description]
 //  * @param {number}   options.maxTime [description]
 //  */
-function requestsBufferHandlerFactory(
-  configurationEntry: HullHandlersConfigurationEntry
-) {
-  const { callback, options } = normalizeHandlersConfigurationEntry(
-    configurationEntry
-  );
+function requestsBufferHandlerFactory({
+  callback,
+  options = {}
+}: HullBatchHandlerConfigurationEntry) {
   const {
     maxSize = 100,
     maxTime = 10000,
-    disableErrorHandling = false,
+    disableErrorHandling = false
   } = options;
 
   const uniqueNamespace = crypto.randomBytes(64).toString("hex");
-  const router = Router();
+  const router = express.Router(); //eslint-disable-line new-cap
 
   router.use(timeoutMiddleware());
   router.use(clientMiddleware()); // initialize client, we need configuration to be set already
@@ -60,17 +57,17 @@ function requestsBufferHandlerFactory(
       ctx: req.hull,
       options: {
         maxSize,
-        maxTime,
-      },
+        maxTime
+      }
     })
-      .setCallback(requests => {
-        return callback(req.hull, requests);
-      })
+      .setCallback(requests => callback(req.hull, requests))
       .addMessage({ body: req.body, query: req.query })
-      .then(() => {
-        res.status(200).end("ok");
-      })
-      .catch(error => next(error));
+      .then(
+        () => {
+          res.status(200).end("ok");
+        },
+        error => next(error)
+      );
   });
 
   if (disableErrorHandling !== true) {

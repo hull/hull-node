@@ -31,7 +31,7 @@ function fullContextBodyMiddlewareFactory({
         return next(new Error("Body must be a json object"));
       }
       const { body } = req;
-      const connector = body.connector;
+      const { connector } = body;
       // pick everything we can
       const {
         segments,

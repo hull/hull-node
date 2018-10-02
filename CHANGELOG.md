@@ -1,5 +1,14 @@
 # 0.14.0-beta.14
+* babel 7
+* update dependencies
 * enforce prettier, lint and flow before commit
+* remove `credsFromQueryMiddleware`. Use `Hull.connector()` instead
+* added strong flow typing and input and response format validation 
+* Deprecated: querystring parameter has been renamed from `ship` to `id`. Future versions will remove support for `ship`
+* added `yarn watch` that continuously rebuilds `/lib` so you can easily use hull-node in development with `yarn link`
+* added Flow types to connectorOptions.queue and ConnectorOptions.cache
+* allowed default Cache to be impacted by `CONNECTOR_CACHE_TTL` and `CONNECTOR_CACHE_MAX` vars;
+* removed context middlewares exposed to customer, replaced with setting up with `Hull.Connector` which allows to do everything.
 
 # 0.14.0-beta.13
 * fix all tests

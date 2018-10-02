@@ -1,31 +1,22 @@
 // @flow
 import type { $Response, NextFunction } from "express";
 import type {
-  HullHandlersConfigurationEntry,
-  HullRequestFull,
+  HullExternalHandlerConfigurationEntry,
+  HullRequestFull
 } from "../../types";
-
-// type HullActionHandlerOptions = {
-//   cache?: {
-//     key?: string,
-//     options?: Object
-//   },
-//   disableErrorHandling?: boolean,
-//   respondWithError?: boolean
-// };
+const extractRequestContent = require("../../lib/extract-request-content");
 const debug = require("debug")("hull-connector:action-handler");
-const { Router } = require("express");
+const express = require("express");
 
-const { TransientError } = require("../../errors");
+const { TransientError, ValidationError } = require("../../errors");
 const {
   credentialsFromQueryMiddleware,
   fullContextFetchMiddleware,
   timeoutMiddleware,
   haltOnTimedoutMiddleware,
   clientMiddleware,
-  instrumentationContextMiddleware,
+  instrumentationContextMiddleware
 } = require("../../middlewares");
-const { normalizeHandlersConfigurationEntry } = require("../../utils");
 
 /**
  * This handler allows to handle simple, authorized HTTP calls.
@@ -51,19 +42,18 @@ const { normalizeHandlersConfigurationEntry } = require("../../utils");
  * const { actionHandler } = require("hull").handlers;
  * app.use("/list", actionHandler((ctx) => {}))
  */
-function actionHandlerFactory(
-  configurationEntry: HullHandlersConfigurationEntry
-): Router {
-  const { callback, options } = normalizeHandlersConfigurationEntry(
-    configurationEntry
-  );
+function actionHandlerFactory({
+  callback,
+  options = {}
+}: HullExternalHandlerConfigurationEntry): express$Router {
   const {
+    // requireAuthentication = false,
     cache = {},
     disableErrorHandling = false,
-    respondWithError = false,
+    respondWithError = false
   } = options;
   debug("options", options);
-  const router = Router();
+  const router = express.Router(); //eslint-disable-line new-cap
   router.use(credentialsFromQueryMiddleware()); // parse config from query
   router.use(timeoutMiddleware());
   router.use(clientMiddleware()); // initialize client
@@ -71,22 +61,34 @@ function actionHandlerFactory(
   router.use(instrumentationContextMiddleware());
   router.use(fullContextFetchMiddleware({ requestName: "action" }));
   router.use(haltOnTimedoutMiddleware());
+  //eslint-disable-next-line no-unused-vars
+  router.use((req: HullRequestFull, res: $Response, next: NextFunction) => {
+    try {
+      const { client, connector } = req.hull;
+      // $FlowFixMe
+      if (!client | !connector) {
+        throw new ValidationError(
+          "missing or invalid credentials",
+          "INVALID_CREDENTIALS",
+          400
+        );
+      }
+    } catch (e) {
+      throw e;
+    }
+  });
   router.use((req: HullRequestFull, res: $Response, next: NextFunction) => {
     (() => {
+      const message = extractRequestContent(req);
       debug("processing");
       if (cache && cache.key) {
         return req.hull.cache.wrap(
           cache.key,
-          () => {
-            // $FlowFixMe
-            return callback(req.hull);
-          },
+          () => callback(req.hull, [message]),
           cache.options || {}
         );
       }
-      debug("calling callback");
-      // $FlowFixMe
-      return callback(req.hull);
+      return callback(req.hull, [message]);
     })()
       .then(response => {
         debug("callback response", response);
@@ -97,17 +99,18 @@ function actionHandlerFactory(
   if (disableErrorHandling !== true) {
     router.use(
       (
-        err: Error,
+        err: Error | TransientError | ValidationError,
         req: HullRequestFull,
         res: $Response,
         next: NextFunction
       ) => {
         debug("error", err.message, err.constructor.name, { respondWithError });
+        // TODO : Work on Error handling
 
+        // $FlowFixMe;
+        const { status = 200 } = err;
         // if we have non transient error
-        if (err instanceof TransientError) {
-          res.status(503);
-        }
+        res.status(status);
 
         if (respondWithError) {
           res.send(err.toString());

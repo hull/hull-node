@@ -1,9 +1,8 @@
 // @flow
 import type { $Response, NextFunction } from "express";
-import type { HullHandlersConfiguration, HullRequestFull } from "../../types";
+import type { HullNotificationHandlerConfiguration, HullRequestFull } from "../../types";
 
 const { Router } = require("express");
-const { normalizeHandlersConfiguration } = require("../../utils");
 const {
   credentialsFromNotificationMiddleware,
   clientMiddleware,
@@ -27,11 +26,9 @@ const errorMiddleware = require("./error-middleware");
  * }));
  */
 function notificationHandlerFactory(
-  configuration: HullHandlersConfiguration
+  configuration: HullNotificationHandlerConfiguration
 ): * {
-  const router = Router();
-  const normalizedConfiguration = normalizeHandlersConfiguration(configuration);
-
+  const router = Router(); //eslint-disable-line new-cap
   router.use(timeoutMiddleware());
   router.use(credentialsFromNotificationMiddleware());
   router.use(haltOnTimedoutMiddleware());
@@ -48,7 +45,7 @@ function notificationHandlerFactory(
     }
     next();
   });
-  router.use(processingMiddleware(normalizedConfiguration));
+  router.use(processingMiddleware(configuration));
   router.use(instrumentationTransientError());
   router.use(errorMiddleware());
   return router;

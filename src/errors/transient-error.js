@@ -10,14 +10,15 @@
  */
 class TransientError extends Error {
   extra: Object;
-
+  status: number;
   code: string;
 
-  constructor(message: string, extra: Object) {
+  constructor(message: string, extra: Object, status: number = 503) {
     super(message);
     this.name = "TransientError"; // compatible with http-errors library
     this.code = "HULL_ERR_TRANSIENT"; // compatible with internal node error
     this.extra = extra;
+    this.status = status;
     Error.captureStackTrace(this, TransientError);
   }
 }

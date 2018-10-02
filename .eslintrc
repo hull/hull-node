@@ -1,28 +1,22 @@
 {
   "parser": "babel-eslint",
-  "globals": {},
-  "env": {
-    "es6": true,
-    "node": true
+  "parserOptions": {
+    "ecmaVersion": 6,
+    "sourceType": "module",
+    "ecmaFeatures": {
+      "jsx": true
+    }
   },
-  "rules": {
-    "strict": 0,
-    "arrow-body-style": [0],
-    "camelcase": [0],
-    "class-methods-use-this": [0],
-    "eqeqeq": [1],
-    "flowtype-errors/show-errors": 2,
-    "max-len": [0],
-    "new-cap": [0],
-    "no-console": [0],
-    "no-param-reassign": [0],
-    "no-underscore-dangle": [0],
-    "no-unused-vars": [1],
-    "prefer-arrow-callback": [1],
-    "prefer-destructuring": [0],
-    "no-use-before-define": ["error", { "classes": false }]
+  "settings": {
+    "ecmascript": 6,
+    "jsx": true,
+    "import/extensions": [".js", ".jsx"],
+    "flowtype": {
+      "onlyFilesWithFlowAnnotation": true
+    }
   },
   "extends": [
+    "eslint:recommended",
     "prettier",
     "prettier/flowtype",
     "prettier/standard",
@@ -33,4 +27,27 @@
     "flowtype",
     "flowtype-errors"
   ],
+  "env": {
+    "node": true,
+    "browser": true,
+    "commonjs": true,
+    "worker": true,
+    "mongo": true,
+    "es6": true
+  },
+  "rules": {
+    "strict": 0,
+    "camelcase": [0],
+    "class-methods-use-this": [0],
+    "no-underscore-dangle": [0],
+    "no-console": [1],
+    "eqeqeq": [1],
+    "new-cap": [1],
+    "no-param-reassign": [1],
+    "no-unused-vars": [1],
+    "prefer-arrow-callback": [1],
+    "prefer-destructuring": [1],
+    "flowtype-errors/show-errors": [2],
+    "no-use-before-define": ["error", { "classes": false }]
+  }
 }

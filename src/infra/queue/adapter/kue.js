@@ -12,7 +12,7 @@ class KueAdapter {
     this.queue = kue.createQueue(options);
     this.queue.watchStuckJobs();
     this.queue.on("error", err => {
-      console.error("queue.adapter.error", err);
+      console.error("queue.adapter.error", err); //eslint-disable-line no-console
     });
     this.app = kue.app;
 

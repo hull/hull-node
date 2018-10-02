@@ -21,7 +21,7 @@ const statusMap = {
  * ]));
  */
 function statusHandler(checks) {
-  const router = Router();
+  const router = Router(); //eslint-disable-line new-cap
   router.post("/", (req, res) => {
     const messages = [];
     let globalStatus = 0;

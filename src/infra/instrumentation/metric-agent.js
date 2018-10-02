@@ -71,7 +71,7 @@ class MetricAgent {
         _.union(this.getMetricTagsArray(), additionalTags)
       );
     } catch (err) {
-      console.warn("metricVal.error", err);
+      console.warn("metricVal.error", err); //eslint-disable-line no-console
     }
     return null;
   }
@@ -101,7 +101,7 @@ class MetricAgent {
         _.union(this.getMetricTagsArray(), additionalTags)
       );
     } catch (err) {
-      console.warn("metricInc.error", err);
+      console.warn("metricInc.error", err); //eslint-disable-line no-console
     }
     return null;
   }

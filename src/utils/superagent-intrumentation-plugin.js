@@ -64,8 +64,7 @@
  */
 function superagentInstrumentationPluginFactory({ logger, metric }) {
   return function superagentInstrumentationPlugin(request) {
-    const url = request.url;
-    const method = request.method;
+    const { method, url } = request;
     let start;
     request
       .on("request", () => {
@@ -80,7 +79,7 @@ function superagentInstrumentationPluginFactory({ logger, metric }) {
       })
       .on("response", resData => {
         const hrTime = process.hrtime(start);
-        const status = resData.status;
+        const { status } = resData;
         const statusGroup = `${status.toString().substring(0, 1)}xx`;
         const elapsed = hrTime[0] * 1000 + hrTime[1] / 1000000;
         logger.debug("connector.service_api.call", {

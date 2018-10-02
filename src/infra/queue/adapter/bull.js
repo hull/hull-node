@@ -1,4 +1,5 @@
 const Queue = require("bull");
+const debug = require("debug")("hull-node:bull");
 
 /**
  * Bull Adapter for queue
@@ -8,10 +9,10 @@ class BullAdapter {
     this.options = options;
     this.queue = new Queue("main", options);
     this.queue.on("error", err => {
-      console.error("queue.adapter.error", err);
+      debug("queue.adapter.error", err);
     });
     this.queue.on("cleaned", (job, type) => {
-      console.log("queue.adapter.clean", { count: job.length, type });
+      debug("queue.adapter.clean", { count: job.length, type });
     });
   }
 

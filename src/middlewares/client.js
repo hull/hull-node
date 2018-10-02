@@ -35,6 +35,7 @@ function clientMiddlewareFactory() {
     res: $Response,
     next: NextFunction
   ) {
+    debug("Client middleware")
     try {
       if (!req.hull) {
         throw new Error(
@@ -63,12 +64,14 @@ function clientMiddlewareFactory() {
         hostSecret
       );
       // $FlowFixMe
-      req.hull = Object.assign(req.hull, {
+      req.hull = {
+        ...req.hull,
         client,
-        clientCredentialsToken,
-      });
+        clientCredentialsToken
+      }
       next();
     } catch (error) {
+      console.log(error.stack); //eslint-disable-line no-console
       next(error);
     }
   };

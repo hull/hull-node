@@ -7,7 +7,7 @@ function parseSignedCookie(signedCookie) {
   try {
     return JSON.parse(Buffer.from(signedCookie, "base64").toString("utf8"));
   } catch (e) {
-    console.warn("Error parsing signed cookie", signedCookie, e.message);
+    console.warn("Error parsing signed cookie", signedCookie, e.message); //eslint-disable-line no-console
   }
   return null;
 }

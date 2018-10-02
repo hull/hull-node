@@ -2,7 +2,7 @@
 import type { $Response, NextFunction } from "express";
 import type {
   HullRequestFull,
-  HullNormalizedHandlersConfiguration,
+  HullBatchHandlersConfiguration
 } from "../../types";
 
 const _ = require("lodash");
@@ -11,7 +11,7 @@ const debug = require("debug")("hull-connector:batch-handler");
 const extractStream = require("../../utils/extract-stream");
 
 function batchExtractProcessingMiddlewareFactory(
-  normalizedConfiguration: HullNormalizedHandlersConfiguration
+  configuration: HullBatchHandlersConfiguration
 ) {
   return function batchExtractProcessingMiddleware(
     req: HullRequestFull,
@@ -31,10 +31,10 @@ function batchExtractProcessingMiddlewareFactory(
     const { url, format, object_type } = body;
     const entityType = object_type === "account_report" ? "account" : "user";
     const channel = `${entityType}:update`;
-    if (normalizedConfiguration[channel] === undefined) {
+    if (configuration[channel] === undefined) {
       return next(new Error(`Missing handler for this channel: ${channel}`));
     }
-    const { callback, options } = normalizedConfiguration[channel];
+    const { callback, options = {} } = configuration[channel];
 
     debug("channel", channel);
     debug("entityType", entityType);
@@ -71,7 +71,7 @@ function batchExtractProcessingMiddlewareFactory(
             [entityType]: _.omit(entity, "segment_ids"),
             [entitySegmentsKey]: _.compact(
               segmentIds.map(id => _.find(segmentsList, { id }))
-            ),
+            )
           };
           if (entityType === "user") {
             message.user = _.omit(entity, "account");
@@ -81,7 +81,7 @@ function batchExtractProcessingMiddlewareFactory(
         });
         // $FlowFixMe
         return callback(req.hull, messages);
-      },
+      }
     }).catch(error => next(error));
   };
 }

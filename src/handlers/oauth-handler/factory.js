@@ -144,8 +144,7 @@ function oAuthHandlerFactory({
     };
   }
 
-  const router = Router();
-
+  const router = Router(); //eslint-disable-line new-cap
   router.use(fetchToken);
   router.use(credentialsFromQueryMiddleware()); // parse config from token
   router.use(clientMiddleware()); // initialize client
@@ -164,9 +163,10 @@ function oAuthHandlerFactory({
     _.merge({}, options, { passReqToCallback: true }),
     (req, accessToken, refreshToken, params, profile, done) => {
       if (done === undefined) {
-        done = profile;
-        profile = params;
-        params = undefined;
+        return profile(undefined, {
+          profile: params,
+          params: undefined
+        })
       }
       done(undefined, {
         accessToken,

@@ -1,5 +1,4 @@
 const cacheManager = require("cache-manager");
-const _ = require("lodash");
 const ConnectorCache = require("./connector-cache");
 const PromiseReuser = require("../../utils/promise-reuser");
 
@@ -44,13 +43,14 @@ const PromiseReuser = require("../../utils/promise-reuser");
  * const connector = new Hull.Connector({ cache });
  */
 class CacheAgent {
+
   constructor(options = {}) {
-    _.defaults(options, {
-      ttl: 60 /* seconds */,
-      max: 100 /* items */,
+    this.cache = cacheManager.caching({
+      ttl: process.env.CONNECTOR_CACHE_TTL || 60 /* seconds */,
+      max: process.env.CONNECTOR_CACHE_MAX || 100 /* items */,
       store: "memory",
+      ...options
     });
-    this.cache = cacheManager.caching(options);
     this.getConnectorCache = this.getConnectorCache.bind(this);
     this.promiseReuser = new PromiseReuser();
   }

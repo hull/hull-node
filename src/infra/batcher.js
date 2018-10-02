@@ -47,10 +47,10 @@ class Batcher {
   }
 
   flush() {
-    const messages = this.messages;
+    const { messages } = this;
     this.messages = [];
     return Promise.resolve(this.callback(messages)).catch(err => {
-      console.error(err);
+      console.error(err); //eslint-disable-line no-console
       this.logger.debug("batcher.flush.error", err);
     });
   }

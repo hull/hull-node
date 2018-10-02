@@ -5,7 +5,7 @@ const debug = require("debug")("hull-connector:on-exit");
  */
 function onExit(promise) {
   function exitNow() {
-    console.warn("connector.exitHandler.exitNow");
+    console.warn("connector.exitHandler.exitNow"); //eslint-disable-line no-console
     process.exit(0);
   }
 

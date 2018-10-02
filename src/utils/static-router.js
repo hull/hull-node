@@ -14,7 +14,7 @@ function readmeRoute(req, res) {
 }
 
 function staticRouter() {
-  const router = express.Router();
+  const router = express.Router(); //eslint-disable-line new-cap
 
   router.use(express.static(`${process.cwd()}/dist`));
   router.use(express.static(`${process.cwd()}/assets`));

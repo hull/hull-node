@@ -15,7 +15,7 @@ function auth(pass) {
 }
 
 module.exports = function queueUiRouter({ hostSecret, queueAgent, queue }) {
-  const router = Router();
+  const router = Router(); //eslint-disable-line new-cap
 
   router.use(auth(hostSecret));
   // @deprecated queueAgent

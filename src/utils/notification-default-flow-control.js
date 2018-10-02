@@ -2,9 +2,14 @@
 
 import type { HullContextFull, HullNotificationFlowControl } from "../types";
 
+const DEFAULT_FLOW_CONTROL = require("../lib/default_flow_controls.js");
+
 type HullNotificationResult = "success" | "unsupported" | "error";
 
 const _ = require("lodash");
+
+const getSettingName = (channel, result, param) =>
+  _.snakeCase(`flow_control_${channel}_${result}_${param}`);
 
 /**
  * A utility which picks default notification flow control.
@@ -19,53 +24,35 @@ function notificationDefaultFlowControl(
   channel: string,
   result: HullNotificationResult
 ): HullNotificationFlowControl {
-  const defaultValues = {
-    success: {
-      size: 10,
-      in: 5,
-      in_time: 10,
-    },
-    error: {
-      size: 10,
-      in: 1000,
-      in_time: 10,
-    },
-    unsupported: {
-      size: 10,
-      in: 5,
-      in_time: 10,
-    },
-  };
 
   function pickPrivateSettings(param: string): number {
-    const settingName = _.snakeCase(
-      `flow_control_${channel}_${result}_${param}`
+    const settingName = getSettingName(channel, result, param);
+    return parseInt(
+      _.get(ctx, ["connector", "private_settings", settingName], 0),
+      10
     );
-    const privateSettings =
-      (ctx.connector && ctx.connector.private_settings) || {};
-    return parseInt(privateSettings[settingName], 10);
   }
   function pickEnv(param: string): number {
-    const envVarName = _.upperCase(
-      _.snakeCase(`flow_control_${channel}_${result}_${param}`)
-    );
+    const envVarName = _.upperCase(getSettingName(channel, result, param));
     return parseInt(process.env[envVarName], 10);
   }
-  let type = "retry";
-  if (result === "success" || result === "unsupported") {
-    type = "next";
-  }
+
+  const type = (result === "success" || result === "unsupported") ? "next" : "retry";
+
   return {
     type,
     size:
       pickPrivateSettings("size") ||
       pickEnv("size") ||
-      defaultValues[result].size,
-    in: pickPrivateSettings("in") || pickEnv("in") || defaultValues[result].in,
+      DEFAULT_FLOW_CONTROL[result].size,
+    in:
+      pickPrivateSettings("in") ||
+      pickEnv("in") ||
+      DEFAULT_FLOW_CONTROL[result].in,
     in_time:
       pickPrivateSettings("in_time") ||
       pickEnv("in_time") ||
-      defaultValues[result].in_time,
+      DEFAULT_FLOW_CONTROL[result].in_time
   };
 }
 

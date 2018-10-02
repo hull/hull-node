@@ -3,7 +3,7 @@ import type { $Response, NextFunction } from "express";
 import type {
   HullRequestFull,
   HullNotificationResponse,
-  HullNormalizedHandlersConfiguration,
+  HullNotificationHandlerConfiguration
 } from "../../types";
 
 const debug = require("debug")("hull-connector:notification-handler");
@@ -11,7 +11,7 @@ const debug = require("debug")("hull-connector:notification-handler");
 const { notificationDefaultFlowControl } = require("../../utils");
 
 function notificationHandlerProcessingMiddlewareFactory(
-  normalizedConfiguration: HullNormalizedHandlersConfiguration
+  handlers: HullNotificationHandlerConfiguration
 ) {
   return function notificationHandlerProcessingMiddleware(
     req: HullRequestFull,
@@ -24,26 +24,27 @@ function notificationHandlerProcessingMiddlewareFactory(
     const { channel, messages } = req.hull.notification;
     debug("notification", {
       channel,
-      messages: Array.isArray(messages) && messages.length,
+      messages: Array.isArray(messages) && messages.length
     });
-    if (normalizedConfiguration[channel] === undefined) {
+    if (handlers[channel] === undefined) {
       return next(new Error("Channel unsupported"));
     }
-    const { callback } = normalizedConfiguration[channel];
+    const { callback } = handlers[channel];
 
-    const defaultSuccessFlowControl = notificationDefaultFlowControl(
-      req.hull,
-      channel,
-      "success"
-    );
-    req.hull.notificationResponse = {
-      flow_control: defaultSuccessFlowControl,
-    };
-
+    // We aren't able to define exactly which channel we're sending so the `messages` object can have several shapes. Disable for now
     // $FlowFixMe
     return callback(req.hull, messages)
       .then((response: HullNotificationResponse) => {
-        res.status(200).json(response || req.hull.notificationResponse);
+        const notificationResponse = response || {
+          flow_control: notificationDefaultFlowControl(
+            req.hull,
+            channel,
+            "success"
+          )
+        };
+
+        res.status(200).json(notificationResponse);
+        return notificationResponse;
       })
       .catch(error => next(error));
   };

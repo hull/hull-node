@@ -31,7 +31,7 @@ const {
  * app.use("/list", actionHandler((ctx) => {}))
  */
 function actionHandler(jobName: string, options: Object) {
-  const router = Router();
+  const router = Router(); //eslint-disable-line new-cap
   router.use(credentialsFromQueryMiddleware()); // parse config from query
   router.use(timeoutMiddleware());
   router.use(clientMiddleware()); // initialize client

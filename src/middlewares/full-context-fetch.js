@@ -35,6 +35,8 @@ function fetchSegments(ctx, entityType = "users"): Promise<Array<HullSegment>> {
       if (ctx.client === undefined) {
         return Promise.reject(new Error("Missing client"));
       }
+      //eslint-disable-next-line no-console
+      console.warn(`Calling Hull API to fetch Context Data for Connector ${id||"unknown"}`);
       debug("fetchSegments - calling API");
       return ctx.client.get(
         `/${entityType}s_segments`,

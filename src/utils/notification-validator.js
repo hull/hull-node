@@ -23,7 +23,7 @@ class NotificationValidator {
     }
   }
 
-  validateHeaders(req: HullRequestBase): NotificationValidationError | null {
+  validateHeaders(req: HullRequestBase): ?NotificationValidationError {
     if (!this.hasFlagHeader(req)) {
       return new NotificationValidationError(
         "Missing flag header",
@@ -52,7 +52,7 @@ class NotificationValidator {
     return _.has(req.headers, "x-hull-smart-notifier");
   }
 
-  validatePayload(req: HullRequestBase): NotificationValidationError | null {
+  validatePayload(req: HullRequestBase): ?NotificationValidationError {
     if (!req.body) {
       return new NotificationValidationError(
         "No notification payload",

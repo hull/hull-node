@@ -65,11 +65,7 @@ function credentialsFromQueryMiddlewareFactory() {
   ) {
     try {
       if (!req.hull || !req.hull.connectorConfig) {
-        return next(
-          new Error(
-            "Missing req.hull or req.hull.connectorConfig context object"
-          )
-        );
+        throw new Error("Missing req.hull or req.hull.connectorConfig context object. Did you initialize Hull.Connector() ?")
       }
       const { hostSecret } = req.hull.connectorConfig;
       const clientCredentialsToken =
@@ -88,6 +84,8 @@ function credentialsFromQueryMiddlewareFactory() {
         typeof clientCredentials.ship === "string"
       ) {
         clientCredentials.id = clientCredentials.ship;
+        delete clientCredentials.ship;
+        debug("You have passed a config parameter called `ship`, which is deprecated. please use `id` instead")
       }
       debug("resolved configuration");
       req.hull = Object.assign(req.hull, {

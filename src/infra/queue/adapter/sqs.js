@@ -9,13 +9,13 @@ const Promise = require("bluebird");
 class SQSAdapter {
   inactiveCount() {
     // eslint-disable-line class-methods-use-this
-    console.warn("Queue adapter inactiveCount not implemented");
+    console.warn("Queue adapter inactiveCount not implemented"); //eslint-disable-line no-console
     return Promise.resolve(0);
   }
 
   failedCount() {
     // eslint-disable-line class-methods-use-this
-    console.warn("Queue adapter failedCount not implemented");
+    console.warn("Queue adapter failedCount not implemented"); //eslint-disable-line no-console
     return Promise.resolve(0);
   }
 
@@ -92,10 +92,12 @@ class SQSAdapter {
     });
 
     consumer.on("processing_error", err => {
+      //eslint-disable-next-line no-console
       console.error("queue.adapter.processing_error", err);
     });
 
     consumer.on("error", err => {
+      //eslint-disable-next-line no-console
       console.error("queue.adapter.error", err);
     });
 

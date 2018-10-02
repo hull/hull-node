@@ -1,5 +1,5 @@
 // @flow
-import type { HullHandlersConfiguration } from "../../types";
+import type { HullBatchHandlersConfiguration } from "../../types";
 
 const { Router } = require("express");
 
@@ -13,7 +13,6 @@ const {
   instrumentationContextMiddleware,
   instrumentationTransientError,
 } = require("../../middlewares");
-const { normalizeHandlersConfiguration } = require("../../utils");
 
 const processingMiddleware = require("./processing-middleware");
 const errorMiddleware = require("./error-middleware");
@@ -28,10 +27,9 @@ const errorMiddleware = require("./error-middleware");
  * }));
  */
 function batchExtractHandlerFactory(
-  configuration: HullHandlersConfiguration
+  configuration: HullBatchHandlersConfiguration
 ): * {
-  const router = Router();
-  const normalizedConfiguration = normalizeHandlersConfiguration(configuration);
+  const router = Router(); //eslint-disable-line new-cap
   router.use(timeoutMiddleware());
   router.use(credentialsFromQueryMiddleware()); // parse query
   router.use(clientMiddleware()); // initialize client
@@ -42,7 +40,7 @@ function batchExtractHandlerFactory(
   ); // get rest of the context from body
   router.use(fullContextFetchMiddleware({ requestName: "batch" })); // if something is missing at body
   router.use(haltOnTimedoutMiddleware());
-  router.use(processingMiddleware(normalizedConfiguration));
+  router.use(processingMiddleware(configuration));
   router.use(instrumentationTransientError());
   router.use(errorMiddleware());
   return router;

@@ -50,7 +50,7 @@ const ERROR_CODES = [
  */
 function superagentErrorPluginFactory({ retries = 2, timeout = 10000 } = {}) {
   return function superagentErrorPlugin(request) {
-    const end = request.end;
+    const { end } = request;
 
     // for all network connection issues we return TransientError
     request.end = cb => {

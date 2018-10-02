@@ -56,7 +56,7 @@ class InstrumentationAgent {
         captureUnhandledRejections: false,
         sampleRate: parseFloat(process.env.SENTRY_SAMPLE_RATE) || 1.0,
       }).install(err => {
-        console.error("connector.error", { err: err.stack || err });
+        console.error("connector.error", { err: err.stack || err }); //eslint-disable-line no-console
         if (this.exitOnError) {
           if (process.listenerCount("gracefulExit") > 0) {
             process.emit("gracefulExit");
@@ -69,7 +69,7 @@ class InstrumentationAgent {
       global.process.on("unhandledRejection", (reason, promise) => {
         const context = promise.domain && promise.domain.sentryContext;
         this.raven.captureException(reason, context || {}, () => {
-          console.error("connector.error", { reason });
+          console.error("connector.error", { reason }); //eslint-disable-line no-console
           if (this.exitOnError) {
             if (process.listenerCount("gracefulExit") > 0) {
               process.emit("gracefulExit");
@@ -104,7 +104,7 @@ class InstrumentationAgent {
         fingerprint: ["{{ default }}", err.message],
       });
     }
-    return console.error(
+    return console.error( //eslint-disable-line no-console
       "connector.error",
       JSON.stringify({ message: err.message, stack: err.stack, tags })
     );
