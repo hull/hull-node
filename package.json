@@ -33,7 +33,7 @@
     "prepublish": "yarn build",
     "test:coverage": "nyc --babel-cache --hook-run-in-context false yarn test",
     "test:flow": "flow check",
-    "test:integration": "NODE_ENV=test mocha --require @babel/register -R spec ./test/integration/*.js",
+    "test:integration": "NODE_ENV=test mocha --opts mocha.opts ./test/integration/*.js",
     "test:lint": "yarn lint",
     "test:modules": "npm outdated --depth=0",
     "test:unit": "NODE_ENV=test mocha --require @babel/register -R spec ./test/unit/*.js ./test/unit/**/*.js",
