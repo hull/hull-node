@@ -45,20 +45,34 @@ export type JsonConfig = {
   verify?: Function
 };
 
+
+
+
+
+
 export type HullConnectorConfig = {
+  clientConfig: HullClientConfiguration,
   hostSecret: ?string,
   port: number | string,
-  json?: JsonConfig,
-  clientConfig: HullClientConfiguration,
-  instrumentation?: InstrumentationAgent,
-  cache?: Cache,
-  queue?: Queue,
   connectorName?: string,
   segmentFilterSetting?: any,
   skipSignatureValidation?: boolean,
+  timeout?: number | string,
+  devMode?: boolean,
+  json?: JsonConfig,
+  instrumentation?: InstrumentationAgent,
+  cache?: Cache,
+  queue?: Queue,
   notificationValidatorHttpClient?: Object,
-  timeout?: number | string
+  middlewares: Array<Middleware>,
+  manifest: HullManifest,
+  // $FlowFixMe
+  handlers: HullHandlers, // eslint-disable-line no-use-before-define
 };
+
+
+
+
 
 export type HullClientCredentials = {
   id: $PropertyType<HullClientConfiguration, "id">,
@@ -315,12 +329,4 @@ export type HullExternalHandlerConfigurationEntry = {
 export type HullSchedulerHandlerConfigurationEntry = {
   callback: HullExternalHandlerCallback,
   options?: HullSchedulerHandlerOptions
-};
-
-export type HullServerConfig = {
-  devMode: boolean,
-  middlewares: Array<Middleware>,
-  manifest: HullManifest,
-  handlers: HullHandlers,
-  connectorConfig: HullConnectorConfig
 };

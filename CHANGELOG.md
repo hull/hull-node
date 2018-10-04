@@ -4,11 +4,18 @@
 * enforce prettier, lint and flow before commit
 * remove `credsFromQueryMiddleware`. Use `Hull.connector()` instead
 * added strong flow typing and input and response format validation 
-* Deprecated: querystring parameter has been renamed from `ship` to `id`. Future versions will remove support for `ship`
+* Deprecated: `req.query` querystring parameter has been renamed from `ship` to `id`.
 * added `yarn watch` that continuously rebuilds `/lib` so you can easily use hull-node in development with `yarn link`
 * added Flow types to connectorOptions.queue and ConnectorOptions.cache
 * allowed default Cache to be impacted by `CONNECTOR_CACHE_TTL` and `CONNECTOR_CACHE_MAX` vars;
 * removed context middlewares exposed to customer, replaced with setting up with `Hull.Connector` which allows to do everything.
+* New way to start connectors: `const opts: HullConnectorConfig = require("connector/main.js"); Hull.start(opts);`. Checkout `hull-node/src/types.js`
+* middlewares passed in `connectorConfig` now run BEFORE every other middleware, including Hull's middleware so you can use them to pre-parse the request for instance and place the proper credentials in `req.hull`.
+* removed `connector.use` -> pass middlewares in the `connectorConfig.middlewares[]` array
+* req.query recognizes `organization`, `id`, `secret` now. `ship` is deprecated;
+* Clarified and made more strict the token resolution strategy: req.hull.clientCredentialsToken -> req.hull.clientCredentials -> req.hull.query.token -> req.hull.query[id, organization, secret]
+* Removed `currentUser` middleware
+* startApp now returns the return value of `app.listen`
 
 # 0.14.0-beta.13
 * fix all tests

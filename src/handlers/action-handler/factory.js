@@ -73,28 +73,28 @@ function actionHandlerFactory({
           400
         );
       }
-    } catch (e) {
-      throw e;
+      next();
+    } catch (error) {
+      next(error);
     }
   });
   router.use((req: HullRequestFull, res: $Response, next: NextFunction) => {
-    (() => {
-      const message = extractRequestContent(req);
-      debug("processing");
-      if (cache && cache.key) {
-        return req.hull.cache.wrap(
-          cache.key,
-          () => callback(req.hull, [message]),
-          cache.options || {}
-        );
-      }
-      return callback(req.hull, [message]);
-    })()
-      .then(response => {
-        debug("callback response", response);
+    const message = extractRequestContent(req);
+    const cb =
+      cache && cache.key
+        ? req.hull.cache.wrap(
+            cache.key,
+            () => callback(req.hull, [message]),
+            cache.options || {}
+          )
+        : callback(req.hull, [message]);
+    cb.then(
+      response => {
         res.end(response);
-      })
-      .catch(error => next(error));
+        next();
+      },
+      error => next(error)
+    );
   });
   if (disableErrorHandling !== true) {
     router.use(

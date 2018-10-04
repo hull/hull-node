@@ -25,12 +25,13 @@ function getToken(query: $PropertyType<HullRequestBase, "query">): string {
 function parseQueryString(
   query: $PropertyType<HullRequestBase, "query">
 ): { [string]: string | void } {
-  return ["organization", "ship", "secret"].reduce((cfg, k) => {
+  return ["organization", "id", "secret"].reduce((cfg, k) => {
     const val = (query && typeof query[k] === "string" ? query[k] : "").trim();
+    const key = k === "id" ? "id" : k;
     if (typeof val === "string") {
-      cfg[k] = val;
+      cfg[key] = val;
     } else if (val && val[0] && typeof val[0] === "string") {
-      cfg[k] = val[0].trim();
+      cfg[key] = val[0].trim();
     }
     return cfg;
   }, {});
@@ -50,6 +51,10 @@ function parseToken(token, secret) {
   }
 }
 
+function generateToken(clientCredentials, secret) {
+  return jwt.encode(clientCredentials, secret);
+}
+
 /**
  * This middleware is responsible for preparing `req.hull.clientCredentials`.
  * If there is already `req.hull.clientCredentials` set before it just skips.
@@ -57,23 +62,31 @@ function parseToken(token, secret) {
  * if not available it tries to get the token in `req.query.hullToken`, `req.query.token` or `req.query.state`.
  * If those two steps fails to find information it parse `req.query` looking for direct connector configuration
  */
-function credentialsFromQueryMiddlewareFactory() {
-  return function credentialsFromQueryMiddleware(
+function credentialsFromQueryMiddleware() {
+  return function credentialsFromQuery(
     req: HullRequestBase,
     res: $Response,
     next: NextFunction
   ) {
     try {
       if (!req.hull || !req.hull.connectorConfig) {
-        throw new Error("Missing req.hull or req.hull.connectorConfig context object. Did you initialize Hull.Connector() ?")
+        throw new Error(
+          "Missing req.hull or req.hull.connectorConfig context object. Did you initialize Hull.Connector() ?"
+        );
       }
       const { hostSecret } = req.hull.connectorConfig;
-      const clientCredentialsToken =
-        req.hull.clientCredentialsToken || getToken(req.query);
       const clientCredentials =
         req.hull.clientCredentials ||
-        parseToken(clientCredentialsToken, hostSecret) ||
+        parseToken(
+          req.hull.clientCredentialsToken || getToken(req.query),
+          hostSecret
+        ) ||
         parseQueryString(req.query);
+
+      const clientCredentialsToken = generateToken(
+        clientCredentials,
+        hostSecret
+      );
 
       if (clientCredentials === undefined) {
         return next(new Error("Could not resolve clientCredentials"));
@@ -85,12 +98,14 @@ function credentialsFromQueryMiddlewareFactory() {
       ) {
         clientCredentials.id = clientCredentials.ship;
         delete clientCredentials.ship;
-        debug("You have passed a config parameter called `ship`, which is deprecated. please use `id` instead")
+        debug(
+          "You have passed a config parameter called `ship`, which is deprecated. please use `id` instead"
+        );
       }
       debug("resolved configuration");
       req.hull = Object.assign(req.hull, {
         clientCredentials,
-        clientCredentialsToken,
+        clientCredentialsToken
       });
       return next();
     } catch (error) {
@@ -99,4 +114,4 @@ function credentialsFromQueryMiddlewareFactory() {
   };
 }
 
-module.exports = credentialsFromQueryMiddlewareFactory;
+module.exports = credentialsFromQueryMiddleware;

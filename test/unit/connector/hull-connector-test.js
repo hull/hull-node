@@ -1,12 +1,12 @@
 /* global describe, it, after */
 const { expect } = require("chai");
 const sinon = require("sinon");
-
 const HullConnector = require("../../../src/connector/hull-connector");
 const HullStub = require("../support/hull-stub");
 
 class WorkerStub {
   use() {}
+  attach() {}
   setJobs() {}
   process() {}
 }
@@ -16,47 +16,56 @@ describe("HullConnector", () => {
     process.removeAllListeners("exit");
   });
 
+  it("should throw if no config passed", () => {
+    expect(() => {
+      new HullConnector({ HullClient: HullStub });
+    }).to.throw();
+  });
+
   it("should return an object of functions", () => {
-    const connector = new HullConnector({ HullClient: HullStub });
-    expect(connector).to.be.object;
-    expect(connector.setupApp).to.be.function;
-    expect(connector.startApp).to.be.function;
-    expect(connector.clientMiddleware).to.be.function;
-    expect(connector.notifMiddleware).to.be.function;
-    expect(connector.worker).to.be.function;
-    expect(connector.startWorker).to.be.function;
+    const connector = new HullConnector({ HullClient: HullStub }, {});
+    expect(connector.setupApp).to.be.a("function");
+    expect(connector.setupRoutes).to.be.a("function");
+    expect(connector.startApp).to.be.a("function");
+    expect(connector.worker).to.be.a("function");
+    expect(connector.startWorker).to.be.a("function");
   });
 
   it("should expose infrastucture objects", () => {
-    const connector = new HullConnector({ HullClient: HullStub });
-    expect(connector.instrumentation).to.be.object;
-    expect(connector.queue).to.be.object;
-    expect(connector.cache).to.be.object;
+    const connector = new HullConnector({ HullClient: HullStub }, {});
+    expect(connector.instrumentation).to.be.an("object");
+    expect(connector.queue).to.be.an("object");
+    expect(connector.cache).to.be.an("object");
   });
 
   it("should return a worker method which returns worker app", () => {
-    const connector = new HullConnector({ Worker: WorkerStub });
+    const connector = new HullConnector({ Worker: WorkerStub }, {});
     const worker = connector.worker();
-    expect(worker.attach).to.be.function;
-    expect(worker.use).to.be.function;
-    expect(worker.process).to.be.function;
+    expect(worker.attach).to.be.a("function");
+    expect(worker.use).to.be.a("function");
+    expect(worker.process).to.be.a("function");
   });
 
   // it("should return a middleware method which returns Hull.Middleware instance", () => {
   //   const connector = new HullConnector(HullStub, HullMiddlewareStub);
-  //   expect(connector.clientMiddleware).to.be.function;
+  //   expect(connector.clientMiddleware).to.be.a("function");
   //   const middleware = connector.clientMiddleware();
-  //   expect(middleware).to.be.function;
+  //   expect(middleware).to.be.a("function");
   // });
 
   it("should wrap express application with setupApp", () => {
     const expressMock = {
-      use: () => { return this; },
-      engine: () => { return this; },
-      set: () => { return this; }
+      use: () => {
+        return this;
+      },
+      engine: () => {
+        return this;
+      },
+      set: () => {
+        return this;
+      }
     };
-    const connector = new HullConnector({ HullClient: HullStub });
-
+    const connector = new HullConnector({ HullClient: HullStub }, {});
     connector.setupApp(expressMock);
   });
 
@@ -66,7 +75,7 @@ describe("HullConnector", () => {
   });
 
   it("should allow to set the name of internal queue", () => {
-    const connector = new HullConnector({ Worker: WorkerStub });
+    const connector = new HullConnector({ Worker: WorkerStub }, {});
     connector.worker();
     const processSpy = sinon.spy(connector._worker, "process");
     connector.startWorker("example");
@@ -76,7 +85,7 @@ describe("HullConnector", () => {
   });
 
   it("should default name of internal queue to queueApp", () => {
-    const connector = new HullConnector({ Worker: WorkerStub });
+    const connector = new HullConnector({ Worker: WorkerStub }, {});
     connector.worker();
     const processSpy = sinon.spy(connector._worker, "process");
     connector.startWorker();
@@ -91,26 +100,16 @@ describe("HullConnector", () => {
       engine: () => {},
       set: () => {}
     };
-
-    // const workerStub = {
-    //   use: () => {},
-    //   setJobs: () => {}
-    // };
-
     const appUseSpy = sinon.spy(appStub, "use");
-    // const workerUseSpy = sinon.spy(workerStub, "use");
-
     const customMiddleware = (req, res, next) => {};
-    const connector = new HullConnector({ HullClient: HullStub });
-    connector.use(customMiddleware);
+    const connector = new HullConnector(
+      { HullClient: HullStub },
+      {
+        middlewares: [customMiddleware]
+      }
+    );
     connector.setupApp(appStub);
-    // connector._worker = workerStub;
-    // connector.worker({});
-
     expect(appUseSpy.called).to.be.true;
-    expect(appUseSpy.lastCall.args[0]).to.be.eql(customMiddleware);
-
-    // expect(workerUseSpy.called).to.be.true;
-    // expect(workerUseSpy.lastCall.args[0]).to.be.eql(customMiddleware);
+    expect(appUseSpy.firstCall.args[0]).to.be.eql(customMiddleware);
   });
 });

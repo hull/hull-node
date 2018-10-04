@@ -25,7 +25,7 @@ describe("notificationHandler", () => {
   let stopMiddlewareSpy;
   let metricIncrementSpy;
 
-  beforeEach((done) => {
+  beforeEach(done => {
     miniHull = new MiniHull();
     connectorId = miniHull.fakeId();
     miniHull.stubConnector({
@@ -56,30 +56,42 @@ describe("notificationHandler", () => {
       next();
     });
 
-    app.use("/timeout-notification", notificationHandler({
-      "user:update": (ctx, messages) => {
-        return new Promise((resolve, reject) => {
-          setTimeout(() => {
-            resolve();
-          }, 125);
-        });
-      }
-    }));
-    app.use("/error-notification", notificationHandler({
-      "user:update": (ctx, messages) => {
-        return Promise.reject(new Error("error message"));
-      }
-    }));
-    app.use("/transient-notification", notificationHandler({
-      "user:update": (ctx, messages) => {
-        return Promise.reject(new TransientError("Transient error message"));
-      }
-    }));
-    app.use("/configuration-notification", notificationHandler({
-      "user:update": (ctx, messages) => {
-        return Promise.reject(new ConfigurationError("Missing API key"));
-      }
-    }));
+    app.use(
+      "/timeout-notification",
+      notificationHandler({
+        "user:update": {
+          callback: (ctx, messages) =>
+            new Promise((resolve, reject) => setTimeout(() => resolve(), 125))
+        }
+      })
+    );
+    app.use(
+      "/error-notification",
+      notificationHandler({
+        "user:update": {
+          callback: (ctx, messages) =>
+            Promise.reject(new Error("error message"))
+        }
+      })
+    );
+    app.use(
+      "/transient-notification",
+      notificationHandler({
+        "user:update": {
+          callback: (ctx, messages) =>
+            Promise.reject(new TransientError("Transient error message"))
+        }
+      })
+    );
+    app.use(
+      "/configuration-notification",
+      notificationHandler({
+        "user:update": {
+          callback: (ctx, messages) =>
+            Promise.reject(new ConfigurationError("Missing API key"))
+        }
+      })
+    );
     server = connector.startApp(app);
     miniHull.listen(3000).then(done);
   });
@@ -89,11 +101,18 @@ describe("notificationHandler", () => {
     miniHull.server.close();
   });
 
-  it("unhandled error", function test() {
-    return miniHull.notifyConnector({ id: connectorId, private_settings: {} }, "localhost:9092/error-notification", "user:update", [])
-      .catch((err) => {
+  it("unhandled error", () => {
+    return miniHull
+      .notifyConnector(
+        { id: connectorId, private_settings: {} },
+        "localhost:9092/error-notification",
+        "user:update",
+        []
+      )
+      .catch(err => {
         expect(stopMiddlewareSpy.called).to.be.true;
         expect(err.response.statusCode).to.equal(500);
+        console.log(err.response.body);
         expect(err.response.body).to.eql({
           flow_control: {
             type: "retry",
@@ -102,16 +121,26 @@ describe("notificationHandler", () => {
             in_time: 10
           },
           error: {
-            code: "N/A", message: "error message", name: "Error"
+            code: "N/A",
+            message: "error message",
+            name: "Error"
           }
         });
       });
   });
-  it("timeout error", function test(done) {
-    miniHull.notifyConnector({ id: connectorId, private_settings: {} }, "localhost:9092/timeout-notification", "user:update", [])
-      .catch((err) => {
+  it("timeout error", done => {
+    miniHull
+      .notifyConnector(
+        { id: connectorId, private_settings: {} },
+        "localhost:9092/timeout-notification",
+        "user:update",
+        []
+      )
+      .catch(err => {
         expect(metricIncrementSpy.args[1]).to.eql([
-          "connector.transient_error", 1, ["error_name:transient_error", "error_message:response_timeout"]
+          "connector.transient_error",
+          1,
+          ["error_name:transient_error", "error_message:response_timeout"]
         ]);
         expect(stopMiddlewareSpy.notCalled).to.be.true;
         expect(err.response.statusCode).to.equal(503);
@@ -120,11 +149,22 @@ describe("notificationHandler", () => {
       done();
     }, 150);
   });
-  it("transient error", function test() {
-    return miniHull.notifyConnector({ id: connectorId, private_settings: {} }, "localhost:9092/transient-notification", "user:update", [])
-      .catch((err) => {
+  it("transient error", () => {
+    return miniHull
+      .notifyConnector(
+        { id: connectorId, private_settings: {} },
+        "localhost:9092/transient-notification",
+        "user:update",
+        []
+      )
+      .catch(err => {
         expect(metricIncrementSpy.args[1]).to.eql([
-          "connector.transient_error", 1, ["error_name:transient_error", "error_message:transient_error_message"]
+          "connector.transient_error",
+          1,
+          [
+            "error_name:transient_error",
+            "error_message:transient_error_message"
+          ]
         ]);
         expect(stopMiddlewareSpy.notCalled).to.be.true;
         expect(err.response.statusCode).to.equal(503);
@@ -143,11 +183,19 @@ describe("notificationHandler", () => {
         });
       });
   });
-  it("configuration error", function test() {
-    return miniHull.notifyConnector({ id: connectorId, private_settings: {} }, "localhost:9092/configuration-notification", "user:update", [])
-      .catch((err) => {
+  it("configuration error", () => {
+    return miniHull
+      .notifyConnector(
+        { id: connectorId, private_settings: {} },
+        "localhost:9092/configuration-notification",
+        "user:update",
+        []
+      )
+      .catch(err => {
         expect(metricIncrementSpy.args[1]).to.eql([
-          "connector.transient_error", 1, ["error_name:configuration_error", "error_message:missing_api_key"]
+          "connector.transient_error",
+          1,
+          ["error_name:configuration_error", "error_message:missing_api_key"]
         ]);
         expect(stopMiddlewareSpy.notCalled).to.be.true;
         expect(err.response.statusCode).to.equal(503);

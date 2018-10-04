@@ -76,11 +76,6 @@ Hull.Client.logger.transports.console.level = "debug";
 
 10. `Hull.Middleware` or `Hull.middleware` is not available anymore, it is inserted automatically when calling `new Hull.Connector(); connector.setupApp(app)`
 
-```js
-const { hullContextMiddleware } = require("hull");
-app.use(hullContextMiddleware());
-```
-
 11. The `req.hull.helpers` object was removed. Some of the helpers were moved to `utils`. `filterNotifications` helper is not available anymore, implement custom `filterUtil` instead.
 
 ```js

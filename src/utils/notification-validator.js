@@ -26,21 +26,21 @@ class NotificationValidator {
   validateHeaders(req: HullRequestBase): ?NotificationValidationError {
     if (!this.hasFlagHeader(req)) {
       return new NotificationValidationError(
-        "Missing flag header",
+        "Missing x-hull-smart-notifier header",
         "MISSING_FLAG_HEADER"
       );
     }
 
     if (!this.validateSignatureVersion(req)) {
       return new NotificationValidationError(
-        "Unsupported signature version",
+        "Unsupported x-hull-smart-notifier-signature-version header",
         "UNSUPPORTED_SIGNATURE_VERSION"
       );
     }
 
     if (!this.validateSignatureHeaders(req)) {
       return new NotificationValidationError(
-        "Missing signature header(s)",
+        "Missing x-hull-smart-notifier-signature header(s)",
         "MISSING_SIGNATURE_HEADERS"
       );
     }
