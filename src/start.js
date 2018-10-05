@@ -8,10 +8,9 @@ module.exports = function(Connector: Class<HullConnectorClass>) {
   return function(connectorConfig: HullConnectorConfig) {
     const connector = new Connector(connectorConfig);
     const app = express();
-    connector
-      .setupApp(app)
-      .setupRoutes(app)
-      .startApp(app);
+    connector.setupApp(app);
+    connector.setupRoutes(app);
+    connector.startApp(app);
     return app;
   };
 };

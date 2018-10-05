@@ -1,0 +1,17 @@
+#!/usr/bin/env node
+// const server = require("../lib/index");
+// const { start } = require("hull");
+// console.log(start);
+// console.log(server);
+// start(server);
+
+const pkg = require("../package.json");
+const program = require("commander");
+program
+  .version(pkg.version)
+  .option('-c', '--connector [connector]', "Boots [connector]")
+  .parse(process.argv)
+
+console.log("----------")
+console.log(program)
+console.log(program.connector)
