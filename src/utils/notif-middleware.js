@@ -50,7 +50,7 @@ module.exports = function notifMiddlewareFactory() {
     }
     if (req.headers["x-amz-sns-message-type"] || req.url.match("/batch")) {
       req.headers["content-type"] = "application/json;charset=UTF-8";
-      bodyParser.json({ limit: "256kb" })(req, res, () => {
+      bodyParser.json({ limit: "10mb" })(req, res, () => {
         if (req.body && req.body.Message && req.body.Type) {
           req.hull.message = req.body;
         }
