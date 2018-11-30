@@ -1,3 +1,6 @@
+# 0.13.17
+* up the limit on bodyParser applied on the batch endpoint
+
 # 0.13.16
 * Explicitly handle too large kraken notification payloads
 * Adds devMode utility
