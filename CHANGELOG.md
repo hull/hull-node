@@ -1,3 +1,6 @@
+# 0.14.0-beta.1.1
+* Fix body parser size on batch calls
+
 # 0.14.0-beta.1
 * Upgrade hull-client-node to v2.0.0
 
