@@ -30,10 +30,17 @@ const HullClient = require("hull-client");
  * });
  */
 function clientMiddlewareFactory() {
-  return function clientMiddleware(req: HullRequestWithCredentials, res: $Response, next: NextFunction) {
+  return function clientMiddleware(
+    req: HullRequestWithCredentials,
+    res: $Response,
+    next: NextFunction
+  ) {
+    debug("Client middleware")
     try {
       if (!req.hull) {
-        throw new Error("Missing request context, you need to initiate it before");
+        throw new Error(
+          "Missing request context, you need to initiate it before"
+        );
       }
       if (!req.hull.connectorConfig || !req.hull.connectorConfig.hostSecret) {
         throw new Error("Missing connectorConfig.hostSecret");
@@ -44,17 +51,27 @@ function clientMiddlewareFactory() {
       const HullClientClass = req.hull.HullClient || HullClient;
 
       const { hostSecret } = req.hull.connectorConfig;
-      const mergedClientConfig = Object.assign({}, req.hull.clientConfig || {}, req.hull.clientCredentials, { requestId: req.hull.requestId });
+      const mergedClientConfig = Object.assign(
+        {},
+        req.hull.clientConfig || {},
+        req.hull.clientCredentials,
+        { requestId: req.hull.requestId }
+      );
       debug("configuration %o", mergedClientConfig);
       const client = new HullClientClass(mergedClientConfig);
-      const clientCredentialsToken = jwt.encode(req.hull.clientCredentials, hostSecret);
+      const clientCredentialsToken = jwt.encode(
+        req.hull.clientCredentials,
+        hostSecret
+      );
       // $FlowFixMe
-      req.hull = Object.assign(req.hull, {
+      req.hull = {
+        ...req.hull,
         client,
         clientCredentialsToken
-      });
+      }
       next();
     } catch (error) {
+      console.log(error.stack); //eslint-disable-line no-console
       next(error);
     }
   };

@@ -12,5 +12,6 @@ module.exports = {
   RecoverableError: require("./recoverable-error"),
   TransientError: require("./transient-error"),
   LogicError: require("./logic-error"),
-  NotificationValidationError: require("./notification-validation-error")
+  NotificationValidationError: require("./notification-validation-error"),
+  ValidationError: require("./validation-error")
 };

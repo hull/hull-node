@@ -1,3 +1,16 @@
 {
-  "plugins": ["transform-flow-comments", ["transform-object-rest-spread", { "useBuiltIns": true }]]
+  "presets": [
+    [
+      "@babel/preset-env",
+      {
+        "targets": {
+          "node": "current"
+        }
+      }
+    ],
+    "@babel/preset-flow"
+  ],
+  "plugins": [
+    "@babel/plugin-transform-flow-comments"
+  ]
 }

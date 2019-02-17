@@ -8,26 +8,44 @@ const bodyParser = require("body-parser");
 /**
  * This middleware parses request json body and extracts information to fill in full HullContext object.
  */
-function fullContextBodyMiddlewareFactory({ requestName, strict = true }: Object) {
-  return function fullContextBodyMiddleware(req: HullRequestWithClient, res: $Response, next: NextFunction) {
-    bodyParser.json({ limit: "10mb" })(req, res, (err) => {
+function fullContextBodyMiddlewareFactory({
+  requestName,
+  strict = true,
+}: Object) {
+  return function fullContextBodyMiddleware(
+    req: HullRequestWithClient,
+    res: $Response,
+    next: NextFunction
+  ) {
+    bodyParser.json({ limit: "10mb" })(req, res, err => {
       debug("parsed notification body", err);
       if (err !== undefined) {
         return next(err);
       }
 
-      if (req.body === null
-        || req.body === undefined
-        || typeof req.body !== "object") {
+      if (
+        req.body === null ||
+        req.body === undefined ||
+        typeof req.body !== "object"
+      ) {
         return next(new Error("Body must be a json object"));
       }
       const { body } = req;
-      const connector = body.connector;
+      const { connector } = body;
       // pick everything we can
-      const { segments, users_segments, accounts_segments, account_segments } = body;
+      const {
+        segments,
+        users_segments,
+        accounts_segments,
+        account_segments,
+      } = body;
       if (!req.hull.requestId && body.notification_id) {
         const timestamp = Math.floor(new Date().getTime() / 1000);
-        req.hull.requestId = [requestName, timestamp, body.notification_id].join(":");
+        req.hull.requestId = [
+          requestName,
+          timestamp,
+          body.notification_id,
+        ].join(":");
       }
 
       const usersSegments = users_segments || segments;
@@ -35,7 +53,8 @@ function fullContextBodyMiddlewareFactory({ requestName, strict = true }: Object
       debug("read from body %o", {
         connector: typeof connector,
         usersSegments: Array.isArray(usersSegments) && usersSegments.length,
-        accountsSegments: Array.isArray(accountsSegments) && accountsSegments.length
+        accountsSegments:
+          Array.isArray(accountsSegments) && accountsSegments.length,
       });
 
       if (strict && typeof connector !== "object") {
@@ -59,7 +78,7 @@ function fullContextBodyMiddlewareFactory({ requestName, strict = true }: Object
         // $FlowFixMe
         accountsSegments,
         // $FlowFixMe
-        notification: body
+        notification: body,
       });
       return next();
     });

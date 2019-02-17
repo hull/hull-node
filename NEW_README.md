@@ -97,11 +97,11 @@ app.use("/notification", notificationHandler(handlersConfiguration));
 connector.startApp(app);
 ```
 
-### Processing data replay
+### Processing data replays (batches)
 
 In addition to continuous outgoing traffic Hull provides a way to manually push selected users or accounts to the connector forcing syncing them or resyncing them.
 
-To add support of data replay you need to add `batch` or `batch-accounts` tag to manifest.json, depending if you want to support users, accounts or both.
+To add support of data replay you need to add the `batch` or `batch-accounts` tag to manifest.json, depending if you want to support users, accounts or both.
 
 **manifest.json**
 ```json
@@ -143,7 +143,7 @@ connector.startApp(app);
 
 ### Fetching continuously incoming data
 
-To continuously poll external API to fetch new data into Hull you can use `schedules` feature of the platform. To register a webhook to be called every 5 minutes put this into your manifest.json:
+To continuously poll an external API to fetch new data into Hull you can use the `schedules` feature. To register a webhook to be called every 5 minutes put this into your manifest.json:
 
 **manifest.json**
 ```json
@@ -362,7 +362,7 @@ It is being build by middleware stack in 4 steps:
 4. In this final step we **build the rest of the context object** - connectors details object and users & accounts segments lists. If we have notification at hand we pick this information from its body, otherwise we query the API an cache the results
     - full context is derived from notification body by [bodyFullContextMiddleware](src/middlewares/full-context-body.js)
     - full context is fetched from platform by [fetchFullContextMiddleware](src/middlewares/full-context-fetch.js)
-    - the `HullContextFull` flow type is defined [here](src/types.js#79)
+    - the `` flow type is defined [here](src/types.js#79)
 
 ## Utils
 

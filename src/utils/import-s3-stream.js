@@ -17,36 +17,53 @@ class ImportS3Stream extends Writable {
    * Dependencies
    */
   hullClient: Object; // authorized HullClient instance
+
   s3: AWS.S3; // authorized s3 client
 
   /*
    * Options
    */
   s3Bucket: string;
+
   s3ACL: string;
+
   s3KeyTemplate: string;
+
   s3SignedUrlExpires: number;
 
   gzipEnabled: boolean;
+
   partSize: number;
 
   importId: string;
+
   overwrite: boolean;
+
   notify: boolean;
+
   emitEvent: boolean;
+
   importType: "users" | "accounts" | "events";
+
   importScheduleAt: (partIndex: number) => string;
+
   importNameTemplate: string;
 
   /*
    * Internals
    */
   currentUploadStream: null | Writable; // contains current uploadImport stream
+
   currentObjectIndex: number;
+
   currentPartIndex: number;
+
   uploadAndImportPromises: Array<Promise<*>>;
+
   partEndIndexes: { [partIndex: number]: number };
+
   uploadResults: Array<Object>;
+
   importResults: Array<Object>;
 
   constructor(dependencies: Object, options: Object) {
@@ -68,7 +85,8 @@ class ImportS3Stream extends Writable {
     this.hullClient = dependencies.hullClient;
     this.s3 = dependencies.s3;
 
-    this.gzipEnabled = options.gzipEnabled !== undefined ? options.gzipEnabled : true;
+    this.gzipEnabled =
+      options.gzipEnabled !== undefined ? options.gzipEnabled : true;
     this.s3Bucket = options.s3Bucket;
     this.s3ACL = options.s3ACL || "private";
     this.s3KeyTemplate = options.s3KeyTemplate || "<%= partIndex %>.json";
@@ -78,11 +96,16 @@ class ImportS3Stream extends Writable {
     this.notify = options.notify || false;
     this.emitEvent = options.emitEvent || false;
     this.importType = options.importType || "users";
-    this.importScheduleAt = options.importScheduleAt || ((partIndex) => {
-      return moment().add((2 * partIndex), "minutes").toISOString();
-    });
+    this.importScheduleAt =
+      options.importScheduleAt ||
+      (partIndex => {
+        return moment()
+          .add(2 * partIndex, "minutes")
+          .toISOString();
+      });
     this.partSize = options.partSize || 10000;
-    this.importNameTemplate = options.importNameTemplate || "Import - part <%= partIndex %>";
+    this.importNameTemplate =
+      options.importNameTemplate || "Import - part <%= partIndex %>";
 
     this.currentUploadStream = null;
     this.currentObjectIndex = 0;
@@ -92,10 +115,10 @@ class ImportS3Stream extends Writable {
     this.uploadResults = [];
     this.importResults = [];
     debug("intialized writable stream", {
-      importId: this.importId
+      importId: this.importId,
     });
 
-    this.once("internal-error", (error) => {
+    this.once("internal-error", error => {
       debug("internal-error-handler", error);
       const timeoutId = setTimeout(() => {
         this.emit("error", error);
@@ -130,20 +153,25 @@ class ImportS3Stream extends Writable {
       currentUploadStream: this.currentUploadStream !== null,
       currentObjectIndex: this.currentObjectIndex,
       currentPartIndex: this.currentPartIndex,
-      uploadAndImportPromises: this.uploadAndImportPromises.length
+      uploadAndImportPromises: this.uploadAndImportPromises.length,
     };
     debug("_write %o", debugPayload);
 
     if (this.currentUploadStream === null) {
-      const newUploadAndImportJob = this.createUploadAndImportJob(this.currentPartIndex, this.currentObjectIndex);
+      const newUploadAndImportJob = this.createUploadAndImportJob(
+        this.currentPartIndex,
+        this.currentObjectIndex
+      );
       this.currentUploadStream = newUploadAndImportJob.uploadStream;
-      this.uploadAndImportPromises.push(newUploadAndImportJob.uploadAndImportPromise);
+      this.uploadAndImportPromises.push(
+        newUploadAndImportJob.uploadAndImportPromise
+      );
       this.emit("upload-stream-new", debugPayload);
       debug("upload-stream-new %o", debugPayload);
     }
 
     // $FlowFixMe
-    this.currentUploadStream.write(`${JSON.stringify(object)}\n`, (err) => {
+    this.currentUploadStream.write(`${JSON.stringify(object)}\n`, err => {
       debug("write-callback %o", { error: typeof err });
       // we are done with this partSize, let's close the current stream
       if ((this.currentObjectIndex + 1) % this.partSize === 0) {
@@ -177,7 +205,10 @@ class ImportS3Stream extends Writable {
    * @return {void}
    */
   _final(callback: Function) {
-    debug("_final %o", { uploadAndImportPromises: this.uploadAndImportPromises, currentUploadStream: typeof this.currentUploadStream });
+    debug("_final %o", {
+      uploadAndImportPromises: this.uploadAndImportPromises,
+      currentUploadStream: typeof this.currentUploadStream,
+    });
     const finalize = () => {
       Promise.all(this.uploadAndImportPromises)
         .then(() => callback())
@@ -204,15 +235,25 @@ class ImportS3Stream extends Writable {
    *
    * If the import operation fails we emit `error` event stopping the `ImportS3Stream` to accept more data. It will trigger a finalize to wait for all pending promises to resolve.
    */
-  createUploadAndImportJob(partIndex: number, objectIndex: number): {
+  createUploadAndImportJob(
+    partIndex: number,
+    objectIndex: number
+  ): {
     uploadAndImportPromise: Promise<*>,
-    uploadStream: Writable
+    uploadStream: Writable,
   } {
-    const { uploadPromise, uploadStream } = this.createS3Upload({ partIndex, objectIndex });
-    this.emit("part-upload-start", { partIndex, objectIndex, partEndIndexes: this.partEndIndexes });
+    const { uploadPromise, uploadStream } = this.createS3Upload({
+      partIndex,
+      objectIndex,
+    });
+    this.emit("part-upload-start", {
+      partIndex,
+      objectIndex,
+      partEndIndexes: this.partEndIndexes,
+    });
     debug("part-upload-start %o", { partIndex, objectIndex });
     const uploadAndImportPromise = uploadPromise
-      .catch((uploadError) => {
+      .catch(uploadError => {
         this.emit("part-upload-error", uploadError);
         debug("part-upload-error", uploadError.message);
         // $FlowFixMe
@@ -223,22 +264,31 @@ class ImportS3Stream extends Writable {
         this.emit("internal-error", uploadError);
         return Promise.reject(uploadError);
       })
-      .then((uploadResult) => {
+      .then(uploadResult => {
         this.uploadResults.push(uploadResult);
-        const size = (this.partEndIndexes[partIndex] - objectIndex) + 1;
+        const size = this.partEndIndexes[partIndex] - objectIndex + 1;
         const url = uploadResult.SignedUrl;
-        const eventPayload = { partIndex, objectIndex, uploadResult, size, stopObjectIndex: this.partEndIndexes[partIndex] };
+        const eventPayload = {
+          partIndex,
+          objectIndex,
+          uploadResult,
+          size,
+          stopObjectIndex: this.partEndIndexes[partIndex],
+        };
         this.emit("part-upload-complete", eventPayload);
         debug("part-upload-complete %o", eventPayload);
-        return this.postImportJob(url, { partIndex, objectIndex, size })
-          .catch((importError) => {
-            this.emit("part-import-error", importError);
-            debug("part-import-error", importError.message);
-            this.emit("internal-error", importError);
-            return Promise.reject(importError);
-          });
+        return this.postImportJob(url, {
+          partIndex,
+          objectIndex,
+          size,
+        }).catch(importError => {
+          this.emit("part-import-error", importError);
+          debug("part-import-error", importError.message);
+          this.emit("internal-error", importError);
+          return Promise.reject(importError);
+        });
       })
-      .then((importResult) => {
+      .then(importResult => {
         this.importResults.push(importResult);
         this.emit("part-import-complete", importResult);
         debug("part-import-complete %o", importResult);
@@ -247,7 +297,7 @@ class ImportS3Stream extends Writable {
       .catch(() => {});
     return {
       uploadAndImportPromise,
-      uploadStream
+      uploadStream,
     };
   }
 
@@ -256,9 +306,12 @@ class ImportS3Stream extends Writable {
    * Refer to `createUploadAndImportJob` method to see how this case is handled.
    * Both internal streams are destroyed and cleanedup.
    */
-  createS3Upload({ partIndex, objectIndex }: Object): {
+  createS3Upload({
+    partIndex,
+    objectIndex,
+  }: Object): {
     uploadPromise: Promise<{ SignedUrl: string }>,
-    uploadStream: Writable
+    uploadStream: Writable,
   } {
     const uploadStream = new PassThrough();
     let gzippedUploadStream;
@@ -268,14 +321,14 @@ class ImportS3Stream extends Writable {
       Body: uploadStream,
       ContentType: "application/json",
       ContentEncoding: "gzip",
-      ACL: this.s3ACL
+      ACL: this.s3ACL,
     };
     debug("upload params %o", _.omit(params, "Body"));
     const upload = this.s3.upload(params);
     if (this.gzipEnabled === true) {
       gzippedUploadStream = new PassThrough();
       gzippedUploadStream.pipe(zlib.createGzip()).pipe(uploadStream);
-      gzippedUploadStream.on("error", (error) => {
+      gzippedUploadStream.on("error", error => {
         // $FlowFixMe
         gzippedUploadStream.destroy(error);
         // $FlowFixMe
@@ -283,19 +336,23 @@ class ImportS3Stream extends Writable {
         upload.abort();
       });
     }
-    uploadStream.on("error", (error) => {
+    uploadStream.on("error", error => {
       // $FlowFixMe
       uploadStream.destroy(error);
       upload.abort();
     });
-    const uploadPromise = upload.promise().then((uploadResult) => {
-      const url = this.s3.getSignedUrl("getObject", { Bucket: params.Bucket, Key: params.Key, Expires: this.s3SignedUrlExpires });
+    const uploadPromise = upload.promise().then(uploadResult => {
+      const url = this.s3.getSignedUrl("getObject", {
+        Bucket: params.Bucket,
+        Key: params.Key,
+        Expires: this.s3SignedUrlExpires,
+      });
       uploadResult.SignedUrl = url;
       return uploadResult;
     });
     return {
       uploadPromise,
-      uploadStream: gzippedUploadStream || uploadStream
+      uploadStream: gzippedUploadStream || uploadStream,
     };
   }
 
@@ -306,16 +363,19 @@ class ImportS3Stream extends Writable {
       notify: this.notify,
       emit_event: this.emitEvent,
       overwrite: this.overwrite,
-      name: _.template(this.importNameTemplate)({ partIndex, size, objectIndex }),
+      name: _.template(this.importNameTemplate)({
+        partIndex,
+        size,
+        objectIndex,
+      }),
       schedule_at: this.importScheduleAt(partIndex),
       stats: { size },
       size,
       import_id: this.importId,
-      part_number: partIndex
+      part_number: partIndex,
     };
     debug("import params %o", params);
-    return this.hullClient
-      .post(`/import/${this.importType}`, params);
+    return this.hullClient.post(`/import/${this.importType}`, params);
   }
 }
 

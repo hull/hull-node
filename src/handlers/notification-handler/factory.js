@@ -1,9 +1,8 @@
 // @flow
 import type { $Response, NextFunction } from "express";
-import type { HullHandlersConfiguration, HullRequest } from "../../types";
+import type { HullNotificationHandlerConfiguration, HullRequestFull } from "../../types";
 
 const { Router } = require("express");
-const { normalizeHandlersConfiguration } = require("../../utils");
 const {
   credentialsFromNotificationMiddleware,
   clientMiddleware,
@@ -11,7 +10,7 @@ const {
   haltOnTimedoutMiddleware,
   fullContextBodyMiddleware,
   instrumentationContextMiddleware,
-  instrumentationTransientError
+  instrumentationTransientError,
 } = require("../../middlewares");
 
 const processingMiddleware = require("./processing-middleware");
@@ -26,10 +25,10 @@ const errorMiddleware = require("./error-middleware");
  *   "user:update": (ctx, message) => {}
  * }));
  */
-function notificationHandlerFactory(configuration: HullHandlersConfiguration): * {
-  const router = Router();
-  const normalizedConfiguration = normalizeHandlersConfiguration(configuration);
-
+function notificationHandlerFactory(
+  configuration: HullNotificationHandlerConfiguration
+): * {
+  const router = Router(); //eslint-disable-line new-cap
   router.use(timeoutMiddleware());
   router.use(credentialsFromNotificationMiddleware());
   router.use(haltOnTimedoutMiddleware());
@@ -37,13 +36,16 @@ function notificationHandlerFactory(configuration: HullHandlersConfiguration): *
   router.use(haltOnTimedoutMiddleware());
   router.use(instrumentationContextMiddleware({ handlerName: "notification" }));
   router.use(fullContextBodyMiddleware({ requestName: "notification" }));
-  router.use((req: HullRequest, res: $Response, next: NextFunction) => {
-    if (req.hull.notification && req.hull.notification.channel === "ship:update") {
+  router.use((req: HullRequestFull, res: $Response, next: NextFunction) => {
+    if (
+      req.hull.notification &&
+      req.hull.notification.channel === "ship:update"
+    ) {
       req.hull.cache.del("connector");
     }
     next();
   });
-  router.use(processingMiddleware(normalizedConfiguration));
+  router.use(processingMiddleware(configuration));
   router.use(instrumentationTransientError());
   router.use(errorMiddleware());
   return router;

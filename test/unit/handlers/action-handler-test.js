@@ -29,7 +29,7 @@ function buildContextBaseStub() {
 }
 
 describe("actionHandler", () => {
-  it("should support plain truthy return values", (done) => {
+  it("should support plain truthy return values", done => {
     const request = httpMocks.createRequest({
       method: "POST",
       url: "/"
@@ -52,9 +52,12 @@ describe("actionHandler", () => {
       }
     };
     const response = httpMocks.createResponse({ eventEmitter: EventEmitter });
-    actionHandler(() => {
-      return Promise.resolve("done");
-    }).handle(request, response);
+    actionHandler({ callback: () => Promise.resolve("done") }).handle(
+      request,
+      response,
+      () => {}
+    );
+
     response.on("end", () => {
       expect(response._isEndCalled()).to.be.ok;
       expect(response._getData()).to.equal("done");

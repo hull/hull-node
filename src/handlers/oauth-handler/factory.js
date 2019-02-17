@@ -4,7 +4,13 @@ const passport = require("passport");
 const bodyParser = require("body-parser");
 const querystring = require("querystring");
 
-const { clientMiddleware, credentialsFromQueryMiddleware, fullContextFetchMiddleware, timeoutMiddleware, haltOnTimedoutMiddleware } = require("../../middlewares");
+const {
+  clientMiddleware,
+  credentialsFromQueryMiddleware,
+  fullContextFetchMiddleware,
+  timeoutMiddleware,
+  haltOnTimedoutMiddleware,
+} = require("../../middlewares");
 
 const HOME_URL = "/";
 const LOGIN_URL = "/login";
@@ -111,12 +117,18 @@ function fetchToken(req, res, next) {
 function oAuthHandlerFactory({
   name,
   tokenInUrl = true,
-  isSetup = function setup() { return Promise.resolve(); },
-  onAuthorize = function onAuth() { return Promise.resolve(); },
-  onLogin = function onLog() { return Promise.resolve(); },
+  isSetup = function setup() {
+    return Promise.resolve();
+  },
+  onAuthorize = function onAuth() {
+    return Promise.resolve();
+  },
+  onLogin = function onLog() {
+    return Promise.resolve();
+  },
   Strategy,
   views = {},
-  options = {}
+  options = {},
 }) {
   function getURL(req, url, qs = { token: req.hull.token }) {
     const host = `https://${req.hostname}${req.baseUrl}${url}`;
@@ -128,12 +140,11 @@ function oAuthHandlerFactory({
       login: getURL(req, LOGIN_URL),
       success: getURL(req, SUCCESS_URL),
       failure: getURL(req, FAILURE_URL),
-      home: getURL(req, HOME_URL)
+      home: getURL(req, HOME_URL),
     };
   }
 
-  const router = Router();
-
+  const router = Router(); //eslint-disable-line new-cap
   router.use(fetchToken);
   router.use(credentialsFromQueryMiddleware()); // parse config from token
   router.use(clientMiddleware()); // initialize client
@@ -148,14 +159,23 @@ function oAuthHandlerFactory({
     done(null, user);
   });
 
-  const strategy = new Strategy(_.merge({}, options, { passReqToCallback: true }), function verifyAccount(req, accessToken, refreshToken, params, profile, done) {
-    if (done === undefined) {
-      done = profile;
-      profile = params;
-      params = undefined;
+  const strategy = new Strategy(
+    _.merge({}, options, { passReqToCallback: true }),
+    (req, accessToken, refreshToken, params, profile, done) => {
+      if (done === undefined) {
+        return profile(undefined, {
+          profile: params,
+          params: undefined
+        })
+      }
+      done(undefined, {
+        accessToken,
+        refreshToken,
+        params,
+        profile,
+      });
     }
-    done(undefined, { accessToken, refreshToken, params, profile });
-  });
+  );
 
   passport.use(strategy);
 
@@ -163,43 +183,52 @@ function oAuthHandlerFactory({
     const { connector = {}, client } = req.hull;
     client.logger.debug("connector.oauth.home");
     const data = { name, urls: getURLs(req), connector };
-    isSetup(req)
-      .then(
-        (setup = {}) => { res.render(views.home, _.merge({}, data, setup)); },
-        (setup = {}) => { res.render(views.login, _.merge({}, data, setup)); }
-      );
+    isSetup(req).then(
+      (setup = {}) => {
+        res.render(views.home, _.merge({}, data, setup));
+      },
+      (setup = {}) => {
+        res.render(views.login, _.merge({}, data, setup));
+      }
+    );
   });
 
   function authorize(req, res, next) {
-    passport.authorize(strategy.name, _.merge(
-      {},
-      req.authParams,
-      { callbackURL: getURL(req, CALLBACK_URL, tokenInUrl ? { token: req.hull.token } : false) }
-    ))(req, res, next);
+    passport.authorize(
+      strategy.name,
+      _.merge({}, req.authParams, {
+        callbackURL: getURL(
+          req,
+          CALLBACK_URL,
+          tokenInUrl ? { token: req.hull.token } : false
+        ),
+      })
+    )(req, res, next);
   }
 
-  router.all(LOGIN_URL, (req, res, next) => {
-    const { client } = req.hull;
-    client.logger.debug("connector.oauth.login");
-    onLogin(req)
-      .then(() => next())
-      .catch(() => next());
-  }, (req, res, next) => {
-    req.authParams = _.merge(
-      {},
-      req.authParams,
-      { state: req.hull.token }
-    );
-    next();
-  }, authorize);
+  router.all(
+    LOGIN_URL,
+    (req, res, next) => {
+      const { client } = req.hull;
+      client.logger.debug("connector.oauth.login");
+      onLogin(req)
+        .then(() => next())
+        .catch(() => next());
+    },
+    (req, res, next) => {
+      req.authParams = _.merge({}, req.authParams, { state: req.hull.token });
+      next();
+    },
+    authorize
+  );
 
-  router.get(FAILURE_URL, function loginFailue(req, res) {
+  router.get(FAILURE_URL, (req, res) => {
     const { client } = req.hull;
     client.logger.debug("connector.oauth.failure");
     return res.render(views.failure, { name, urls: getURLs(req) });
   });
 
-  router.get(SUCCESS_URL, function login(req, res) {
+  router.get(SUCCESS_URL, (req, res) => {
     const { client } = req.hull;
     client.logger.debug("connector.oauth.success");
     return res.render(views.success, { name, urls: getURLs(req) });
@@ -210,7 +239,14 @@ function oAuthHandlerFactory({
     client.logger.debug("connector.oauth.authorize");
     onAuthorize(req)
       .then(() => res.redirect(getURL(req, SUCCESS_URL)))
-      .catch(error => res.redirect(getURL(req, FAILURE_URL, { token: req.hull.clientCredentialsToken, error })));
+      .catch(error =>
+        res.redirect(
+          getURL(req, FAILURE_URL, {
+            token: req.hull.clientCredentialsToken,
+            error,
+          })
+        )
+      );
   });
 
   router.use((error, req, res, next) => { // eslint-disable-line no-unused-vars
@@ -218,7 +254,11 @@ function oAuthHandlerFactory({
     if (client) {
       client.logger.error("connector.oauth.error", error);
     }
-    return res.render(views.failure, { name, urls: getURLs(req), error: error.message || error.toString() || "" });
+    return res.render(views.failure, {
+      name,
+      urls: getURLs(req),
+      error: error.message || error.toString() || "",
+    });
   });
 
   return router;

@@ -1,29 +1,27 @@
 const Queue = require("bull");
+const debug = require("debug")("hull-node:bull");
 
 /**
  * Bull Adapter for queue
  */
 class BullAdapter {
-
   constructor(options) {
     this.options = options;
     this.queue = new Queue("main", options);
-    this.queue.on("error", (err) => {
-      console.error("queue.adapter.error", err);
+    this.queue.on("error", err => {
+      debug("queue.adapter.error", err);
     });
     this.queue.on("cleaned", (job, type) => {
-      console.log("queue.adapter.clean", { count: job.length, type });
+      debug("queue.adapter.clean", { count: job.length, type });
     });
   }
 
   inactiveCount() {
-    return this.queue.getJobCounts()
-      .then(counts => counts.wait);
+    return this.queue.getJobCounts().then(counts => counts.wait);
   }
 
   failedCount() {
-    return this.queue.getJobCounts()
-      .then(counts => counts.failed);
+    return this.queue.getJobCounts().then(counts => counts.failed);
   }
 
   /**
@@ -31,13 +29,17 @@ class BullAdapter {
    * @param {Object} jobPayload
    * @return {Promise}
    */
-  create(jobName, jobPayload = {}, { ttl = 0, delay = null, priority = null } = {}) {
+  create(
+    jobName,
+    jobPayload = {},
+    { ttl = 0, delay = null, priority = null } = {}
+  ) {
     const options = {
       priority,
       delay,
       timeout: ttl,
       attempts: 3,
-      removeOnComplete: true
+      removeOnComplete: true,
     };
     return this.queue.add(jobName, jobPayload, options);
   }
@@ -48,7 +50,7 @@ class BullAdapter {
    * @return {Object} this
    */
   process(jobName, jobCallback) {
-    this.queue.process(jobName, (job) => {
+    this.queue.process(jobName, job => {
       return jobCallback(job);
     });
     return this;
@@ -58,7 +60,8 @@ class BullAdapter {
     return this.queue.close();
   }
 
-  setupUiRouter(router) { // eslint-disable-line class-methods-use-this
+  setupUiRouter(router) {
+    // eslint-disable-line class-methods-use-this
     // due to problems in arena configuration it's disabled right now
     // and removed from the package.json
     //

@@ -3,36 +3,41 @@ const Aws = require("aws-sdk");
 const SqsConsumer = require("sqs-consumer");
 const Promise = require("bluebird");
 
-
 /**
  * SQS Adapter for queue
  */
 class SQSAdapter {
-
-  inactiveCount() {  // eslint-disable-line class-methods-use-this
-    console.warn("Queue adapter inactiveCount not implemented");
+  inactiveCount() {
+    // eslint-disable-line class-methods-use-this
+    console.warn("Queue adapter inactiveCount not implemented"); //eslint-disable-line no-console
     return Promise.resolve(0);
   }
 
-  failedCount() {  // eslint-disable-line class-methods-use-this
-    console.warn("Queue adapter failedCount not implemented");
+  failedCount() {
+    // eslint-disable-line class-methods-use-this
+    console.warn("Queue adapter failedCount not implemented"); //eslint-disable-line no-console
     return Promise.resolve(0);
   }
 
-  exit() {  // eslint-disable-line class-methods-use-this
+  exit() {
+    // eslint-disable-line class-methods-use-this
     return this.consumer && this.consumer.stop();
   }
 
-  setupUiRouter(router) { // eslint-disable-line class-methods-use-this
+  setupUiRouter(router) {
+    // eslint-disable-line class-methods-use-this
     return router;
   }
 
-  clean() { // eslint-disable-line class-methods-use-this
+  clean() {
+    // eslint-disable-line class-methods-use-this
   }
 
   constructor(options) {
     this.options = options;
-    Aws.config.update(_.pick(options, "accessKeyId", "secretAccessKey", "region"));
+    Aws.config.update(
+      _.pick(options, "accessKeyId", "secretAccessKey", "region")
+    );
     this.sqs = new Aws.SQS({ apiVersion: "2012-11-05" });
     this.sendMessage = Promise.promisify(this.sqs.sendMessage.bind(this.sqs));
   }
@@ -42,7 +47,11 @@ class SQSAdapter {
    * @param {Object} jobPayload
    * @return {Promise}
    */
-  create(jobName, jobPayload = {}, { attempts = 3, delay = 0, priority = 1 } = {}) {
+  create(
+    jobName,
+    jobPayload = {},
+    { attempts = 3, delay = 0, priority = 1 } = {}
+  ) {
     return this.sendMessage({
       MessageDeduplicationId: `${jobName}-${new Date().getTime()}`,
       MessageGroupId: `${jobName}-${new Date().getTime()}`,
@@ -50,10 +59,10 @@ class SQSAdapter {
       MessageAttributes: {
         jobName: { DataType: "String", StringValue: jobName },
         attempts: { DataType: "Number", StringValue: attempts.toString() },
-        priority: { DataType: "Number", StringValue: priority.toString() }
+        priority: { DataType: "Number", StringValue: priority.toString() },
       },
       MessageBody: JSON.stringify(jobPayload),
-      QueueUrl: this.options.queueUrl
+      QueueUrl: this.options.queueUrl,
     });
   }
 
@@ -74,19 +83,21 @@ class SQSAdapter {
           const id = message.MessageId;
           const data = JSON.parse(message.Body);
           return jobCallback({ id, data })
-          .then(() => done())
-          .catch(done);
+            .then(() => done())
+            .catch(done);
         } catch (err) {
           return done(err);
         }
-      }
+      },
     });
 
-    consumer.on("processing_error", (err) => {
+    consumer.on("processing_error", err => {
+      //eslint-disable-next-line no-console
       console.error("queue.adapter.processing_error", err);
     });
 
-    consumer.on("error", (err) => {
+    consumer.on("error", err => {
+      //eslint-disable-next-line no-console
       console.error("queue.adapter.error", err);
     });
 
@@ -96,7 +107,6 @@ class SQSAdapter {
 
     return this;
   }
-
 }
 
 module.exports = SQSAdapter;

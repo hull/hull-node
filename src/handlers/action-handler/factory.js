@@ -1,21 +1,22 @@
 // @flow
 import type { $Response, NextFunction } from "express";
-import type { HullHandlersConfigurationEntry, HullRequestFull } from "../../types";
-
-// type HullActionHandlerOptions = {
-//   cache?: {
-//     key?: string,
-//     options?: Object
-//   },
-//   disableErrorHandling?: boolean,
-//   respondWithError?: boolean
-// };
+import type {
+  HullExternalHandlerConfigurationEntry,
+  HullRequestFull
+} from "../../types";
+const extractRequestContent = require("../../lib/extract-request-content");
 const debug = require("debug")("hull-connector:action-handler");
-const { Router } = require("express");
+const express = require("express");
 
-const { TransientError } = require("../../errors");
-const { credentialsFromQueryMiddleware, fullContextFetchMiddleware, timeoutMiddleware, haltOnTimedoutMiddleware, clientMiddleware, instrumentationContextMiddleware } = require("../../middlewares");
-const { normalizeHandlersConfigurationEntry } = require("../../utils");
+const { TransientError, ValidationError } = require("../../errors");
+const {
+  credentialsFromQueryMiddleware,
+  fullContextFetchMiddleware,
+  timeoutMiddleware,
+  haltOnTimedoutMiddleware,
+  clientMiddleware,
+  instrumentationContextMiddleware
+} = require("../../middlewares");
 
 /**
  * This handler allows to handle simple, authorized HTTP calls.
@@ -41,15 +42,18 @@ const { normalizeHandlersConfigurationEntry } = require("../../utils");
  * const { actionHandler } = require("hull").handlers;
  * app.use("/list", actionHandler((ctx) => {}))
  */
-function actionHandlerFactory(configurationEntry: HullHandlersConfigurationEntry): Router {
-  const { callback, options } = normalizeHandlersConfigurationEntry(configurationEntry);
+function actionHandlerFactory({
+  callback,
+  options = {}
+}: HullExternalHandlerConfigurationEntry): express$Router {
   const {
+    // requireAuthentication = false,
     cache = {},
     disableErrorHandling = false,
     respondWithError = false
   } = options;
   debug("options", options);
-  const router = Router();
+  const router = express.Router(); //eslint-disable-line new-cap
   router.use(credentialsFromQueryMiddleware()); // parse config from query
   router.use(timeoutMiddleware());
   router.use(clientMiddleware()); // initialize client
@@ -57,44 +61,68 @@ function actionHandlerFactory(configurationEntry: HullHandlersConfigurationEntry
   router.use(instrumentationContextMiddleware());
   router.use(fullContextFetchMiddleware({ requestName: "action" }));
   router.use(haltOnTimedoutMiddleware());
-  router.use(function actionHandler(req: HullRequestFull, res: $Response, next: NextFunction) {
-    (() => {
-      debug("processing");
-      if (cache && cache.key) {
-        return req.hull.cache.wrap(cache.key, () => {
-          // $FlowFixMe
-          return callback(req.hull);
-        }, cache.options || {});
-      }
-      debug("calling callback");
+  //eslint-disable-next-line no-unused-vars
+  router.use((req: HullRequestFull, res: $Response, next: NextFunction) => {
+    try {
+      const { client, connector } = req.hull;
       // $FlowFixMe
-      return callback(req.hull);
-    })()
-      .then((response) => {
-        debug("callback response", response);
+      if (!client | !connector) {
+        throw new ValidationError(
+          "missing or invalid credentials",
+          "INVALID_CREDENTIALS",
+          400
+        );
+      }
+      next();
+    } catch (error) {
+      next(error);
+    }
+  });
+  router.use((req: HullRequestFull, res: $Response, next: NextFunction) => {
+    const message = extractRequestContent(req);
+    const cb =
+      cache && cache.key
+        ? req.hull.cache.wrap(
+            cache.key,
+            () => callback(req.hull, [message]),
+            cache.options || {}
+          )
+        : callback(req.hull, [message]);
+    cb.then(
+      response => {
         res.end(response);
-      })
-      .catch(error => next(error));
+        next();
+      },
+      error => next(error)
+    );
   });
   if (disableErrorHandling !== true) {
-    router.use(function actionHandlerErrorMiddleware(err: Error, req: HullRequestFull, res: $Response, next: NextFunction) {
-      debug("error", err.message, err.constructor.name, { respondWithError });
+    router.use(
+      (
+        err: Error | TransientError | ValidationError,
+        req: HullRequestFull,
+        res: $Response,
+        next: NextFunction
+      ) => {
+        debug("error", err.message, err.constructor.name, { respondWithError });
+        // TODO : Work on Error handling
 
-      // if we have non transient error
-      if (err instanceof TransientError) {
-        res.status(503);
-      }
+        // $FlowFixMe;
+        const { status = 200 } = err;
+        // if we have non transient error
+        res.status(status);
 
-      if (respondWithError) {
-        res.send(err.toString());
-      } else {
-        res.send("error");
+        if (respondWithError) {
+          res.send(err.toString());
+        } else {
+          res.send("error");
+        }
+        // if we have non transient error
+        if (!(err instanceof TransientError)) {
+          next(err);
+        }
       }
-      // if we have non transient error
-      if (!(err instanceof TransientError)) {
-        next(err);
-      }
-    });
+    );
   }
 
   return router;

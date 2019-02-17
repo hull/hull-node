@@ -53,7 +53,8 @@ class QueueAgent {
     this.getEnqueue = this.getEnqueue.bind(this);
   }
 
-  getEnqueue(ctx) { // eslint-disable-line class-methods-use-this
+  getEnqueue(ctx) {
+    // eslint-disable-line class-methods-use-this
     return enqueue.bind(null, this.adapter, ctx);
   }
 

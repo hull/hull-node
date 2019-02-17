@@ -19,7 +19,7 @@ function promiseToTransformStream(
     transform(chunk, encoding, callback) {
       debug("writing to a promise");
       promise(chunk, encoding, this.push.bind(this))
-        .then((promiseResult) => {
+        .then(promiseResult => {
           if (promiseResult !== undefined && promiseResult !== null) {
             callback(null, promiseResult);
           } else {
@@ -27,7 +27,7 @@ function promiseToTransformStream(
           }
         })
         .catch(error => callback(error));
-    }
+    },
   });
 }
 module.exports = promiseToTransformStream;

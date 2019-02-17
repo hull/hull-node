@@ -23,10 +23,19 @@ const promiseToWritableStream = require("./promise-to-writable-stream");
  * @param {Function} options.onError    callback called during error
  * @return {Promise}
  */
-function extractStream({ body, batchSize, callback, onResponse, onError }: Object): Promise<*> {
+function extractStream({
+  body,
+  batchSize,
+  callback,
+  onResponse,
+  onError,
+}: Object): Promise<*> {
   const { url, format } = body;
   if (!url) return Promise.reject(new Error("Missing URL"));
-  const decoder = format === "csv" ? CSVStream.createStream({ escapeChar: "\"", enclosedChar: "\"" }) : JSONStream.parse();
+  const decoder =
+    format === "csv"
+      ? CSVStream.createStream({ escapeChar: '"', enclosedChar: '"' })
+      : JSONStream.parse();
 
   if (format === "csv") {
     // Workaround over problems on Node v8
@@ -36,23 +45,18 @@ function extractStream({ body, batchSize, callback, onResponse, onError }: Objec
   const batch = new BatchStream({ size: batchSize });
 
   const responseStream = requestClient({ url })
-    .on("response", (response) => {
+    .on("response", response => {
       if (_.isFunction(onResponse)) {
         onResponse(response);
       }
     })
-    .on("error", (error) => {
+    .on("error", error => {
       if (_.isFunction(onError)) {
         onError(error);
       }
     });
   const targetStream = promiseToWritableStream(callback);
-  return promisePipe(
-    responseStream,
-    decoder,
-    batch,
-    targetStream
-  );
+  return promisePipe(responseStream, decoder, batch, targetStream);
 }
 
 module.exports = extractStream;

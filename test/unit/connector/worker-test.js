@@ -5,24 +5,22 @@ const sinon = require("sinon");
 const Worker = require("../../../src/connector/worker");
 
 describe("Worker", () => {
-
   after(() => {
     process.removeAllListeners("exit");
   });
 
-  it("should return a resolved promise for an empty job", (done) => {
+  it("should return a resolved promise for an empty job", done => {
     const queueStub = {
-      contextMiddleware: () => (() => {}),
+      contextMiddleware: () => () => {},
       adapter: {
         clean: () => {}
       }
     };
     const cacheStub = {
-      contextMiddleware: () => (() => {})
+      contextMiddleware: () => () => {}
     };
     const instrumentationStub = {
-      contextMiddleware: () => (() => {})
-
+      contextMiddleware: () => () => {}
     };
     const worker = new Worker({
       queue: queueStub,
@@ -30,11 +28,10 @@ describe("Worker", () => {
       cache: cacheStub
     });
 
-
     const result = worker.dispatch({
       data: {}
     });
-    expect(result).to.be.promise;
+    expect(result.then).to.be.a("function");
     result.then(() => {
       done();
     });

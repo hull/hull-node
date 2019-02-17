@@ -10,5 +10,5 @@ module.exports.credentialsFromQueryMiddleware = require("./credentials-from-quer
 
 module.exports.timeoutMiddleware = require("./timeout");
 module.exports.haltOnTimedoutMiddleware = require("./halt-on-timedout");
-module.exports.instrumentationContextMiddleware = require("./instrumentation-context-middleware");
+module.exports.instrumentationContextMiddleware = require("./instrumentation-context");
 module.exports.instrumentationTransientError = require("./instrumentation-transient-error");

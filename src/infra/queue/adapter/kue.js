@@ -11,12 +11,18 @@ class KueAdapter {
     this.options = options;
     this.queue = kue.createQueue(options);
     this.queue.watchStuckJobs();
-    this.queue.on("error", (err) => {
-      console.error("queue.adapter.error", err);
+    this.queue.on("error", err => {
+      console.error("queue.adapter.error", err); //eslint-disable-line no-console
     });
     this.app = kue.app;
 
-    ["inactiveCount", "activeCount", "completeCount", "failedCount", "delayedCount"].forEach((name) => {
+    [
+      "inactiveCount",
+      "activeCount",
+      "completeCount",
+      "failedCount",
+      "delayedCount",
+    ].forEach(name => {
       this[name] = Promise.promisify(this.queue[name]).bind(this.queue);
     });
   }
@@ -26,9 +32,14 @@ class KueAdapter {
    * @param {Object} jobPayload
    * @return {Promise}
    */
-  create(jobName, jobPayload = {}, { ttl = 0, delay = null, priority = null } = {}) {
-    return Promise.fromCallback((callback) => {
-      const job = this.queue.create(jobName, jobPayload)
+  create(
+    jobName,
+    jobPayload = {},
+    { ttl = 0, delay = null, priority = null } = {}
+  ) {
+    return Promise.fromCallback(callback => {
+      const job = this.queue
+        .create(jobName, jobPayload)
         .attempts(3)
         .removeOnComplete(true);
 
@@ -44,7 +55,7 @@ class KueAdapter {
         job.priority(priority);
       }
 
-      return job.save((err) => {
+      return job.save(err => {
         callback(err, job.id);
       });
     });
@@ -58,12 +69,15 @@ class KueAdapter {
   process(jobName, jobCallback) {
     this.queue.process(jobName, (job, done) => {
       jobCallback(job)
-        .then((res) => {
-          done(null, res);
-        }, (err) => {
-          done(err);
-        })
-        .catch((err) => {
+        .then(
+          res => {
+            done(null, res);
+          },
+          err => {
+            done(err);
+          }
+        )
+        .catch(err => {
           done(err);
         });
     });
@@ -71,7 +85,7 @@ class KueAdapter {
   }
 
   exit() {
-    return Promise.fromCallback((callback) => {
+    return Promise.fromCallback(callback => {
       this.queue.shutdown(5000, callback);
     });
   }
@@ -80,7 +94,7 @@ class KueAdapter {
     ui.setup({
       apiURL: "/kue/_api", // IMPORTANT: specify the api url
       baseURL: "/kue", // IMPORTANT: specify the base url
-      updateInterval: 5000 // Optional: Fetches new data every 5000 ms
+      updateInterval: 5000, // Optional: Fetches new data every 5000 ms
     });
 
     router.use("/_api", this.app);

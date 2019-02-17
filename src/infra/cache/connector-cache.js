@@ -14,7 +14,9 @@ const Promise = require("bluebird");
  */
 class ConnectorCache {
   ctx: HullContextFull;
+
   cache: Object;
+
   promiseReuser: Object;
 
   constructor(ctx: HullContextFull, cache: Object, promiseReuser: Object) {
@@ -38,7 +40,9 @@ class ConnectorCache {
    */
   getCacheKey(key: string): string {
     if (this.ctx.client === undefined) {
-      throw new Error("ConnectorCache can be used only with initialized client, otherwise use ctx.cache.cache.set");
+      throw new Error(
+        "ConnectorCache can be used only with initialized client, otherwise use ctx.cache.cache.set"
+      );
     }
     const { secret, organization } = this.ctx.client.configuration();
     return jwt.encode({ sub: key, iss: organization }, secret);
@@ -57,7 +61,7 @@ class ConnectorCache {
    */
   wrap(key: string, cb: Function, options: ?Object): Promise<any> {
     const shipCacheKey = this.getCacheKey(key);
-    const reuseWrap = this.promiseReuser.reusePromise((wrappedShipCacheKey) => {
+    const reuseWrap = this.promiseReuser.reusePromise(wrappedShipCacheKey => {
       return this.cache.wrap(wrappedShipCacheKey, cb, options);
     });
     return reuseWrap(shipCacheKey);
@@ -99,7 +103,7 @@ class ConnectorCache {
   del(key: string) {
     const shipCacheKey = this.getCacheKey(key);
     return new Promise((resolve, reject) => {
-      this.cache.del(shipCacheKey, (error) => {
+      this.cache.del(shipCacheKey, error => {
         if (error) {
           return reject(error);
         }
