@@ -1,3 +1,6 @@
+# 0.13.18
+* upgrade hull-client to v1.2.3 to add support for unalias methods
+
 # 0.13.17
 * up the limit on bodyParser applied on the batch endpoint
 
