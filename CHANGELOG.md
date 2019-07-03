@@ -1,3 +1,6 @@
+# 0.13.19
+* remove x-powered-by header
+
 # 0.13.18
 * upgrade hull-client to v1.2.3 to add support for unalias methods
 
