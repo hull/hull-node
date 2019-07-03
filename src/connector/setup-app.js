@@ -60,6 +60,7 @@ module.exports = function setupApp({ instrumentation, queue, cache, app, connect
 
   app.set("views", `${process.cwd()}/views`);
   app.set("view engine", "ejs");
+  app.disable("x-powered-by");
 
   app.use((req, res, next) => {
     req.hull = req.hull || {};
