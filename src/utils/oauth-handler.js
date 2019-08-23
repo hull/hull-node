@@ -124,7 +124,7 @@ module.exports = function oauth({
 
     let host = `https://${hostname}${baseUrl}${url}`;
     if (!_.isNil(source_url)) {
-      host = `${source_url.slice(0, -1)}${baseUrl}${url}`;
+      host = source_url.slice(-1) === "/" ? `${source_url.slice(0, -1)}${baseUrl}${url}` : `${source_url}${baseUrl}${url}`;
     }
 
     if (qs === false) {
