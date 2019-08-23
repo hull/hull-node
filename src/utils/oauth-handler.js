@@ -119,8 +119,18 @@ module.exports = function oauth({
   options = {}
 }) {
   function getURL(req, url, qs = { token: req.hull.token }) {
-    const host = `https://${req.hostname}${req.baseUrl}${url}`;
-    if (qs === false) return host;
+    const { hostname, baseUrl } = req;
+    const { source_url } = req.hull.ship;
+
+    let host = `https://${hostname}${baseUrl}${url}`;
+    if (!_.isNil(source_url)) {
+      host = source_url.slice(-1) === "/" ? `${source_url.slice(0, -1)}${baseUrl}${url}` : `${source_url}${baseUrl}${url}`;
+    }
+
+    if (qs === false) {
+      return host;
+    }
+
     return `${host}?${querystring.stringify(qs)}`;
   }
   function getURLs(req) {

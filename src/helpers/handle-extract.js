@@ -32,7 +32,7 @@ module.exports = function handleExtract(ctx, { body, batchSize, handler, onRespo
     decoder._encoding = "utf8";
   }
 
-  const batch = new BatchStream({ size: batchSize });
+  const batch = new BatchStream({ size: batchSize, highWaterMark: 1 });
 
   return requestClient({ url })
     .on("response", (response) => {
