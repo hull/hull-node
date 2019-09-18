@@ -2,8 +2,13 @@ src/
 spec/
 tasks/
 docs/
+tmp/
+test/
 .babelrc
 .editorconfig
+.eslintrc
+.flowconfig
+.circleci/config.yml
 .gitignore
 demo.js
 gulpfile.js
