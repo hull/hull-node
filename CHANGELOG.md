@@ -1,3 +1,6 @@
+# 0.13.20
+* Bump up version of hull-client-node to 1.2.4
+
 # 0.13.19
 * use source url instead of the hostname to build urls
 
