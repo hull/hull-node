@@ -1,6 +1,5 @@
 const _ = require("lodash");
 const jwt = require("jwt-simple");
-
 const { handleExtract, requestExtract } = require("../helpers");
 
 function parseQueryString(query) {
@@ -38,7 +37,7 @@ function parseToken(token, secret) {
  * @return {Function}
  */
 module.exports = function hullClientMiddlewareFactory(HullClient, { hostSecret, clientConfig = {} }) {
-  function getCurrentShip(id, client, cache, bust, notification) {
+  function getCurrentShip(organization, id, client, cache, bust, notification) {
     if (notification && notification.connector) {
       return Promise.resolve(notification.connector);
     }
@@ -48,13 +47,21 @@ module.exports = function hullClientMiddlewareFactory(HullClient, { hostSecret, 
         return cache.del(id);
       }
       return Promise.resolve();
-    })()
-    .then(() => {
+    })().then(() => {
+      const platformRespKey = `last-resp-${organization}`;
       if (cache) {
-        return cache.wrap(id, () => {
-          return client.get(id, {}, {
-            timeout: 5000,
-            retry: 1000
+        return cache.get(platformRespKey).then((lastResp) => {
+          if (!_.isNil(lastResp) && (lastResp.status === 402 || lastResp.status === 404)) {
+            const error = new Error(lastResp.message);
+            error.status = lastResp.status;
+            throw new Error(error);
+          }
+
+          return cache.wrap(id, () => {
+            return client.get(id, {}, {
+              timeout: 5000,
+              retry: 1000
+            });
           });
         });
       }
@@ -97,16 +104,36 @@ module.exports = function hullClientMiddlewareFactory(HullClient, { hostSecret, 
 
         const bust = (message && message.Subject === "ship:update");
 
-        // Promise<ship>
-        return getCurrentShip(id, req.hull.client, req.hull.cache, bust, notification).then((ship = {}) => {
+        return getCurrentShip(organization, id, req.hull.client, req.hull.cache, bust, notification).then((ship = {}) => {
           req.hull.ship = ship;
           req.hull.hostname = req.hostname;
           req.hull.options = _.merge({}, req.query, req.body);
           return next();
         }, (err) => {
-          const e = new Error(err.message);
-          e.status = 401;
-          return next(e);
+          let refinedError = { message: err.message, status: 401 };
+          if (err.status === 402) {
+            refinedError = {
+              message: "Organization is disabled",
+              status: 402
+            };
+          } else if (err.status === 404) {
+            refinedError = {
+              message: "Invalid id / secret",
+              status: 404
+            };
+          }
+          const error = new Error(refinedError.message);
+          error.status = refinedError.status;
+          if (req.hull.cache && (err.status === 402 || err.status === 404)) {
+            return req.hull.cache.set(
+              `last-resp-${organization}`,
+              _.pick(error, ["message", "status"]),
+              { ttl: 1800 } // 30 minutes
+            ).then(() => {
+              return next(error);
+            });
+          }
+          return next(error);
         });
       }
       return next();
