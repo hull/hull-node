@@ -30,7 +30,7 @@ class HullConnector {
     this.instrumentation = instrumentation || new Instrumentation();
     this.cache = cache || new Cache();
     this.workspaceCache = new Cache({
-      ttl: 1800,
+      ttl: 60,
       max: 100,
       store: "memory"
     });

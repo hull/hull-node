@@ -23,8 +23,8 @@ describe("segmentMiddleware", () => {
     };
     const cache = new Cache({ store: "memory", max: 100, ttl: 1 });
     const req2 = _.cloneDeep(req);
-    cache.contextMiddleware()(req, {}, () => {});
-    cache.contextMiddleware()(req2, {}, () => {});
+    cache.workspaceMiddleware()(req, {}, () => {});
+    cache.workspaceMiddleware()(req2, {}, () => {});
 
     sinon.stub(req.hull.client, "configuration").returns({ id: "foo", secret: "bar", organization: "localhost" });
     sinon.stub(req2.hull.client, "configuration").returns({ id: "foo2", secret: "bar2", organization: "localhost2" });

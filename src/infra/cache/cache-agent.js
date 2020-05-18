@@ -58,7 +58,7 @@ class CacheAgent {
   workspaceMiddleware() {
     return (req, res, next) => {
       req.hull = req.hull || {};
-      req.hull.workspaceCache = this.cache;
+      req.hull.workspaceCache = new ShipCache(req.hull, this.cache, this.promiseReuser);
       next();
     };
   }
