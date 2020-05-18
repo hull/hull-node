@@ -48,26 +48,21 @@ module.exports = function hullClientMiddlewareFactory(HullClient, { hostSecret, 
       }
       return Promise.resolve();
     })().then(() => {
-      const platformRespKey = `last-resp-${organization}`;
-      if (cache) {
-        return cache.get(platformRespKey).then((lastResp) => {
-          if (!_.isNil(lastResp) && (lastResp.status === 402 || lastResp.status === 404)) {
-            const error = new Error(lastResp.message);
-            error.status = lastResp.status;
-            throw new Error(error);
+      return cache.wrap(id, () => {
+        return client.get(id, {}, {
+          timeout: 5000,
+          retry: 1000
+        }).catch((err) => {
+          const { message, status } = err;
+          if (status === 402 || status === 404) {
+            const error = new Error(message);
+            error.status = status;
+            return Promise.resolve(error);
           }
-
-          return cache.wrap(id, () => {
-            return client.get(id, {}, {
-              timeout: 5000,
-              retry: 1000
-            });
-          });
+          return Promise.reject(err);
         });
-      }
-      return client.get(id, {}, {
-        timeout: 5000,
-        retry: 1000
+      }).then((res) => {
+        return res instanceof Error ? Promise.reject(res) : Promise.resolve(res);
       });
     });
   }
@@ -104,7 +99,7 @@ module.exports = function hullClientMiddlewareFactory(HullClient, { hostSecret, 
 
         const bust = (message && message.Subject === "ship:update");
 
-        return getCurrentShip(organization, id, req.hull.client, req.hull.cache, bust, notification).then((ship = {}) => {
+        return getCurrentShip(organization, id, req.hull.client, req.hull.middlewareCache, bust, notification).then((ship = {}) => {
           req.hull.ship = ship;
           req.hull.hostname = req.hostname;
           req.hull.options = _.merge({}, req.query, req.body);
@@ -124,15 +119,6 @@ module.exports = function hullClientMiddlewareFactory(HullClient, { hostSecret, 
           }
           const error = new Error(refinedError.message);
           error.status = refinedError.status;
-          if (req.hull.cache && (err.status === 402 || err.status === 404)) {
-            return req.hull.cache.set(
-              `last-resp-${organization}`,
-              _.pick(error, ["message", "status"]),
-              { ttl: 1800 } // 30 minutes
-            ).then(() => {
-              return next(error);
-            });
-          }
           return next(error);
         });
       }

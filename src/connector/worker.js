@@ -6,7 +6,7 @@ const _ = require("lodash");
  * Background worker using QueueAdapter.
  */
 class Worker {
-  constructor({ Hull, queue, instrumentation, cache }) {
+  constructor({ Hull, queue, instrumentation, cache, middlewareCache }) {
     if (!Hull || !queue) {
       throw new Error("Worker initialized without all required dependencies: Hull, queue");
     }
@@ -18,6 +18,7 @@ class Worker {
 
     this.use(queue.contextMiddleware());
     this.use(cache.contextMiddleware());
+    this.use(middlewareCache.contextMiddleware("middleware"));
 
     this.use(instrumentation.contextMiddleware());
     // instrument jobs between 1 and 5 minutes

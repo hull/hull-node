@@ -24,7 +24,7 @@ module.exports = function segmentsMiddlewareFactory() {
     if (!hull.client) {
       return next();
     }
-    const { cache, message, notification, connectorConfig } = hull;
+    const { middlewareCache: cache, message, notification, connectorConfig } = hull;
 
     if (notification && notification.segments) {
       hull.segments = notification.segments;
