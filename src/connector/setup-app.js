@@ -14,7 +14,7 @@ function haltOnTimedout(req, res, next) {
 /**
  * This function setups express application pre route middleware stack
  */
-module.exports = function setupApp({ instrumentation, queue, cache, middlewareCache, app, connectorConfig, clientMiddleware, middlewares }) {
+module.exports = function setupApp({ instrumentation, queue, cache, workspaceCache, app, connectorConfig, clientMiddleware, middlewares }) {
   /**
    * This middleware overwrites default `send` and `json` methods to make it timeout aware,
    * and not to try to respond second time after previous response after a timeout happened
@@ -55,7 +55,7 @@ module.exports = function setupApp({ instrumentation, queue, cache, middlewareCa
   app.use(instrumentation.contextMiddleware());
   app.use(queue.contextMiddleware());
   app.use(cache.contextMiddleware());
-  app.use(middlewareCache.contextMiddleware("middleware"));
+  app.use(workspaceCache.workspaceMiddleware());
 
   app.engine("html", renderFile);
 

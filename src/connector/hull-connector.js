@@ -29,8 +29,8 @@ class HullConnector {
     this.HullClient = HullClient;
     this.instrumentation = instrumentation || new Instrumentation();
     this.cache = cache || new Cache();
-    this.middlewareCache = new Cache({
-      ttl: 60,
+    this.workspaceCache = new Cache({
+      ttl: 1800,
       max: 100,
       store: "memory"
     });
@@ -90,7 +90,7 @@ class HullConnector {
       app,
       instrumentation: this.instrumentation,
       cache: this.cache,
-      middlewareCache: this.middlewareCache,
+      workspaceCache: this.workspaceCache,
       queue: this.queue,
       connectorConfig: this.connectorConfig,
       clientMiddleware: this.clientMiddleware(),
@@ -151,7 +151,7 @@ class HullConnector {
       Hull: this.HullClient,
       instrumentation: this.instrumentation,
       cache: this.cache,
-      middlewareCache: this.middlewareCache,
+      workspaceCache: this.workspaceCache,
       queue: this.queue
     });
     this._worker.use((req, res, next) => {

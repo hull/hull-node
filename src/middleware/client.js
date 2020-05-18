@@ -99,7 +99,7 @@ module.exports = function hullClientMiddlewareFactory(HullClient, { hostSecret, 
 
         const bust = (message && message.Subject === "ship:update");
 
-        return getCurrentShip(organization, id, req.hull.client, req.hull.middlewareCache, bust, notification).then((ship = {}) => {
+        return getCurrentShip(organization, id, req.hull.client, req.hull.workspaceCache, bust, notification).then((ship = {}) => {
           req.hull.ship = ship;
           req.hull.hostname = req.hostname;
           req.hull.options = _.merge({}, req.query, req.body);

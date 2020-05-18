@@ -55,15 +55,16 @@ class CacheAgent {
     this.promiseReuser = new PromiseReuser();
   }
 
-  contextMiddleware(scope = "connector") { // eslint-disable-line class-methods-use-this
+  workspaceMiddleware() {
+    return (req, res, next) => {
+      req.hull = req.hull || {};
+      req.hull.workspaceCache = this.cache;
+      next();
+    };
+  }
 
-    if (scope === "middleware") {
-      return (req, res, next) => {
-        req.hull = req.hull || {};
-        req.hull.middlewareCache = new ShipCache(req.hull, this.cache, this.promiseReuser);
-        next();
-      };
-    }
+  contextMiddleware() {
+    // eslint-disable-line class-methods-use-this
     return (req, res, next) => {
       req.hull = req.hull || {};
       req.hull.cache = req.hull.cache || new ShipCache(req.hull, this.cache, this.promiseReuser);

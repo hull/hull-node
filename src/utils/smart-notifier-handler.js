@@ -24,7 +24,7 @@ function processHandlersFactory(handlers, userHandlerOptions) {
       // if we are dealing with `ship:update` notification
       // we clean the underlying cache
       if (notification.channel === "ship:update") {
-        req.hull.cache.del(req.hull.ship.id);
+        req.hull.workspaceCache.del(req.hull.ship.id);
       }
 
       if (!messageHandler) {
