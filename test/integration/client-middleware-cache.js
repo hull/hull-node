@@ -45,7 +45,7 @@ describe("Client Middleware", () => {
 
   it("should take a ShipCache", function (done) {
     const cache = new Cache({ store: "memory", max: 100, ttl: 1/*seconds*/ });
-    cache.contextMiddleware()(reqStub, {}, () => {});
+    cache.workspaceMiddleware()(reqStub, {}, () => {});
     const instance = Middleware(HullStub, { hostSecret: "secret"});
     instance(reqStub, {}, (err) => {
       expect(reqStub.hull.ship.private_settings.value).to.equal("test");
@@ -55,7 +55,7 @@ describe("Client Middleware", () => {
         }
       };
 
-      reqStub.hull.cache.set("ship_id", newShip)
+      reqStub.hull.workspaceCache.set("ship_id", newShip)
         .then((arg) => {
           instance(reqStub, {}, () => {
             expect(reqStub.hull.ship.private_settings.value).to.equal("test2");
@@ -69,7 +69,7 @@ describe("Client Middleware", () => {
   it("should allow for disabling caching", function (done) {
     const cache = new Cache({ store: "memory", isCacheableValue: () => false });
 
-    cache.contextMiddleware()(reqStub, {}, () => {});
+    cache.workspaceMiddleware()(reqStub, {}, () => {});
     const instance = Middleware(HullStub, { hostSecret: "secret" });
     instance(reqStub, {}, () => {
       expect(reqStub.hull.ship.private_settings.value).to.equal("test");
@@ -83,7 +83,7 @@ describe("Client Middleware", () => {
 
   it("should call the API only once even for multiple concurrent inits", function (done) {
     const cache = new Cache({ store: "memory", max: 100, ttl: 1/*seconds*/ });
-    cache.contextMiddleware()(reqStub, {}, () => {});
+    cache.workspaceMiddleware()(reqStub, {}, () => {});
     const instance = Middleware(HullStub, { hostSecret: "secret" });
     this.getStub.restore();
     this.getStub = sinon.stub(HullStub.prototype, "get");
@@ -99,7 +99,7 @@ describe("Client Middleware", () => {
 
   it("should call the API only once even for multiple concurrent inits, one call per ship id", function (done) {
     const cache = new Cache({ store: "memory", max: 100, ttl: 1/*seconds*/ });
-    cache.contextMiddleware()(reqStub, {}, () => {});
+    cache.workspaceMiddleware()(reqStub, {}, () => {});
     const instance = Middleware(HullStub, { hostSecret: "secret" });
     this.getStub.restore();
     const reqStub2 = _.cloneDeep(reqStub);

@@ -19,7 +19,8 @@ describe("Worker", () => {
       }
     };
     const cacheStub = {
-      contextMiddleware: () => (() => {})
+      contextMiddleware: () => (() => {}),
+      workspaceMiddleware: () => (() => {})
     };
     const instrumentationStub = {
       contextMiddleware: () => (() => {})
@@ -29,7 +30,8 @@ describe("Worker", () => {
       Hull: HullStub,
       queue: queueStub,
       instrumentation: instrumentationStub,
-      cache: cacheStub
+      cache: cacheStub,
+      workspaceCache: cacheStub
     });
 
 

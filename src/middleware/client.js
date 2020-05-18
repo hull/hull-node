@@ -48,21 +48,27 @@ module.exports = function hullClientMiddlewareFactory(HullClient, { hostSecret, 
       }
       return Promise.resolve();
     })().then(() => {
-      return cache.wrap(id, () => {
-        return client.get(id, {}, {
-          timeout: 5000,
-          retry: 1000
-        }).catch((err) => {
-          const { message, status } = err;
-          if (status === 402 || status === 404) {
-            const error = new Error(message);
-            error.status = status;
-            return Promise.resolve(error);
-          }
-          return Promise.reject(err);
+      if (cache) {
+        return cache.wrap(id, () => {
+          return client.get(id, {}, {
+            timeout: 5000,
+            retry: 1000
+          }).catch((err) => {
+            const { message, status } = err;
+            if (status === 402 || status === 404) {
+              const error = new Error(message);
+              error.status = status;
+              return Promise.resolve(error);
+            }
+            return Promise.reject(err);
+          });
+        }).then((res) => {
+          return res instanceof Error ? Promise.reject(res) : Promise.resolve(res);
         });
-      }).then((res) => {
-        return res instanceof Error ? Promise.reject(res) : Promise.resolve(res);
+      }
+      return client.get(id, {}, {
+        timeout: 5000,
+        retry: 1000
       });
     });
   }

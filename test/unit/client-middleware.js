@@ -99,7 +99,7 @@ describe("Client Middleware", () => {
   it("should store a ship in cache", function (done) {
     const instance = Middleware(HullStub, { hostSecret: "secret" });
     this.reqStub.hull = {
-      cache: {
+      workspaceCache: {
         cache: false,
         wrap: function (id, cb) {
           if (this.cache) {
