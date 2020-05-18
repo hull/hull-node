@@ -1,3 +1,6 @@
+# 0.13.21
+* Do not resolve disabled orgs
+
 # 0.13.20
 * Bump up version of hull-client-node to 1.2.4
 
