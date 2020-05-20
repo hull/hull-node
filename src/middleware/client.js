@@ -1,6 +1,5 @@
 const _ = require("lodash");
 const jwt = require("jwt-simple");
-
 const { handleExtract, requestExtract } = require("../helpers");
 
 function parseQueryString(query) {
@@ -38,7 +37,7 @@ function parseToken(token, secret) {
  * @return {Function}
  */
 module.exports = function hullClientMiddlewareFactory(HullClient, { hostSecret, clientConfig = {} }) {
-  function getCurrentShip(id, client, cache, bust, notification) {
+  function getCurrentShip(organization, id, client, cache, bust, notification) {
     if (notification && notification.connector) {
       return Promise.resolve(notification.connector);
     }
@@ -48,14 +47,23 @@ module.exports = function hullClientMiddlewareFactory(HullClient, { hostSecret, 
         return cache.del(id);
       }
       return Promise.resolve();
-    })()
-    .then(() => {
+    })().then(() => {
       if (cache) {
         return cache.wrap(id, () => {
           return client.get(id, {}, {
             timeout: 5000,
             retry: 1000
+          }).catch((err) => {
+            const { message, status } = err;
+            if (status === 402 || status === 404) {
+              return Promise.resolve({
+                plError: { message, status }
+              });
+            }
+            return Promise.reject(err);
           });
+        }).then((res) => {
+          return !_.isNil(res.plError) ? Promise.reject(res.plError) : Promise.resolve(res);
         });
       }
       return client.get(id, {}, {
@@ -97,16 +105,21 @@ module.exports = function hullClientMiddlewareFactory(HullClient, { hostSecret, 
 
         const bust = (message && message.Subject === "ship:update");
 
-        // Promise<ship>
-        return getCurrentShip(id, req.hull.client, req.hull.cache, bust, notification).then((ship = {}) => {
+        return getCurrentShip(organization, id, req.hull.client, req.hull.cache, bust, notification).then((ship = {}) => {
           req.hull.ship = ship;
           req.hull.hostname = req.hostname;
           req.hull.options = _.merge({}, req.query, req.body);
           return next();
         }, (err) => {
-          const e = new Error(err.message);
-          e.status = 401;
-          return next(e);
+          let refinedError = { message: err.message, status: 401 };
+          if (err.status === 402) {
+            refinedError = { message: "Organization is disabled", status: 402 };
+          } else if (err.status === 404) {
+            refinedError = { message: "Connector not found", status: 404 };
+          }
+          const error = new Error(refinedError.message);
+          error.status = refinedError.status;
+          return next(error);
         });
       }
       return next();
