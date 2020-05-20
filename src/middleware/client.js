@@ -37,7 +37,7 @@ function parseToken(token, secret) {
  * @return {Function}
  */
 module.exports = function hullClientMiddlewareFactory(HullClient, { hostSecret, clientConfig = {} }) {
-  function getCurrentShip(organization, id, client, cache, bust, notification) {
+  function getCurrentShip(id, client, cache, bust, notification) {
     if (notification && notification.connector) {
       return Promise.resolve(notification.connector);
     }
@@ -105,7 +105,7 @@ module.exports = function hullClientMiddlewareFactory(HullClient, { hostSecret, 
 
         const bust = (message && message.Subject === "ship:update");
 
-        return getCurrentShip(organization, id, req.hull.client, req.hull.cache, bust, notification).then((ship = {}) => {
+        return getCurrentShip(id, req.hull.client, req.hull.cache, bust, notification).then((ship = {}) => {
           req.hull.ship = ship;
           req.hull.hostname = req.hostname;
           req.hull.options = _.merge({}, req.query, req.body);
