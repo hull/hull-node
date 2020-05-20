@@ -115,7 +115,7 @@ module.exports = function hullClientMiddlewareFactory(HullClient, { hostSecret, 
           if (err.status === 402) {
             refinedError = { message: "Organization is disabled", status: 402 };
           } else if (err.status === 404) {
-            refinedError = { message: "Invalid id / secret", status: 404 };
+            refinedError = { message: "Connector not found", status: 404 };
           }
           const error = new Error(refinedError.message);
           error.status = refinedError.status;
