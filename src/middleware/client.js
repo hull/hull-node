@@ -57,13 +57,13 @@ module.exports = function hullClientMiddlewareFactory(HullClient, { hostSecret, 
             const { message, status } = err;
             if (status === 402 || status === 404) {
               return Promise.resolve({
-                quietError: { message, status }
+                plError: { message, status }
               });
             }
             return Promise.reject(err);
           });
         }).then((res) => {
-          return !_.isNil(res.quietError) ? Promise.reject(res.quietError) : Promise.resolve(res);
+          return !_.isNil(res.plError) ? Promise.reject(res.plError) : Promise.resolve(res);
         });
       }
       return client.get(id, {}, {
