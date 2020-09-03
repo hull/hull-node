@@ -42,7 +42,7 @@ describe("SmartNotifierMiddleware", () => {
         connector: {},
         messages: [{
           user: {
-            super_long_trait: String(".").repeat(10485760) // 10mb string
+            super_long_trait: String(".").repeat(21485760)
           }
         }]
       })
