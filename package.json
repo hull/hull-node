@@ -1,6 +1,6 @@
 {
   "name": "hull",
-  "version": "0.13.22",
+  "version": "0.13.23",
   "description": "A Node.js client for hull.io",
   "main": "lib",
   "repository": {
@@ -12,7 +12,7 @@
     "url": "https://github.com/hull/hull-node/issues"
   },
   "engines": {
-    "node": ">=6.12.0"
+    "node": "^10.x"
   },
   "author": "Romain Dardour <romain@hull.io>",
   "license": "MIT",
@@ -53,9 +53,8 @@
     "jsonwebtoken": "^7.4.3",
     "jwt-simple": "^0.5.0",
     "kue": "^0.11.5",
-    "kue-ui": "^0.1.0",
     "lodash": "^4.17.5",
-    "newrelic": "^4.1.4",
+    "newrelic": "^7.1.1",
     "passport": "^0.3.2",
     "progress-bar-webpack-plugin": "^1.11.0",
     "promise-streams": "^1.0.1",
@@ -67,13 +66,13 @@
     "sqs-consumer": "^3.6.1",
     "supply": "0.0.4",
     "urijs": "^1.18.7",
-    "webpack": "^3.12.0",
+    "webpack": "^3.12",
     "webpack-dev-middleware": "^2.0.6",
     "webpack-hot-middleware": "^2.22.2"
   },
   "peerDependencies": {
     "express": "^4.16.3",
-    "newrelic": "^4.1.4"
+    "newrelic": "^7.1.1"
   },
   "devDependencies": {
     "babel": "^6.5.2",

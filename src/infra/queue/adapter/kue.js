@@ -1,6 +1,6 @@
 const Promise = require("bluebird");
 const kue = require("kue");
-const ui = require("kue-ui");
+// const ui = require("kue-ui");
 
 /**
  * Kue Adapter for queue
@@ -76,16 +76,18 @@ class KueAdapter {
     });
   }
 
+  // eslint-disable-next-line class-methods-use-this
   setupUiRouter(router) {
-    ui.setup({
-      apiURL: "/kue/_api", // IMPORTANT: specify the api url
-      baseURL: "/kue", // IMPORTANT: specify the base url
-      updateInterval: 5000 // Optional: Fetches new data every 5000 ms
-    });
-
-    router.use("/_api", this.app);
-    router.use("/", ui.app);
     return router;
+    // ui.setup({
+    //   apiURL: "/kue/_api", // IMPORTANT: specify the api url
+    //   baseURL: "/kue", // IMPORTANT: specify the base url
+    //   updateInterval: 5000 // Optional: Fetches new data every 5000 ms
+    // });
+
+    // router.use("/_api", this.app);
+    // router.use("/", ui.app);
+    // return router;
   }
 
   clean() {} // eslint-disable-line class-methods-use-this
