@@ -22,6 +22,7 @@ function notificationHandlerProcessingMiddlewareFactory(normalizedConfiguration:
     req.hull.notificationResponse = {
       flow_control: defaultSuccessFlowControl
     };
+
     // $FlowFixMe
     return callback(req.hull, messages)
       .then(() => {

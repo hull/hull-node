@@ -30,6 +30,7 @@ It supports only currently active Node JS LTS version. It's line 8.x right now.
 6. Development
 
 ## Get started
+This is the minimal connector implementation Hull Node SDK:
 
 ```js
 const express = require("express");
@@ -52,7 +53,10 @@ app.use("/notification", notificationHandler({
 connector.startApp(app);
 ```
 
+> **PRO TIP:** the snippet above specify handler configuration directly as handler arguments, but the good practise is to specify it separately as one centralized JS object with all channels and callbacks, and then pass the same to all handlers. All examples below use this good practise.
+
 ## Examples
+Below you can see real life examples of how to implement typical use case scenarios for most of the connectors.
 
 ### Processing outgoing data flow
 
@@ -61,50 +65,101 @@ To process outgoing data flow which occurs whenever there is any change on the H
 **manifest.json**
 ```json
 {
-  subscriptions: [
-    { url: "/notification" }
+  "subscriptions": [
+    { "url": "/notification" }
   ]
 }
 ```
 
-Then in our connector code we need to implement `notificationHandler` and pass there a map of processing callback which will do the actual work
+Then in our connector code we need to implement `notificationHandler` and pass there a map of processing callbacks which will do the actual work:
 
 ```js
 const express = require("express");
 const { Connector } = require("hull");
-const { notificationHandler } = require("hull").handlers;
+const { notificationHandler } = require("hull/lib/handlers");
 
 const connector = new Connector({ ...options });
-// const { notificationHandler } = connector.handlers;
 const app = express();
+
+const handlersConfiguration = {
+  "user:update": (ctx, messages) => {
+    // process user update messages
+  },
+  "account:update": (ctx, messages) => {
+    // process user update messages
+  }
+};
 
 connector.setupApp(app);
 
-// specify handlers, see details below
-app.use("/notification", notificationHandler({
-  "user:update": (ctx, messages) => {
-    // process user update messages
-  }
-}));
+app.use("/notification", notificationHandler(handlersConfiguration));
 
 connector.startApp(app);
 ```
 
 ### Processing data replay
-batchHandler
 
-### Fetching incoming data
+In addition to continuous outgoing traffic Hull provides a way to manually push selected users or accounts to the connector forcing syncing them or resyncing them.
+
+To add support of data replay you need to add `batch` or `batch-accounts` tag to manifest.json, depending if you want to support users, accounts or both.
 
 **manifest.json**
 ```json
 {
-  schedules: [
-    { url: "/fetch-users" }
+  "tags": [
+    "batch",
+    "batch-accounts"
   ]
 }
 ```
 
-Then in our connector code we need to implement `notificationHandler` and pass there a map of processing callback which will do the actual work
+Then you need to handle new endpoints on the connector: `POST /batch` and `POST /batch-accounts`. To do so add `batchHandler` on those routes:
+
+```js
+const express = require("express");
+const { Connector } = require("hull");
+const { batchHandler } = require("hull/lib/handlers");
+
+const connector = new Connector({ ...options });
+const app = express();
+
+const handlersConfiguration = {
+  "user:update": (ctx, messages) => {
+    // process user update messages
+  },
+  "account:update": (ctx, messages) => {
+    // process user update messages
+  }
+};
+
+connector.setupApp(app);
+
+app.use("/batch", batchHandler(handlersConfiguration));
+
+app.use("/batch-accounts", batchHandler(handlersConfiguration));
+
+connector.startApp(app);
+```
+
+### Fetching continuously incoming data
+
+To continuously poll external API to fetch new data into Hull you can use `schedules` feature of the platform. To register a webhook to be called every 5 minutes put this into your manifest.json:
+
+**manifest.json**
+```json
+{
+  "schedules": [
+    {
+      "url": "/fetch-users",
+      "type": "interval",
+      "value": "5"
+    }
+  ]
+}
+```
+[See more information about this schema here](https://www.hull.io/docs/reference/connectors/#subscriptions)
+
+Then in our connector code we need to implement `scheduleHandler` and then pass there **one entry from handlers configuration**. This is the difference between `notificationHandler` and `scheduleHandler` - `notificationHandler` can process multiple channels while `scheduleHandler` performs only one action.
 
 ```js
 const express = require("express");
@@ -114,42 +169,69 @@ const { scheduleHandler } = require("hull").handlers;
 const connector = new Connector({ ...options });
 const app = express();
 
-connector.setupApp(app);
-
-// specify handlers, see details below
-app.use("/fetch-users", scheduleHandler("schedule:fetch-users", {
+const handlersConfiguration = {
+  // the name of the key here is up to you
   "schedule:fetch-users": (ctx) => {
     // perform api calls to fetch the data
-  }
-}));
+  } 
+};
 
-connec;
+connector.setupApp(app);
+
+app.use("/fetch-users", scheduleHandler(
+  handlersConfiguration["schedule:fetch-users"]
+));
+
+connector.startApp(app);
 ```
 
 ### Processing incoming webhooks
 
-If external service connector integrates with provides sending it's updates as webhook requests we provide a way to handle then
+If external service you are integrating with, provides sending it's updates as webhook requests we provide a way to handle then more easily.
+`requestsBufferHandler` provides a way to handle HTTP requests grouping them in memory allowing you to work on them in chunks.
+
+This handler require you to provide a custom middleware the route before handler to provide `clientCredentials` to let handler know how to initiate HullClient.
 
 ```js
 const express = require("express");
 const { Connector } = require("hull");
-const { requestsBufferHandler } = require("hull").handlers;
+const { requestsBufferHandler } = require("hull/lib/handlers");
+
+const decodeAuthorizationHeader = require("./lib/decode-authorization-header");
 
 const connector = new Connector({ ...options });
-// const { notificationHandler } = connector.handlers;
 const app = express();
+
+const handlersConfiguration = {
+  "incoming:webhook": (ctx, simplifiedRequests = []) => {
+    // process simplifiedRequests which contains:
+    // { body, query }
+  }
+};
 
 connector.setupApp(app);
 
 // specify handlers, see details below
-app.use("/incoming-webhook", requestsBufferHandler("incoming:webhook", {
-  "incoming:webhook": (ctx, simplifiedRequests = []) => {
-    // process user update messages
-  }
-}));
+app.use(
+  "/incoming-webhook",
+  (req, res, next) => {
+    // take HullCredentials from the correct place
+    const credentials = decodeAuthorizationHeader(req.headers["auth-header"]);
+
+    // if we have correct credentials store it as clientCredentials
+    if (credentials) {
+      req.hull.clientCredentials = credentials;
+      return next();
+    }
+    // if not we respond to the external API in a correct way
+    return res.status(401).end("authorization data is missing");
+  },
+  requestsBufferHandler(handlersConfiguration["incoming:webhook"])
+);
 
 connector.startApp(app);
 ```
+
 ### Handling oAuth authorization flow
 oauthHandler
 
@@ -171,7 +253,7 @@ const handlersConfiguration: HullHandlersConfiguration = {
   "account:update": {
     callback: () => {},
     options: {},
-  }
+  },
   "scheduler:fetch": () => {},
   "incoming:webook": {
     callback: () => {},
@@ -231,11 +313,41 @@ app.use("/webhook", requestsBufferHandler((ctx) => {
 ```
 
 ## Context
-
 The context object carries all helpers and modules scoped to given connector instance.
 
-It is being build by middleware stack in 4 steps:
+### base params
+- requestId?: string, // request id
+- hostname: string, // req.hostname
+- options: Object, // req.query
+- isBatch: boolean
 
+### infra utils
+- cache
+- metric
+- enqueue
+
+### HullClient related params
+clientConfig
+clientCredentials: HullClientCredentials,
+clientCredentialsToken: string,
+client: HullClient,
+
+### organization state
+connector: HullConnector,
+usersSegments: Array<HullSegment>,
+accountsSegments: Array<HullSegment>,
+
+### notification handler
+- notification - 
+- notificationResponse - 
+
+### advanced params
+- connectorConfig
+- HullClient
+- handlerName?: string
+
+## How context is built?
+It is being build by middleware stack in 4 steps:
 
 1. **Base context** initiates cache, metrics and queue helpers, injects basic information from original request. This is a synchronuous step.
     - the base context is built by [contextBaseMiddleware](src/middlewares/context-base.js)

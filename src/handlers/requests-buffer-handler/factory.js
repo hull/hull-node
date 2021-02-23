@@ -1,28 +1,37 @@
 // @flow
 import type { $Response, NextFunction } from "express";
-import type { HullRequestFull, HullContextFull } from "../../types";
+import type { HullRequestFull, HullHandlersConfigurationEntry } from "../../types";
 
-type HullRequestsBufferHandlerCallback = (ctx: HullContextFull, requests: Array<{ body: mixed, query: mixed }>) => Promise<*>;
-type HullRequestsBufferHandlerOptions = {
-  maxSize?: number,
-  maxTime?: number,
-  disableErrorHandling?: boolean
-};
+// type HullRequestsBufferHandlerCallback = (ctx: HullContextFull, requests: Array<{ body: mixed, query: mixed }>) => Promise<*>;
+// type HullRequestsBufferHandlerOptions = {
+//   maxSize?: number,
+//   maxTime?: number,
+//   disableErrorHandling?: boolean
+// };
 
 const crypto = require("crypto");
 const { Router } = require("express");
 
+const { normalizeHandlersConfigurationEntry } = require("../../utils");
 const { clientMiddleware, fullContextFetchMiddleware, timeoutMiddleware, haltOnTimedoutMiddleware, instrumentationContextMiddleware } = require("../../middlewares");
 
 const Batcher = require("../../infra/batcher");
 
 /**
+ * @param
  * @param {Object|Function} callback         [description]
  * @param {Object}   options [description]
  * @param {number}   options.maxSize [description]
  * @param {number}   options.maxTime [description]
  */
-function requestsBufferHandlerFactory(callback: HullRequestsBufferHandlerCallback, { maxSize = 100, maxTime = 10000, disableErrorHandling = false }: HullRequestsBufferHandlerOptions = {}) {
+function requestsBufferHandlerFactory(configurationEntry: HullHandlersConfigurationEntry) {
+  const { callback, options } = normalizeHandlersConfigurationEntry(configurationEntry);
+  const {
+    maxSize = 100,
+    maxTime = 10000,
+    disableErrorHandling = false
+  } = options;
+
   const uniqueNamespace = crypto.randomBytes(64).toString("hex");
   const router = Router();
 

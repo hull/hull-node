@@ -28,3 +28,4 @@ module.exports.promiseToTransformStream = require("./promise-to-transform-stream
 module.exports.settingsUpdate = require("./settings-update");
 module.exports.extractRequest = require("./extract-request");
 module.exports.extractStream = require("./extract-stream");
+module.exports.ImportS3Stream = require("./import-s3-stream");
