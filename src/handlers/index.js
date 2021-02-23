@@ -1,5 +1,5 @@
 // @flow
-module.exports.actionHandler = require("./action-handler/factory");
+module.exports.jsonHandler = require("./json-handler/factory");
 module.exports.batchHandler = require("./batch-handler/factory");
 module.exports.notificationHandler = require("./notification-handler/factory");
 module.exports.oAuthHandler = require("./oauth-handler/factory");

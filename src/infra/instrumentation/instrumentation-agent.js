@@ -41,9 +41,12 @@ class InstrumentationAgent {
     }
 
     if (process.env.DATADOG_API_KEY) {
+      if (!process.env.DATADOG_HOST) {
+        throw new Error("To turn on Datadog integration you need to provide `DATADOG_HOST` env var");
+      }
       this.metrics = metrics;
       metrics.init({
-        host: process.env.HOST,
+        host: process.env.DATADOG_HOST,
       });
       dogapi.initialize({ api_key: process.env.DATADOG_API_KEY });
       this.dogapi = dogapi;

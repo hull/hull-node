@@ -7,8 +7,8 @@ const jwt = require("jwt-simple");
 const HullClient = require("hull-client");
 
 /**
- * This middleware initiates client and helpers,
- * it depends on `req.hull.clientConfig` or `req.hull.config` (legacy naming) parameters available already in the request object.
+ * This middleware initiates Hull client
+ * it depends on `req.hull.clientConfig` parameters available already in the request object.
  * @example
  * const { clientMiddleware } = require("hull/lib/middlewares");
  * const app = express();

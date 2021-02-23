@@ -2,7 +2,7 @@
 import type { $Response, NextFunction } from "express";
 import type { HullHandlersConfigurationEntry, HullRequestFull } from "../../types";
 
-// type HullActionHandlerOptions = {
+// type HullJsonHandlerOptions = {
 //   cache?: {
 //     key?: string,
 //     options?: Object
@@ -25,9 +25,9 @@ const { normalizeHandlersConfigurationEntry } = require("../../utils");
  *
  * Optionally it can cache the response, to use it provide `options.cache` parameter with cache key
  * Metrics:
- * connector.action-handler.requests
- * connector.action-handler.duration
- * connector.action-handler.api-calls
+ * connector.json-handler.requests
+ * connector.json-handler.duration
+ * connector.json-handler.api-calls
  *
  *
  * @param  {Object|Function} configurationEntry [description]
@@ -38,10 +38,10 @@ const { normalizeHandlersConfigurationEntry } = require("../../utils");
  * @param  {string} [configurationEntry.options.cache.options]
  * @return {Function}
  * @example
- * const { actionHandler } = require("hull").handlers;
- * app.use("/list", actionHandler((ctx) => {}))
+ * const { jsonHandler } = require("hull/lib/handlers");
+ * app.use("/list", jsonHandler((ctx) => {}))
  */
-function actionHandlerFactory(configurationEntry: HullHandlersConfigurationEntry): Router {
+function jsonHandlerFactory(configurationEntry: HullHandlersConfigurationEntry): Router {
   const { callback, options } = normalizeHandlersConfigurationEntry(configurationEntry);
   const {
     cache = {},
@@ -57,7 +57,7 @@ function actionHandlerFactory(configurationEntry: HullHandlersConfigurationEntry
   router.use(instrumentationContextMiddleware());
   router.use(fullContextFetchMiddleware({ requestName: "action" }));
   router.use(haltOnTimedoutMiddleware());
-  router.use(function actionHandler(req: HullRequestFull, res: $Response, next: NextFunction) {
+  router.use(function jsonHandler(req: HullRequestFull, res: $Response, next: NextFunction) {
     (() => {
       debug("processing");
       if (cache && cache.key) {
@@ -77,7 +77,7 @@ function actionHandlerFactory(configurationEntry: HullHandlersConfigurationEntry
       .catch(error => next(error));
   });
   if (disableErrorHandling !== true) {
-    router.use(function actionHandlerErrorMiddleware(err: Error, req: HullRequestFull, res: $Response, next: NextFunction) {
+    router.use(function jsonHandlerErrorMiddleware(err: Error, req: HullRequestFull, res: $Response, next: NextFunction) {
       debug("error", err.message, err.constructor.name, { respondWithError });
 
       // if we have non transient error
@@ -86,9 +86,9 @@ function actionHandlerFactory(configurationEntry: HullHandlersConfigurationEntry
       }
 
       if (respondWithError) {
-        res.send(err.toString());
+        res.json(err.toString());
       } else {
-        res.send("error");
+        res.json({ error: true });
       }
       // if we have non transient error
       if (!(err instanceof TransientError)) {
@@ -100,4 +100,4 @@ function actionHandlerFactory(configurationEntry: HullHandlersConfigurationEntry
   return router;
 }
 
-module.exports = actionHandlerFactory;
+module.exports = jsonHandlerFactory;

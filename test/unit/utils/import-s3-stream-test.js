@@ -2,7 +2,26 @@ const sinon = require("sinon");
 const { expect } = require("chai");
 const { Readable } = require("stream");
 const ImportS3Stream = require("../../../src/utils/import-s3-stream");
+const _ = require("lodash");
+const debug = require("debug");
 
+function inspectReadableStream(stream) {
+  const events = ["data", "end", "close", "error", "readable"];
+  events.forEach((event) => {
+    stream.on(event, () => {
+      debug("inspect-stream:readable")(`on.${event} %o`, _.omit(stream._readableState, "pipes", "objectMode", "highWaterMark", "defaultEncoding"));
+    });
+  });
+}
+
+function inspectWritableStream(stream) {
+  const events = ["close", "drain", "error", "finish"];
+  events.forEach((event) => {
+    stream.on(event, () => {
+      debug("inspect-stream:writable")(`on.${event} %o`, _.omit(stream._writableState, "pipes", "objectMode", "highWaterMark", "defaultEncoding"));
+    });
+  });
+}
 
 class SourceStream extends Readable {
   constructor(options = {}) {
@@ -23,7 +42,7 @@ class SourceStream extends Readable {
       setTimeout(() => {
         if (this._errorAt !== null && this._index === this._errorAt) {
           // this.emit("error", new Error("Failed reading"));
-          this.destroy(new Error("Failed reading"))
+          this.destroy(new Error("Failed reading"));
         } else {
           this.push(this._object);
         }
@@ -58,21 +77,32 @@ function getS3Stub({ delay = 0, errorAt = null } = {}) {
         };
         Body
           .on("end", () => {
+            console.log("on end!!!!");
             setTimeout(() => {
+              console.log("--- resolvin'")
               resolve({ Location: `dummy-s3://${options.Bucket}/${options.Key}` });
             }, delay);
           });
         Body
           .on("readable", () => {
-            let chunk;
-            while (null !== (chunk = Body.read(14))) {
-              if (errorAt && errorAt === index) {
-                Body.destroy(new Error("Failed writing"));
-                break;
-              }
-              index += 1;
+            // let chunk;
+            // while (null !== (chunk = Body.read(14))) {
+            //   if (errorAt && errorAt === index) {
+            //     Body.destroy(new Error("Failed writing"));
+            //     break;
+            //   }
+            //   index += 1;
+            // }
+
+            // ---
+
+            const chunk = Body.read(14);
+            if (errorAt && errorAt === index) {
+              return Body.destroy(new Error("Failed writing"));
             }
-          })
+            index += 1;
+            Body.read(0);
+          });
       });
       return {
         promise: () => {
@@ -86,7 +116,7 @@ function getS3Stub({ delay = 0, errorAt = null } = {}) {
   };
 }
 
-describe("ImportS3Stream", () => {
+describe.only("ImportS3Stream", () => {
   it("should handle basic usage", (done) => {
     const hullClient = getHullClientStub();
     const s3 = getS3Stub();
@@ -99,11 +129,16 @@ describe("ImportS3Stream", () => {
     });
 
     const exampleStream = new SourceStream();
+    inspectReadableStream(exampleStream);
     exampleStream.pipe(importS3Stream);
+
+    // inspectWritableStream(importS3Stream);
 
     importS3Stream.on("finish", () => {
       done();
     });
+
+    importS3Stream.on("error", err => console.log(err));
   });
 
   it("should handle partSize", (done) => {
@@ -118,7 +153,6 @@ describe("ImportS3Stream", () => {
     });
 
     const exampleStream = new SourceStream({ max: 40 });
-
     exampleStream.pipe(importS3Stream);
 
     importS3Stream.on("finish", () => {
@@ -202,6 +236,26 @@ describe("ImportS3Stream", () => {
   });
 
   it("should handle an error when posting an import job", (done) => {
+    const hullClient = getHullClientStub({ error: new Error("API error") });
+    const s3 = getS3Stub();
+    const importS3Stream = new ImportS3Stream({
+      hullClient,
+      s3
+    }, {
+      s3Bucket: "example",
+      partSize: 10
+    });
+
+    const exampleStream = new SourceStream({ max: 30 });
+
+    exampleStream.pipe(importS3Stream);
+    importS3Stream.on("error", (error) => {
+      console.log(">>>>>!!! ERROR", error);
+      done();
+    });
+  });
+
+  it.skip("should handle a slow source stream", (done) => {
     const hullClient = getHullClientStub({ error: new Error("API error") });
     const s3 = getS3Stub();
     const importS3Stream = new ImportS3Stream({

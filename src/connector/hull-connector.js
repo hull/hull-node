@@ -17,6 +17,14 @@ const { onExit } = require("../utils");
 // const { TransientError } = require("../errors");
 
 /**
+ * An object that's available in all action handlers and routers as `req.hull`.
+ * It's a set of parameters and modules to work in the context of current organization and connector instance.
+ *
+ * @namespace Context
+ * @public
+ */
+
+/**
  * @public
  * @param {Object}        dependencies
  * @param {Object}        [options={}]
