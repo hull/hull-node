@@ -1,6 +1,6 @@
 // @flow
 import type { $Response, NextFunction } from "express";
-import type { HullRequestFull, HullContextFull, HullHandlersConfigurationEntry } from "../../types";
+import type { HullRequestFull, HullHandlersConfigurationEntry } from "../../types";
 
 // type HullRequestsBufferHandlerCallback = (ctx: HullContextFull, requests: Array<{ body: mixed, query: mixed }>) => Promise<*>;
 // type HullRequestsBufferHandlerOptions = {
