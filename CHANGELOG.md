@@ -1,3 +1,5 @@
+# 0.14.0-beta.30
+* Bump dependencies
 # 0.14.0-beta.14
 * fix within oauth handler
 
