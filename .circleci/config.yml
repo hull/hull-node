@@ -28,11 +28,15 @@ jobs:
   "node-14":
     <<: *shared
     docker:
-      - image: circleci/node:14
+      - image: cimg/node:14.19
   "node-16":
     <<: *shared
     docker:
-      - image: circleci/node:16
+      - image: cimg/node:16.15
+  "node-18":
+    <<: *shared
+    docker:
+      - image: cimg/node:18.0
 
 workflows:
   version: 2
