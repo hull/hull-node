@@ -25,7 +25,7 @@ module.exports.SmartNotifierResponse = require("./smart-notifier-response");
 module.exports.PromiseReuser = require("./promise-reuser");
 
 module.exports.superagentUrlTemplatePlugin = require("./superagent-url-template-plugin");
-module.exports.superagentInstrumentationPlugin = require("./superagent-intrumentation-plugin.js");
-module.exports.superagentErrorPlugin = require("./superagent-error-plugin.js");
+module.exports.superagentInstrumentationPlugin = require("./superagent-intrumentation-plugin");
+module.exports.superagentErrorPlugin = require("./superagent-error-plugin");
 
 module.exports.devMode = require("./dev-mode");

@@ -1,6 +1,6 @@
 {
   "name": "hull",
-  "version": "0.13.23",
+  "version": "0.13.24",
   "description": "A Node.js client for hull.io",
   "main": "lib",
   "repository": {
@@ -12,17 +12,17 @@
     "url": "https://github.com/hull/hull-node/issues"
   },
   "engines": {
-    "node": "^10.x"
+    "node": ">=14.x"
   },
   "author": "Romain Dardour <romain@hull.io>",
   "license": "MIT",
   "scripts": {
-    "test": "npm run test:lint && npm run test:flow && npm run test:unit && npm run test:integration",
+    "test": "npm run test:lint && npm run test:unit && npm run test:integration",
     "test:lint": "eslint src && documentation lint src",
     "test:modules": "npm outdated --depth=0",
     "test:unit": "NODE_ENV=test mocha --require babel-register -R spec ./test/unit/*.js ./test/unit/**/*.js",
     "test:integration": "NODE_ENV=test mocha --require babel-register -R spec ./test/integration/*.js",
-    "test:flow": "flow check",
+    "test:flow": "echo flow test",
     "test:coverage": "nyc --babel-cache --hook-run-in-context false npm run test",
     "update": "updtr",
     "clean": "rimraf lib",

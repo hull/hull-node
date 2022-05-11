@@ -48,7 +48,8 @@ describe("HullConnector", () => {
     const expressMock = {
       use: () => { return this; },
       engine: () => { return this; },
-      set: () => { return this; }
+      set: () => { return this; },
+      disable: () => { return this; }
     };
     const connector = new HullConnector(HullStub);
 
@@ -104,7 +105,8 @@ describe("HullConnector", () => {
     const appStub = {
       use: () => {},
       engine: () => {},
-      set: () => {}
+      set: () => {},
+      disable: () => {}
     };
 
     const workerStub = {

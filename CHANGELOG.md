@@ -1,3 +1,9 @@
+# 0.13.24
+* Bump node dependency
+
+# 0.13.23
+* Bump dependencies
+
 # 0.13.22
 * Increase payload max size
 
