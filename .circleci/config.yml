@@ -33,10 +33,6 @@ jobs:
     <<: *shared
     docker:
       - image: circleci/node:16
-  "node-18":
-    <<: *shared
-    docker:
-      - image: circleci/node:18
 
 workflows:
   version: 2
@@ -44,4 +40,3 @@ workflows:
     jobs:
       - "node-14"
       - "node-16"
-      - "node-18"
