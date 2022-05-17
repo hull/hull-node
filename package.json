@@ -1,6 +1,6 @@
 {
   "name": "hull",
-  "version": "0.13.24",
+  "version": "0.13.25",
   "description": "A Node.js client for hull.io",
   "main": "lib",
   "repository": {
