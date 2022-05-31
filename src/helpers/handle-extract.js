@@ -1,7 +1,7 @@
 const Promise = require("bluebird");
 const CSVStream = require("csv-stream");
 const JSONStream = require("JSONStream");
-const requestClient = require("request");
+const superagent = require("superagent");
 const ps = require("promise-streams");
 const BatchStream = require("batch-stream");
 const _ = require("lodash");
@@ -34,7 +34,8 @@ module.exports = function handleExtract(ctx, { body, batchSize, handler, onRespo
 
   const batch = new BatchStream({ size: batchSize, highWaterMark: 1 });
 
-  return requestClient({ url })
+  return superagent
+    .post(url)
     .on("response", (response) => {
       if (_.isFunction(onResponse)) {
         onResponse(response);

@@ -1,6 +1,6 @@
 /* @flow */
 const Promise = require("bluebird");
-const requestClient = require("request");
+const superagent = require("superagent");
 const _ = require("lodash");
 const jwt = require("jsonwebtoken");
 
@@ -9,11 +9,11 @@ const supportedSignaturesVersions = ["v1"];
 
 module.exports = class SmartNotifierValidator {
   request: Object;
-  httpClient: requestClient;
+  httpClient: superagent;
 
-  constructor(http: requestClient = null) {
+  constructor(http: superagent = null) {
     if (!http) {
-      this.httpClient = requestClient;
+      this.httpClient = superagent;
     } else {
       this.httpClient = http;
     }
@@ -82,15 +82,16 @@ module.exports = class SmartNotifierValidator {
     return new Promise((resolve, reject) => {
       this.httpClient.post(certUrl, {
         body: signature
-      }, (error, response, body) => {
+      }, (error, response) => {
         if (error) {
           return reject(error);
         }
-        if (!body.match("-----BEGIN PUBLIC KEY-----")) {
+        const { text = "" } = response;
+        if (!text.match("-----BEGIN PUBLIC KEY-----")) {
           return reject(new Error("Invalid certificate"));
         }
-        certCache[certUrl] = body;
-        return resolve(body);
+        certCache[certUrl] = text;
+        return resolve(text);
       });
     });
   }
