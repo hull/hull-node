@@ -29,7 +29,7 @@ const _ = require("lodash");
  */
 function superagentUrlTemplatePluginFactory(defaults = {}) {
   return function superagentUrlTemplatePlugin(request) {
-    const end = request.end;
+    const { end } = request;
     request.urlTemplateVariables = {};
     request.tmplVar = (object) => {
       _.merge(request.urlTemplateVariables, object);

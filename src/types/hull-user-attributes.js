@@ -1,6 +1,6 @@
 /* @flow */
 
-import type { THullAttributeName, THullAttributeValue } from "./";
+import type { THullAttributeName, THullAttributeValue } from ".";
 
 /**
  * Object which is passed to `hullClient.asUser().traits(traits: THullUserAttributes)` call

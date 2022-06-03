@@ -4,7 +4,6 @@ const Queue = require("bull");
  * Bull Adapter for queue
  */
 class BullAdapter {
-
   constructor(options) {
     this.options = options;
     this.queue = new Queue("main", options);
@@ -18,12 +17,12 @@ class BullAdapter {
 
   inactiveCount() {
     return this.queue.getJobCounts()
-      .then(counts => counts.wait);
+      .then((counts) => counts.wait);
   }
 
   failedCount() {
     return this.queue.getJobCounts()
-      .then(counts => counts.failed);
+      .then((counts) => counts.failed);
   }
 
   /**

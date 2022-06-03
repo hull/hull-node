@@ -28,10 +28,10 @@ module.exports = function handleExtractFactory({ handlers, options }) {
         handler: (entities) => {
           const segmentId = req.query.segment_id || null;
           if (options.groupTraits) {
-            entities = entities.map(u => client.utils.traits.group(u));
+            entities = entities.map((u) => client.utils.traits.group(u));
           }
 
-          const segmentsList = req.hull[`${entityType}s_segments`].map(s => _.pick(s, ["id", "name", "type", "created_at", "updated_at"]));
+          const segmentsList = req.hull[`${entityType}s_segments`].map((s) => _.pick(s, ["id", "name", "type", "created_at", "updated_at"]));
           const entitySegmentsKey = entityType === "user" ? "segments" : "account_segments";
           const messages = entities.map((entity) => {
             const segmentIds = _.compact(
@@ -40,7 +40,7 @@ module.exports = function handleExtractFactory({ handlers, options }) {
             const message = {
               [entityType]: _.omit(entity, "segment_ids"),
               [entitySegmentsKey]: _.compact(
-                segmentIds.map(id => _.find(segmentsList, { id }))
+                segmentIds.map((id) => _.find(segmentsList, { id }))
               )
             };
             if (entityType === "user") {
@@ -55,8 +55,8 @@ module.exports = function handleExtractFactory({ handlers, options }) {
             if (req.query.source === "connector") {
               message.matchesFilter = helpers.filterNotification(
                 message,
-                options.segmentFilterSetting ||
-                  req.hull.connectorConfig.segmentFilterSetting
+                options.segmentFilterSetting
+                  || req.hull.connectorConfig.segmentFilterSetting
               );
             } else {
               message.matchesFilter = true;

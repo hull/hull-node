@@ -14,7 +14,9 @@
  */
 class LogicError extends Error {
   action: string;
+
   payload: any;
+
   code: string;
 
   constructor(message: string, action: string, payload: any) {

@@ -3,23 +3,21 @@ const Aws = require("aws-sdk");
 const SqsConsumer = require("sqs-consumer");
 const Promise = require("bluebird");
 
-
 /**
  * SQS Adapter for queue
  */
 class SQSAdapter {
-
-  inactiveCount() {  // eslint-disable-line class-methods-use-this
+  inactiveCount() { // eslint-disable-line class-methods-use-this
     console.warn("Queue adapter inactiveCount not implemented");
     return Promise.resolve(0);
   }
 
-  failedCount() {  // eslint-disable-line class-methods-use-this
+  failedCount() { // eslint-disable-line class-methods-use-this
     console.warn("Queue adapter failedCount not implemented");
     return Promise.resolve(0);
   }
 
-  exit() {  // eslint-disable-line class-methods-use-this
+  exit() { // eslint-disable-line class-methods-use-this
     return this.consumer && this.consumer.stop();
   }
 
@@ -74,8 +72,8 @@ class SQSAdapter {
           const id = message.MessageId;
           const data = JSON.parse(message.Body);
           return jobCallback({ id, data })
-          .then(() => done())
-          .catch(done);
+            .then(() => done())
+            .catch(done);
         } catch (err) {
           return done(err);
         }
@@ -96,7 +94,6 @@ class SQSAdapter {
 
     return this;
   }
-
 }
 
 module.exports = SQSAdapter;

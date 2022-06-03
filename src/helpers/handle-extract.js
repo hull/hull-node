@@ -21,7 +21,9 @@ const _ = require("lodash");
  * @param {Function} options.onError    callback called during error
  * @return {Promise}
  */
-module.exports = function handleExtract(ctx, { body, batchSize, handler, onResponse, onError }) {
+module.exports = function handleExtract(ctx, {
+  body, batchSize, handler, onResponse, onError
+}) {
   const { logger } = ctx.client;
   const { url, format } = body;
   if (!url) return Promise.reject(new Error("Missing URL"));

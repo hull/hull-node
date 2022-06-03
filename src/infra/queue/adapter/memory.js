@@ -32,7 +32,7 @@ class MemoryAdapter {
     this.queue[jobName].push({
       id: this.queue[jobName].length,
       data: _.merge({
-        name: jobName,
+        name: jobName
       }, jobPayload)
     });
     return this.processQueues();

@@ -14,7 +14,9 @@ const Promise = require("bluebird");
  */
 class ConnectorCache {
   ctx: THullReqContext;
+
   cache: Object;
+
   promiseReuser: Object;
 
   constructor(ctx: THullReqContext, cache: Object, promiseReuser: Object) {

@@ -1,6 +1,6 @@
 /* @flow */
 import type { $Request } from "express";
-import type { THullReqContext } from "./";
+import type { THullReqContext } from ".";
 
 /*
  * Since Hull Middleware adds new parameter to the Reuqest object from express application

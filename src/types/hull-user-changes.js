@@ -1,6 +1,6 @@
 /* @flow */
 
-import type { THullAttributesChanges, THullSegmentsChanges } from "./";
+import type { THullAttributesChanges, THullSegmentsChanges } from ".";
 
 /**
  * Object containing all changes related to User in THullUserUpdateMessage

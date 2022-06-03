@@ -41,7 +41,9 @@ function processHandlersFactory(handlers, options = {}) {
   const ns = crypto.randomBytes(64).toString("hex");
   return function process(req, res, next) {
     try {
-      const { message, notification, client, helpers, connectorConfig = {} } = req.hull;
+      const {
+        message, notification, client, helpers, connectorConfig = {}
+      } = req.hull;
       const eventName = getHandlerName(message.Subject);
       const messageHandlers = handlers[eventName];
       const processing = [];
@@ -64,10 +66,10 @@ function processHandlersFactory(handlers, options = {}) {
                 maxTime: options.maxTime || 10000
               }
             })
-            .setCallback((messages) => {
-              return handler(ctx, messages);
-            })
-            .addMessage(notification.message);
+              .setCallback((messages) => {
+                return handler(ctx, messages);
+              })
+              .addMessage(notification.message);
           })));
         } else {
           processing.push(Promise.all(messageHandlers.map((handler) => {
@@ -154,7 +156,9 @@ function processHandlersFactory(handlers, options = {}) {
  * connector.setupApp(app);
  * app.use('/notify', handler);
  */
-module.exports = function notifHandler({ handlers = {}, onSubscribe, userHandlerOptions, options }) {
+module.exports = function notifHandler({
+  handlers = {}, onSubscribe, userHandlerOptions, options
+}) {
   if (userHandlerOptions) {
     console.warn("deprecation: userHandlerOptions has been deprecated in favor of options in notifHandler params. This will be a breaking change in 0.14.x");
   }

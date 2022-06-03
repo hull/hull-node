@@ -22,7 +22,7 @@ module.exports = function notifMiddlewareFactory() {
 
       if (message.Type === "SubscriptionConfirmation") {
         return next();
-      } else if (message.Type === "Notification") {
+      } if (message.Type === "Notification") {
         try {
           const payload = JSON.parse(message.Message);
           req.hull.notification = {

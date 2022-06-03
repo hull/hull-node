@@ -1,4 +1,5 @@
 /* @flow */
+// eslint-disable-next-line max-classes-per-file
 const { defaultErrorFlowControl } = require("./smart-notifier-flow-controls");
 
 /**
@@ -6,9 +7,13 @@ const { defaultErrorFlowControl } = require("./smart-notifier-flow-controls");
  */
 class SmartNotifierFlowControl {
   type: string;
+
   size: Number;
+
   in_time: Number;
+
   in: Number;
+
   at: Date;
 
   constructor(flowControl: Object = {}) {
@@ -48,8 +53,11 @@ class SmartNotifierMetric {
 
 class SmartNotifierError extends Error {
   code: string;
+
   statusCode: number;
+
   reason: string;
+
   flowControl: Object;
 
   constructor(code: string, reason: string, statusCode: number = 400, flowControl: Object = defaultErrorFlowControl) {
@@ -64,12 +72,13 @@ class SmartNotifierError extends Error {
   toJSON() {
     return { code: this.code, reason: this.reason };
   }
-
 }
 
 class SmartNotifierResponse {
   flowControl: SmartNotifierFlowControl;
+
   metrics: Array<SmartNotifierMetric>;
+
   errors: Array<SmartNotifierError>;
 
   constructor() {
@@ -99,8 +108,8 @@ class SmartNotifierResponse {
   toJSON() {
     return {
       flow_control: this.flowControl && this.flowControl.toJSON(),
-      metrics: this.metrics.map(m => m.toJSON()),
-      errors: this.errors.map(err => err.toJSON())
+      metrics: this.metrics.map((m) => m.toJSON()),
+      errors: this.errors.map((err) => err.toJSON())
     };
   }
 }

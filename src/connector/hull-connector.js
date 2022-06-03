@@ -4,8 +4,12 @@ const _ = require("lodash");
 
 const setupApp = require("./setup-app");
 const Worker = require("./worker");
-const { Instrumentation, Cache, Queue, Batcher } = require("../infra");
-const { exitHandler, segmentsMiddleware, requireHullMiddleware, helpersMiddleware } = require("../utils");
+const {
+  Instrumentation, Cache, Queue, Batcher
+} = require("../infra");
+const {
+  exitHandler, segmentsMiddleware, requireHullMiddleware, helpersMiddleware
+} = require("../utils");
 const { TransientError } = require("../errors");
 
 /**
@@ -156,7 +160,7 @@ class HullConnector {
     this._worker.use(requireHullMiddleware());
     this._worker.use(helpersMiddleware());
     this._worker.use(segmentsMiddleware());
-    this.middlewares.map(middleware => this._worker.use(middleware));
+    this.middlewares.map((middleware) => this._worker.use(middleware));
 
     this._worker.setJobs(jobs);
     return this._worker;

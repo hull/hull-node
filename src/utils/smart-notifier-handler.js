@@ -70,7 +70,7 @@ function processHandlersFactory(handlers, userHandlerOptions) {
         req.hull.smartNotifierResponse.addError(new SmartNotifierError("N/A", err.message));
 
         // if (!req.hull.smartNotifierResponse.isValid()) {
-          // ctx.client.logger.debug("connector.smartNotifierHandler.responseInvalid", req.hull.smartNotifierResponse.toJSON());
+        // ctx.client.logger.debug("connector.smartNotifierHandler.responseInvalid", req.hull.smartNotifierResponse.toJSON());
         req.hull.smartNotifierResponse.setFlowControl(defaultErrorFlowControl);
         // }
         err = err || new Error("Error while processing notification");

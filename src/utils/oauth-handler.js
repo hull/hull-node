@@ -160,7 +160,9 @@ module.exports = function oauth({
       profile = params;
       params = undefined;
     }
-    done(undefined, { accessToken, refreshToken, params, profile });
+    done(undefined, {
+      accessToken, refreshToken, params, profile
+    });
   });
 
   passport.use(strategy);
@@ -216,7 +218,7 @@ module.exports = function oauth({
     client.logger.debug("connector.oauth.authorize");
     onAuthorize(req)
       .then(() => res.redirect(getURL(req, SUCCESS_URL)))
-      .catch(error => res.redirect(getURL(req, FAILURE_URL, { token: req.hull.token, error })));
+      .catch((error) => res.redirect(getURL(req, FAILURE_URL, { token: req.hull.token, error })));
   });
 
   router.use((error, req, res, next) => { // eslint-disable-line no-unused-vars

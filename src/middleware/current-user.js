@@ -3,14 +3,14 @@ const crypto = require("hull-client/lib/lib/crypto");
 function parseSignedCookie(signedCookie) {
   if (!signedCookie) { return null; }
   try {
-    return JSON.parse(new Buffer(signedCookie, "base64").toString("utf8"));
+    return JSON.parse(Buffer.from(signedCookie, "base64").toString("utf8"));
   } catch (e) {
     console.warn("Error parsing signed cookie", signedCookie, e.message);
   }
   return null;
 }
 
-module.exports = function CurrentUser(config = {}, req, res, next) {
+module.exports = function CurrentUser(req, res, next, config = {}) {
   req.hull = req.hull || {};
   const cookies = req.cookies || {};
   const { id } = config;

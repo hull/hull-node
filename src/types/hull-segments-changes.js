@@ -1,6 +1,6 @@
 /* @flow */
 
-import type { THullSegment } from "./";
+import type { THullSegment } from ".";
 
 /**
  * Represents segment changes in TUserChanges.
