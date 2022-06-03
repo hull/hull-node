@@ -10,7 +10,6 @@ const Promise = require("bluebird");
 const smartNotifierHandler = require("../../src/utils/smart-notifier-handler");
 const smartNotifierMiddleware = require("../../src/utils/smart-notifier-middleware");
 const smartNotifierErrorMiddleware = require("../../src/utils/smart-notifier-error-middleware");
-const requestClient = require("request");
 
 const chai = require('chai');
 const chaiHttp = require('chai-http');
@@ -132,7 +131,7 @@ describe("SmartNotifierHandler validation", () => {
 
   it("should fail with invalid signature headers", (done) => {
     mockHttpClient.post = function(url, body, cb) {
-      cb(null, {}, "invalid certificate");
+      cb(null, { text: "invalid certificate" });
     };
 
     chai.request(server)

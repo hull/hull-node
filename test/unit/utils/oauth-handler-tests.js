@@ -5,7 +5,7 @@ const sinon = require("sinon");
 const express = require("express");
 const Promise = require("bluebird");
 const passport = require("passport");
-const request = require("request");
+const request = require("superagent");
 const { renderFile } = require("ejs");
 
 const HullStub = require("../support/hull-stub");
@@ -52,9 +52,9 @@ describe("OAuthHandler", () => {
     }));
     const server = app.listen(() => {
       const port = server.address().port;
-      request(`http://localhost:${port}/auth/callback`, (error, response, body) => {
-          expect(response.statusCode).to.equal(200);
-          expect(body).to.equal("This is an oauth failure: test\n");
+      request(`http://localhost:${port}/auth/callback`, (error, response) => {
+          expect(response.status).to.equal(200);
+          expect(response.text).to.equal("This is an oauth failure: test\n");
           done();
         });
     });
