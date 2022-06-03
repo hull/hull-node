@@ -1,3 +1,6 @@
+# 0.14.1
+* Bump dependencies
+
 # 0.14.0
 * **Breaking**: Removed kue adapter due to vulnerabilities
 * Bump hull-client version to 2.0.4
