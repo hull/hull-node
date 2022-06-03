@@ -1,6 +1,6 @@
 {
   "name": "hull",
-  "version": "0.13.26",
+  "version": "0.14.0",
   "description": "A Node.js client for hull.io",
   "main": "lib",
   "repository": {
@@ -49,10 +49,9 @@
     "del": "^2.2.1",
     "dogapi": "2.8.4",
     "ejs": "^3.1.7",
-    "hull-client": "1.2.4",
+    "hull-client": "^2.0.4",
     "jsonwebtoken": "^7.4.3",
     "jwt-simple": "^0.5.0",
-    "kue": "^0.11.5",
     "lodash": "^4.17.5",
     "newrelic": "^7.5.2",
     "passport": "^0.3.2",
