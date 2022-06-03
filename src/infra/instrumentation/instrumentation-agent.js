@@ -34,7 +34,6 @@ class InstrumentationAgent {
       this.manifest = {};
     }
 
-
     if (process.env.NEW_RELIC_LICENSE_KEY) {
       this.nr = require("newrelic"); // eslint-disable-line global-require
     }
@@ -42,12 +41,11 @@ class InstrumentationAgent {
     if (process.env.DATADOG_API_KEY) {
       this.metrics = metrics;
       metrics.init({
-        host: process.env.HOST,
+        host: process.env.HOST
       });
       dogapi.initialize({ api_key: process.env.DATADOG_API_KEY });
       this.dogapi = dogapi;
     }
-
 
     if (process.env.SENTRY_URL) {
       console.log("starting raven");
@@ -159,7 +157,7 @@ class InstrumentationAgent {
             body: req.body,
             query: req.query,
             method: req.method,
-            url: url.parse(req.url).pathname,
+            url: url.parse(req.url).pathname
           }
         });
       }
@@ -171,6 +169,5 @@ class InstrumentationAgent {
     return (new MetricAgent({}, this)).value(metric, value);
   }
 }
-
 
 module.exports = InstrumentationAgent;

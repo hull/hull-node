@@ -78,11 +78,10 @@ module.exports = function hullClientMiddlewareFactory(HullClient, { hostSecret, 
 
     try {
       // Try to fetch config, or create it based on query string parameters or Token
-      req.hull.config =
-        req.hull.config ||
-        parseToken(req.hull.token, hostSecret) ||
-        parseQueryString(req.query) ||
-        {};
+      req.hull.config = req.hull.config
+        || parseToken(req.hull.token, hostSecret)
+        || parseQueryString(req.query)
+        || {};
       const { message, notification, config } = req.hull;
       const { organization, ship: id, secret } = config;
 
@@ -90,7 +89,9 @@ module.exports = function hullClientMiddlewareFactory(HullClient, { hostSecret, 
       const requestId = req.hull.requestId || headers["x-hull-request-id"];
 
       if (organization && id && secret) {
-        req.hull.client = new HullClient(_.merge({ id, secret, organization, requestId }, clientConfig));
+        req.hull.client = new HullClient(_.merge({
+          id, secret, organization, requestId
+        }, clientConfig));
         req.hull.client.utils = req.hull.client.utils || {};
         req.hull.client.utils.extract = {
           handle: (options) => {

@@ -6,7 +6,9 @@ const _ = require("lodash");
  * Background worker using QueueAdapter.
  */
 class Worker {
-  constructor({ Hull, queue, instrumentation, cache }) {
+  constructor({
+    Hull, queue, instrumentation, cache
+  }) {
     if (!Hull || !queue) {
       throw new Error("Worker initialized without all required dependencies: Hull, queue");
     }

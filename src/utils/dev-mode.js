@@ -12,7 +12,7 @@ function devMode(app: $Application, config: Object) {
     config.entry,
     (m: Object, v, k: string) => {
       m[k] = [
-        require.resolve("babel-polyfill"),
+        require.resolve("@babel/polyfill"),
         require.resolve("react-hot-loader/patch"),
         require.resolve("webpack-hot-middleware/client"),
         v

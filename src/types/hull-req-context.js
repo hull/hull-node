@@ -1,6 +1,6 @@
 /* @flow */
 
-import type { THullSegment, THullConnector } from "./";
+import type { THullSegment, THullConnector } from ".";
 
 /**
  * Context added to the express app request by hull-node connector sdk.

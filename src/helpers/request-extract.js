@@ -19,7 +19,9 @@ const _ = require("lodash");
  * @example
  * req.hull.helpers.requestExtract({ segment = null, path, fields = [], additionalQuery = {} });
  */
-module.exports = function requestExtract(ctx, { segment = null, format = "json", path = "batch", fields = [], additionalQuery = {} } = {}) {
+module.exports = function requestExtract(ctx, {
+  segment = null, format = "json", path = "batch", fields = [], additionalQuery = {}
+} = {}) {
   const { client, hostname } = ctx;
   const conf = client.configuration();
   const search = _.merge({
@@ -49,9 +51,11 @@ module.exports = function requestExtract(ctx, { segment = null, format = "json",
     }
     return client.get(segment.id);
   })()
-  .then(({ query }) => {
-    const params = { query, format, url, fields };
-    client.logger.debug("connector.requestExtract.params", params);
-    return client.post("extract/user_reports", params);
-  });
+    .then(({ query }) => {
+      const params = {
+        query, format, url, fields
+      };
+      client.logger.debug("connector.requestExtract.params", params);
+      return client.post("extract/user_reports", params);
+    });
 };

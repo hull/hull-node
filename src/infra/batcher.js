@@ -4,11 +4,10 @@ const Promise = require("bluebird");
 const HANDLERS = {};
 
 class Batcher {
-
   static exit() {
     console.log("batcher.exit");
     if (!Batcher.exiting) {
-      const exiting = Promise.all(_.map(HANDLERS, h => h.flush()));
+      const exiting = Promise.all(_.map(HANDLERS, (h) => h.flush()));
       Batcher.exiting = exiting;
       return exiting;
     }
@@ -27,7 +26,6 @@ class Batcher {
     this.options = options;
 
     this.flushLater = _.throttle(this.flush.bind(this), this.options.maxTime);
-    return this;
   }
 
   setCallback(callback) {
@@ -47,7 +45,7 @@ class Batcher {
   }
 
   flush() {
-    const messages = this.messages;
+    const { messages } = this;
     this.messages = [];
     return Promise.resolve(this.callback(messages))
       .catch((err) => {

@@ -7,8 +7,9 @@ const _ = require("lodash");
  * Based on https://github.com/elado/reuse-promise
  */
 module.exports = class PromiseReuser {
-  options: Object
-  promiseMapsByArgs: Object
+  options: Object;
+
+  promiseMapsByArgs: Object;
 
   constructor(options: Object = {}) {
     /**
@@ -19,7 +20,7 @@ module.exports = class PromiseReuser {
     }
 
     this.options = _.defaults(options, {
-      serializeArguments,
+      serializeArguments
     });
     this.promiseMapsByArgs = {};
   }

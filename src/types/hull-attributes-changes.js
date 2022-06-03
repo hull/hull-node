@@ -1,6 +1,6 @@
 /* @flow */
 
-import type { THullAttributeName, THullAttributeValue } from "./";
+import type { THullAttributeName, THullAttributeValue } from ".";
 
 /**
  * Attributes (traits) changes is an object map where keys are attribute (trait) names and value is an array

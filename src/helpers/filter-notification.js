@@ -24,5 +24,5 @@ module.exports = function filterNotification(ctx: THullReqContext, notification:
   const filterSegmentIds = _.get(ctx.ship.private_settings, fieldName, []);
 
   const segments = _.get(notification, "segments", []);
-  return _.intersection(filterSegmentIds, segments.map(s => s.id)).length > 0;
+  return _.intersection(filterSegmentIds, segments.map((s) => s.id)).length > 0;
 };

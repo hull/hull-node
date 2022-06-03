@@ -40,4 +40,3 @@ module.exports = function enqueue(queueAdapter, ctx, jobName, jobPayload, option
     context
   }, options);
 };
-

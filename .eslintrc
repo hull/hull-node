@@ -1,11 +1,17 @@
 {
-  "parser": "babel-eslint",
+  "parser": "@babel/eslint-parser",
   "globals": {},
   "env": {
     "es6": true
   },
   "rules": {
-    "comma-dangle": [0],
+    "comma-dangle": ["error", {
+      "arrays": "never",
+      "objects": "never",
+      "imports": "never",
+      "exports": "never",
+      "functions": "never"
+    }],
     "max-len": [0],
     "camelcase": [0],
     "quotes": [2, "double"],
@@ -16,7 +22,8 @@
     "no-param-reassign" : [0],
     "no-console": [0],
     "eqeqeq": [1],
-    "spaced-comment": ["error", "always", { "markers": [":", "::"] }]
+    "spaced-comment": ["error", "always", { "markers": [":", "::"] }],
+    "import/no-import-module-exports": [0]
   },
   "extends": [
     "airbnb-base",
@@ -24,5 +31,5 @@
   ],
   "plugins": [
     "flowtype"
-  ],
+  ]
 }

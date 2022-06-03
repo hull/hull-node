@@ -24,15 +24,16 @@ module.exports = function segmentsMiddlewareFactory() {
     if (!hull.client) {
       return next();
     }
-    const { cache, message, notification, connectorConfig } = hull;
+    const {
+      cache, message, notification, connectorConfig
+    } = hull;
 
     if (notification && notification.segments) {
       hull.segments = notification.segments;
       return next();
     }
 
-    const bust =
-      message && message.Subject && message.Subject.includes("segment");
+    const bust = message && message.Subject && message.Subject.includes("segment");
 
     return (() => {
       if (bust) {
@@ -40,14 +41,10 @@ module.exports = function segmentsMiddlewareFactory() {
       }
       return Promise.resolve();
     })()
-      .then(() =>
-        cache.wrap("segments", () =>
-          Promise.all([
-            fetchSegments(hull.client, "users"),
-            fetchSegments(hull.client, "accounts")
-          ])
-        )
-      )
+      .then(() => cache.wrap("segments", () => Promise.all([
+        fetchSegments(hull.client, "users"),
+        fetchSegments(hull.client, "accounts")
+      ])))
       .then(
         ([users_segments, accounts_segments]) => {
           hull.users_segments = _.map(users_segments, (segment) => {

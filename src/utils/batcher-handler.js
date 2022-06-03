@@ -17,11 +17,11 @@ module.exports = function batcherHandler(handler, { maxSize = 100, maxTime = 100
         maxTime
       }
     })
-    .setCallback((messages) => {
-      return handler(req.hull, messages);
-    })
-    .addMessage({ body: req.body, query: req.query })
-    .then(next, next);
+      .setCallback((messages) => {
+        return handler(req.hull, messages);
+      })
+      .addMessage({ body: req.body, query: req.query })
+      .then(next, next);
   });
   router.use(responseMiddleware());
 

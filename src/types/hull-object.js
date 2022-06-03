@@ -1,6 +1,6 @@
 /* @flow */
 
-import type { THullUser, THullAccount } from "./";
+import type { THullUser, THullAccount } from ".";
 
 /**
  * General type for THullUser and THullAccount

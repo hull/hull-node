@@ -4,7 +4,6 @@
  * @namespace Types
  */
 
-/*::
 export type { THullAccountAttributes } from "./hull-account-attributes";
 export type { THullAccountIdent } from "./hull-account-ident";
 export type { THullAccount } from "./hull-account";
@@ -32,4 +31,3 @@ export type { THullUserChanges } from "./hull-user-changes";
 export type { THullUserIdent } from "./hull-user-ident";
 export type { THullUserUpdateMessage } from "./hull-user-update-message";
 export type { THullUser } from "./hull-user";
-*/

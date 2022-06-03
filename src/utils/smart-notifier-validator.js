@@ -9,6 +9,7 @@ const supportedSignaturesVersions = ["v1"];
 
 module.exports = class SmartNotifierValidator {
   request: Object;
+
   httpClient: superagent;
 
   constructor(http: superagent = null) {
@@ -36,15 +37,15 @@ module.exports = class SmartNotifierValidator {
   }
 
   validateSignatureVersion(): boolean {
-    return _.has(this.request.headers, "x-hull-smart-notifier-signature-version") &&
-      _.indexOf(supportedSignaturesVersions, this.request.headers["x-hull-smart-notifier-signature-version"]) >= 0;
+    return _.has(this.request.headers, "x-hull-smart-notifier-signature-version")
+      && _.indexOf(supportedSignaturesVersions, this.request.headers["x-hull-smart-notifier-signature-version"]) >= 0;
   }
 
   validateSignatureHeaders(): boolean {
     return ["x-hull-smart-notifier-signature",
       "x-hull-smart-notifier-signature-version",
       "x-hull-smart-notifier-signature-public-key-url"
-    ].every(h => _.has(this.request.headers, h));
+    ].every((h) => _.has(this.request.headers, h));
   }
 
   validateConfiguration(): boolean {

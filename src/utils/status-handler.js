@@ -7,7 +7,7 @@ const requireHullMiddleware = require("./require-hull-middleware");
 const statusMap = {
   0: "ok",
   1: "warning",
-  2: "error",
+  2: "error"
 };
 
 /**

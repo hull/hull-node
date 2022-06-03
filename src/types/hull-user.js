@@ -1,6 +1,6 @@
 /* @flow */
 
-import type { THullAttributeName, THullAttributeValue } from "./";
+import type { THullAttributeName, THullAttributeValue } from ".";
 
 /**
  * Main HullUser object with attributes (traits)

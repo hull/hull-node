@@ -64,8 +64,8 @@
  */
 function superagentInstrumentationPluginFactory({ logger, metric }) {
   return function superagentInstrumentationPlugin(request) {
-    const url = request.url;
-    const method = request.method;
+    const { url } = request;
+    const { method } = request;
     let start;
     request
       .on("request", () => {
@@ -75,12 +75,12 @@ function superagentInstrumentationPluginFactory({ logger, metric }) {
         metric.increment("connector.service_api.error", 1, [
           `method:${method}`,
           `url:${url}`,
-          `endpoint:${method} ${url}`,
+          `endpoint:${method} ${url}`
         ]);
       })
       .on("response", (resData) => {
         const hrTime = process.hrtime(start);
-        const status = resData.status;
+        const { status } = resData;
         const statusGroup = `${(status).toString().substring(0, 1)}xx`;
         const elapsed = (hrTime[0] * 1000) + (hrTime[1] / 1000000);
         logger.debug("connector.service_api.call", {
@@ -96,14 +96,14 @@ function superagentInstrumentationPluginFactory({ logger, metric }) {
           `url:${url}`,
           `status:${status}`,
           `statusGroup:${statusGroup}`,
-          `endpoint:${method} ${url}`,
+          `endpoint:${method} ${url}`
         ]);
         metric.value("connector.service_api.response_time", elapsed, [
           `method:${method}`,
           `url:${url}`,
           `status:${status}`,
           `statusGroup:${statusGroup}`,
-          `endpoint:${method} ${url}`,
+          `endpoint:${method} ${url}`
         ]);
       });
   };
