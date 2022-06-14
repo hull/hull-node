@@ -55,7 +55,7 @@
     "lodash": "^4.17.5",
     "newrelic": "^7.5.2",
     "passport": "^0.3.2",
-    "progress-bar-webpack-plugin": "^1.11.0",
+    "progress-bar-webpack-plugin": "^2.1.0",
     "promise-streams": "^1.0.1",
     "raven": "^2.4.2",
     "raw-body": "^2.1.7",
@@ -66,7 +66,7 @@
     "supply": "0.0.4",
     "urijs": "^1.18.7",
     "webpack": "^5.73.0",
-    "webpack-dev-middleware": "^2.0.6",
+    "webpack-dev-middleware": "^5.3.3",
     "webpack-hot-middleware": "^2.25.1"
   },
   "peerDependencies": {
