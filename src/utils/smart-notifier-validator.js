@@ -81,9 +81,7 @@ module.exports = class SmartNotifierValidator {
       return Promise.resolve(_.get(certCache, certUrl));
     }
     return new Promise((resolve, reject) => {
-      this.httpClient.post(certUrl, {
-        body: signature
-      }, (error, response) => {
+      this.httpClient.post(certUrl, signature, (error, response) => {
         if (error) {
           return reject(error);
         }
